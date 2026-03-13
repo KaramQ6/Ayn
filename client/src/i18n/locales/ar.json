@@ -1,0 +1,207 @@
+{
+  "app": {
+    "name": "ForestGuard AI",
+    "loading": "جاري تحميل ForestGuard",
+    "initTelemetry": "جاري تهيئة القياس عن بعد...",
+    "notFound": {
+      "code": "404",
+      "title": "القطاع غير موجود",
+      "description": "الإحداثيات التي أدخلتها خارج نطاق المناطق المراقبة.",
+      "returnBase": "العودة للرئيسية",
+      "commandCenter": "مركز القيادة"
+    }
+  },
+
+  "nav": {
+    "mission": "المهمة",
+    "tech": "التقنية",
+    "impact": "الأثر",
+    "accessDashboard": "لوحة القيادة"
+  },
+
+  "hero": {
+    "eyesInSky": "عيون في السماء.",
+    "voicesOn": "أصوات على",
+    "ground": "الأرض.",
+    "description": "إدارة كوارث حرائق الغابات في الوقت الفعلي مدعومة بالقياس عن بعد من أقمار NASA FIRMS الصناعية والتحقق المجتمعي الميداني."
+  },
+
+  "pillars": {
+    "crossValidation": {
+      "title": "محرك التحقق المتبادل",
+      "subtitle": "تشخيصات التنبيه بالذكاء الاصطناعي",
+      "validated": "تم التحقق"
+    },
+    "community": {
+      "title": "التحقق المجتمعي الميداني",
+      "subtitle": "بوت تيليجرام للبلاغات",
+      "userReport": "مستخدم_092: رصد دخان <",
+      "locating": "...تحديد القطاع 4 <"
+    },
+    "satellite": {
+      "title": "القياس عن بعد بالأقمار الصناعية",
+      "subtitle": "NASA FIRMS VIIRS/MODIS",
+      "coordsScanned": "إحداثيات تم مسحها"
+    }
+  },
+
+  "philosophy": {
+    "problem": "معظم أنظمة الكوارث تعتمد فقط على صور مدارية متأخرة.",
+    "focusOn": "نحن نركز على",
+    "solution": "التحقق المتبادل في الوقت الفعلي."
+  },
+
+  "protocol": {
+    "step1": {
+      "title": "الخطوة 1: الكشف",
+      "description": "استيعاب المسوحات الحرارية من NASA FIRMS VIIRS/MODIS وظروف OpenWeatherMap وتدفقات بيانات الطقس في الوقت الفعلي مباشرة من المدار."
+    },
+    "step2": {
+      "title": "الخطوة 2: التحقق",
+      "description": "يجمع بوت تيليجرام المحلي بلاغات المدنيين ويُهيكلها فوراً، مضيفاً طبقة التحقق البشري الميداني فوق الشذوذات الحرارية."
+    },
+    "step3": {
+      "title": "الخطوة 3: التنفيذ",
+      "description": "يرسل مركز القيادة المبني بـ Node.js و React تنبيهات موثقة وعالية الثقة للسلطات قبل دقائق من تسجيل واجهات البرمجة القياسية للتهديد."
+    },
+    "launchCenter": "تشغيل مركز القيادة"
+  },
+
+  "impact": {
+    "sysArch": "هيكلية النظام",
+    "globalGoals": "أهداف الأثر العالمي",
+    "sdg09": "الصناعة والابتكار والبنية التحتية",
+    "sdg13": "العمل المناخي",
+    "sdg15": "الحياة على الأرض"
+  },
+
+  "footer": {
+    "tagline": "شبكة المراقبة العالمية في الوقت الفعلي"
+  },
+
+  "dashboard": {
+    "commandCenter": "مركز القيادة",
+    "liveTelemetry": "القياس المباشر",
+    "live": "متصل",
+    "reconnecting": "إعادة الاتصال",
+    "analytics": "التحليلات",
+    "report": "بلاغ",
+    "demo": "عرض توضيحي",
+    "stopDemo": "إيقاف العرض",
+    "demoActive": "العرض التوضيحي نشط",
+    "demoInit": "جاري تهيئة سيناريو العرض...",
+    "demoComplete": "اكتمل العرض",
+    "selectScenario": "اختر السيناريو",
+    "allCountries": "جميع الدول",
+    "filterCountry": "تصفية حسب الدولة",
+
+    "stats": {
+      "fires24h": "حرائق 24 ساعة",
+      "reportsToday": "بلاغات اليوم",
+      "activeAlerts": "تنبيهات نشطة",
+      "avgFWI": "متوسط خطر FWI",
+      "monitoredZones": "مناطق مراقبة"
+    },
+
+    "map": {
+      "firmsTelemetry": "قياس NASA FIRMS",
+      "clickToReport": "انقر على الخريطة للإبلاغ",
+      "reportLocation": "موقع البلاغ",
+      "thermalAnomaly": "شذوذ حراري",
+      "confidence": "الثقة",
+      "source": "المصدر",
+      "groundReport": "بلاغ ميداني",
+      "by": "من",
+      "type": "النوع",
+      "ai": "ذكاء اصطناعي"
+    },
+
+    "alerts": {
+      "title": "التنبيهات",
+      "active": "نشط",
+      "all": "الكل",
+      "resolved": "محلول",
+      "noActive": "لا توجد تهديدات نشطة",
+      "noResolved": "لا توجد تنبيهات محلولة",
+      "resolve": "حل"
+    },
+
+    "risk": {
+      "title": "مؤشر خطر FWI",
+      "awaiting": "في انتظار البيانات..."
+    },
+
+    "leaderboard": {
+      "title": "لوحة المتصدرين",
+      "rangers": "حراس",
+      "noReports": "لا توجد بلاغات بعد",
+      "reports": "بلاغات",
+      "pts": "نقاط"
+    },
+
+    "terminal": {
+      "title": "البث المباشر",
+      "listening": "في الانتظار...",
+      "detected": "تم الكشف"
+    },
+
+    "time": {
+      "justNow": "الآن",
+      "minsAgo": "منذ {{count}} د",
+      "hoursAgo": "منذ {{count}} س",
+      "daysAgo": "منذ {{count}} ي"
+    }
+  },
+
+  "reportForm": {
+    "title": "تقديم بلاغ",
+    "threatType": "نوع التهديد",
+    "types": {
+      "fire": "حريق",
+      "smoke": "دخان",
+      "logging": "قطع أشجار غير قانوني",
+      "desertification": "تصحر",
+      "pollution": "تلوث",
+      "wildlife": "حياة برية مهددة",
+      "other": "أخرى"
+    },
+    "location": "الموقع",
+    "clickMapHint": "(انقر على الخريطة للتحديد)",
+    "latitude": "خط العرض",
+    "longitude": "خط الطول",
+    "description": "الوصف (اختياري)",
+    "descPlaceholder": "صف ما لاحظته...",
+    "submit": "إرسال البلاغ",
+    "success": "تم إرسال البلاغ!",
+    "crossValidation": "سيبدأ التحقق المتبادل تلقائياً",
+    "errorCoords": "الرجاء إدخال إحداثيات صحيحة أو النقر على الخريطة",
+    "errorSubmit": "فشل في إرسال البلاغ",
+    "errorNetwork": "خطأ في الشبكة. يرجى المحاولة مرة أخرى."
+  },
+
+  "analyticsPanel": {
+    "title": "لوحة التحليلات",
+    "period": "7 أيام",
+    "loading": "جاري تحميل التحليلات...",
+    "fireTrend": "اتجاه البؤر الحرارية",
+    "alertDist": "توزيع التنبيهات",
+    "forestRisk": "مؤشر خطر الغابات",
+    "reportsByType": "البلاغات حسب النوع",
+    "hotspots": "بؤر حرارية",
+    "critical": "حرج",
+    "high": "عالي",
+    "medium": "متوسط",
+    "riskScore": "درجة الخطر",
+    "noReports": "لا توجد بلاغات بعد",
+    "reportTypes": {
+      "fire": "حريق",
+      "logging": "قطع أشجار",
+      "smoke": "دخان",
+      "unknown": "غير معروف",
+      "desertification": "تصحر",
+      "pollution": "تلوث",
+      "wildlife": "حياة برية",
+      "other": "أخرى"
+    }
+  }
+}

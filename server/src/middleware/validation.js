@@ -1,12 +1,17 @@
 import { z } from 'zod';
+import { isWithinAnyCountry } from '../data/forests.js';
 
 // --- Report validation schema ---
+// Accepts coordinates from any monitored MENA country
 export const reportSchema = z.object({
-  latitude: z.number().min(29).max(34).describe('Must be within Jordan'),
-  longitude: z.number().min(34).max(40).describe('Must be within Jordan'),
+  latitude: z.number().min(-5).max(42).describe('Must be within a monitored region'),
+  longitude: z.number().min(-18).max(60).describe('Must be within a monitored region'),
   report_type: z.enum(['fire', 'smoke', 'logging', 'desertification', 'pollution', 'wildlife', 'other', 'unknown']).default('unknown'),
   description: z.string().max(1000).optional().default(''),
-});
+}).refine(
+  (data) => isWithinAnyCountry(data.latitude, data.longitude).valid,
+  { message: 'Coordinates must be within a monitored country', path: ['latitude'] }
+);
 
 // --- Generic validation middleware factory ---
 export function validate(schema) {

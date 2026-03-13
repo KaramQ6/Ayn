@@ -1,0 +1,207 @@
+{
+  "app": {
+    "name": "ForestGuard AI",
+    "loading": "Chargement de ForestGuard",
+    "initTelemetry": "Initialisation de la telemetrie...",
+    "notFound": {
+      "code": "404",
+      "title": "Secteur introuvable",
+      "description": "Les coordonnees saisies sont en dehors de nos zones surveillees.",
+      "returnBase": "Retour a l'accueil",
+      "commandCenter": "Centre de commande"
+    }
+  },
+
+  "nav": {
+    "mission": "Mission",
+    "tech": "Technologie",
+    "impact": "Impact",
+    "accessDashboard": "Tableau de bord"
+  },
+
+  "hero": {
+    "eyesInSky": "Des yeux dans le ciel.",
+    "voicesOn": "Des voix sur le",
+    "ground": "terrain.",
+    "description": "Gestion des catastrophes d'incendies de foret en temps reel alimentee par la telemetrie satellitaire NASA FIRMS et la validation communautaire de terrain."
+  },
+
+  "pillars": {
+    "crossValidation": {
+      "title": "Moteur de validation croisee",
+      "subtitle": "Diagnostics d'alerte IA",
+      "validated": "Valide"
+    },
+    "community": {
+      "title": "Verite terrain communautaire",
+      "subtitle": "Relais Bot Telegram",
+      "userReport": "USER_092: Fumee reperee <",
+      "locating": "...Localisation Secteur 4 <"
+    },
+    "satellite": {
+      "title": "Telemetrie satellitaire",
+      "subtitle": "NASA FIRMS VIIRS/MODIS",
+      "coordsScanned": "Coordonnees analysees"
+    }
+  },
+
+  "philosophy": {
+    "problem": "La plupart des systemes de catastrophes reposent uniquement sur l'imagerie orbitale differee.",
+    "focusOn": "Nous nous concentrons sur la",
+    "solution": "validation croisee en temps reel."
+  },
+
+  "protocol": {
+    "step1": {
+      "title": "Etape 1 : Detecter",
+      "description": "Ingestion des scans thermiques NASA FIRMS VIIRS/MODIS, des conditions OpenWeatherMap et des flux de donnees meteorologiques en temps reel directement depuis l'orbite."
+    },
+    "step2": {
+      "title": "Etape 2 : Verifier",
+      "description": "Le Bot Telegram localise agrege et structure les rapports civils instantanement, superposant la verite terrain humaine aux anomalies satellitaires."
+    },
+    "step3": {
+      "title": "Etape 3 : Agir",
+      "description": "Le centre de commande Node.js et React envoie des alertes verifiees et a haute confiance aux autorites plusieurs minutes avant que les API standard n'enregistrent la menace."
+    },
+    "launchCenter": "Lancer le centre de commande"
+  },
+
+  "impact": {
+    "sysArch": "Architecture du systeme",
+    "globalGoals": "Objectifs d'impact mondial",
+    "sdg09": "Industrie, innovation et infrastructure",
+    "sdg13": "Action climatique",
+    "sdg15": "Vie terrestre"
+  },
+
+  "footer": {
+    "tagline": "Reseau mondial de surveillance en temps reel"
+  },
+
+  "dashboard": {
+    "commandCenter": "Centre de commande",
+    "liveTelemetry": "Telemetrie en direct",
+    "live": "En ligne",
+    "reconnecting": "Reconnexion",
+    "analytics": "Analyses",
+    "report": "Rapport",
+    "demo": "Demo",
+    "stopDemo": "Arreter demo",
+    "demoActive": "Demo active",
+    "demoInit": "Initialisation du scenario de demo...",
+    "demoComplete": "Demo terminee",
+    "selectScenario": "Choisir un scenario",
+    "allCountries": "Tous les pays",
+    "filterCountry": "Filtrer par pays",
+
+    "stats": {
+      "fires24h": "Feux 24h",
+      "reportsToday": "Rapports aujourd'hui",
+      "activeAlerts": "Alertes actives",
+      "avgFWI": "Risque FWI moy.",
+      "monitoredZones": "Zones surveillees"
+    },
+
+    "map": {
+      "firmsTelemetry": "Telemetrie NASA FIRMS",
+      "clickToReport": "Cliquez pour signaler",
+      "reportLocation": "Emplacement du rapport",
+      "thermalAnomaly": "Anomalie thermique",
+      "confidence": "Conf",
+      "source": "Src",
+      "groundReport": "Rapport terrain",
+      "by": "Par",
+      "type": "Type",
+      "ai": "IA"
+    },
+
+    "alerts": {
+      "title": "Alertes",
+      "active": "actives",
+      "all": "toutes",
+      "resolved": "resolues",
+      "noActive": "Aucune menace active",
+      "noResolved": "Aucune alerte resolue",
+      "resolve": "Resoudre"
+    },
+
+    "risk": {
+      "title": "Risque FWI",
+      "awaiting": "En attente de donnees..."
+    },
+
+    "leaderboard": {
+      "title": "Classement",
+      "rangers": "Rangers",
+      "noReports": "Pas encore de rapports",
+      "reports": "rapports",
+      "pts": "pts"
+    },
+
+    "terminal": {
+      "title": "Relais en direct",
+      "listening": "En ecoute...",
+      "detected": "DETECTE"
+    },
+
+    "time": {
+      "justNow": "A l'instant",
+      "minsAgo": "Il y a {{count}}min",
+      "hoursAgo": "Il y a {{count}}h",
+      "daysAgo": "Il y a {{count}}j"
+    }
+  },
+
+  "reportForm": {
+    "title": "Soumettre un rapport",
+    "threatType": "Type de menace",
+    "types": {
+      "fire": "Incendie",
+      "smoke": "Fumee",
+      "logging": "Exploitation illegale",
+      "desertification": "Desertification",
+      "pollution": "Pollution",
+      "wildlife": "Faune menacee",
+      "other": "Autre"
+    },
+    "location": "Emplacement",
+    "clickMapHint": "(cliquez sur la carte)",
+    "latitude": "Latitude",
+    "longitude": "Longitude",
+    "description": "Description (optionnel)",
+    "descPlaceholder": "Decrivez ce que vous avez observe...",
+    "submit": "Soumettre le rapport",
+    "success": "Rapport soumis !",
+    "crossValidation": "La validation croisee commencera automatiquement",
+    "errorCoords": "Veuillez entrer des coordonnees valides ou cliquer sur la carte",
+    "errorSubmit": "Echec de la soumission du rapport",
+    "errorNetwork": "Erreur reseau. Veuillez reessayer."
+  },
+
+  "analyticsPanel": {
+    "title": "Tableau de bord analytique",
+    "period": "7 jours",
+    "loading": "Chargement des analyses...",
+    "fireTrend": "Tendance des foyers",
+    "alertDist": "Distribution des alertes",
+    "forestRisk": "Indice de risque forestier",
+    "reportsByType": "Rapports par type",
+    "hotspots": "Foyers",
+    "critical": "Critique",
+    "high": "Eleve",
+    "medium": "Moyen",
+    "riskScore": "Score de risque",
+    "noReports": "Pas encore de rapports",
+    "reportTypes": {
+      "fire": "Incendie",
+      "logging": "Exploitation",
+      "smoke": "Fumee",
+      "unknown": "Inconnu",
+      "desertification": "Desertification",
+      "pollution": "Pollution",
+      "wildlife": "Faune",
+      "other": "Autre"
+    }
+  }
+}

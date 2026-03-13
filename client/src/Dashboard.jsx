@@ -1,8 +1,9 @@
-import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Circle, useMapEvents } from 'react-leaflet';
+import { useState, useEffect, useCallback, lazy, Suspense, useRef } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, Circle, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { Link } from 'react-router-dom';
-import { Target, Flame, FileText, AlertTriangle, Thermometer, TreePine, Map, Bell, ArrowLeft, Radio, CheckCircle, TrendingUp, Plus, Wifi, WifiOff, Brain, Shield, Play, Square, Trophy } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Target, Flame, FileText, AlertTriangle, Thermometer, TreePine, Map, Bell, ArrowLeft, Radio, CheckCircle, TrendingUp, Plus, Wifi, WifiOff, Brain, Shield, Play, Square, Trophy, Globe, ChevronDown } from 'lucide-react';
 const AnalyticsPanel = lazy(() => import('./AnalyticsPanel'));
 const ReportForm = lazy(() => import('./ReportForm'));
 import 'leaflet/dist/leaflet.css';
@@ -10,6 +11,10 @@ import './index.css';
 
 const API_URL = '/api';
 const WS_URL = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/ws`;
+
+// MENA overview center
+const MENA_CENTER = [28, 35];
+const MENA_ZOOM = 4;
 
 // Custom Map Icons
 const fireIcon = L.divIcon({ html: '<div class="w-4 h-4 rounded-full bg-red-500 animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.8)] border-2 border-white/50"></div>', className: '', iconSize: [16, 16], iconAnchor: [8, 8] });
@@ -26,7 +31,23 @@ function MapClickHandler({ onMapClick }) {
   return null;
 }
 
+// Map fly-to controller
+function MapController({ center, zoom }) {
+  const map = useMap();
+  const prevCenter = useRef(center);
+  const prevZoom = useRef(zoom);
+  useEffect(() => {
+    if (center && zoom && (prevCenter.current !== center || prevZoom.current !== zoom)) {
+      map.flyTo(center, zoom, { duration: 1.5 });
+      prevCenter.current = center;
+      prevZoom.current = zoom;
+    }
+  }, [center, zoom, map]);
+  return null;
+}
+
 function Dashboard() {
+  const { t, i18n } = useTranslation();
   const [stats, setStats] = useState({ fires_24h: 0, reports_24h: 0, active_alerts: 0, avg_fire_risk: 0, forests_monitored: 0, forests: [] });
   const [fires, setFires] = useState([]);
   const [reports, setReports] = useState([]);
@@ -43,14 +64,33 @@ function Dashboard() {
   const [demoProgress, setDemoProgress] = useState(0);
   const [demoEventText, setDemoEventText] = useState('');
 
+  // Pan-Arab: country filter & scenarios
+  const [countries, setCountries] = useState([]);
+  const [selectedCountry, setSelectedCountry] = useState('');
+  const [scenarios, setScenarios] = useState([]);
+  const [selectedScenario, setSelectedScenario] = useState('ajloun');
+  const [mapCenter, setMapCenter] = useState(MENA_CENTER);
+  const [mapZoom, setMapZoom] = useState(MENA_ZOOM);
+
+  // Fetch countries and scenarios on mount
+  useEffect(() => {
+    fetch(`${API_URL}/countries`).then(r => r.json()).then(data => setCountries(data || [])).catch(() => {});
+    fetch(`${API_URL}/demo/scenarios`).then(r => r.json()).then(data => {
+      if (data.scenarios) setScenarios(data.scenarios);
+    }).catch(() => {});
+  }, []);
+
+  const countryParam = selectedCountry ? `&country=${selectedCountry}` : '';
+
   const fetchData = useCallback(() => {
+    const cp = selectedCountry ? `?country=${selectedCountry}` : '';
     return Promise.all([
-      fetch(`${API_URL}/stats`).then(r => r.json()).catch(() => stats),
-      fetch(`${API_URL}/fires`).then(r => r.json()).catch(() => []),
-      fetch(`${API_URL}/reports`).then(r => r.json()).catch(() => []),
-      fetch(`${API_URL}/alerts`).then(r => r.json()).catch(() => []),
-      fetch(`${API_URL}/risk`).then(r => r.json()).catch(() => []),
-      fetch(`${API_URL}/leaderboard`).then(r => r.json()).catch(() => []),
+      fetch(`${API_URL}/stats${cp}`).then(r => r.json()).catch(() => stats),
+      fetch(`${API_URL}/fires${cp}`).then(r => r.json()).catch(() => []),
+      fetch(`${API_URL}/reports${cp}`).then(r => r.json()).catch(() => []),
+      fetch(`${API_URL}/alerts${cp}`).then(r => r.json()).catch(() => []),
+      fetch(`${API_URL}/risk${cp}`).then(r => r.json()).catch(() => []),
+      fetch(`${API_URL}/leaderboard${cp}`).then(r => r.json()).catch(() => []),
     ]).then(([statsData, firesData, reportsData, alertsData, risksData, leaderboardData]) => {
       setStats(statsData);
       setFires(firesData);
@@ -59,7 +99,7 @@ function Dashboard() {
       setRisks(risksData);
       setLeaderboard(leaderboardData);
     });
-  }, []);
+  }, [selectedCountry]);
 
   useEffect(() => {
     setLoading(true);
@@ -104,7 +144,12 @@ function Dashboard() {
         if (msg.type === 'DEMO_STARTED') {
           setDemoActive(true);
           setDemoProgress(0);
-          setDemoEventText('Demo scenario initializing...');
+          setDemoEventText(t('dashboard.demoInit'));
+          // Fly to scenario center if provided
+          if (msg.data?.center) {
+            setMapCenter(msg.data.center);
+            setMapZoom(msg.data.zoom || 10);
+          }
           fetchData();
         }
         if (msg.type === 'DEMO_EVENT') {
@@ -116,7 +161,7 @@ function Dashboard() {
         }
         if (msg.type === 'DEMO_COMPLETE') {
           setDemoProgress(100);
-          setDemoEventText('Demo complete');
+          setDemoEventText(t('dashboard.demoComplete'));
           setTimeout(() => { setDemoActive(false); setDemoProgress(0); setDemoEventText(''); }, 5000);
         }
       };
@@ -129,7 +174,7 @@ function Dashboard() {
         ws.close();
       }
     };
-  }, [fetchData]);
+  }, [fetchData, t]);
 
   const handleMapClick = useCallback((coords) => {
     setClickedCoords(coords);
@@ -156,14 +201,22 @@ function Dashboard() {
         setDemoActive(false);
         setDemoProgress(0);
         setDemoEventText('');
+        // Reset to MENA overview
+        setMapCenter(MENA_CENTER);
+        setMapZoom(MENA_ZOOM);
       } else {
         await fetch(`${API_URL}/demo/seed`);
-        await fetch(`${API_URL}/demo/start`);
+        await fetch(`${API_URL}/demo/start?scenario=${selectedScenario}`);
       }
     } catch (err) {
       console.error('Demo toggle error:', err);
     }
-  }, [demoActive]);
+  }, [demoActive, selectedScenario]);
+
+  // Language switcher
+  const changeLang = useCallback((lng) => {
+    i18n.changeLanguage(lng);
+  }, [i18n]);
 
   const getRiskColorClass = (score) => {
     if (score >= 65) return 'text-red-500 bg-red-500/10 border-red-500/20';
@@ -183,11 +236,11 @@ function Dashboard() {
     if (!dateStr) return '';
     const diff = Date.now() - new Date(dateStr + 'Z').getTime();
     const mins = Math.floor(diff / 60000);
-    if (mins < 1) return 'Just now';
-    if (mins < 60) return `${mins}m ago`;
+    if (mins < 1) return t('dashboard.time.justNow');
+    if (mins < 60) return t('dashboard.time.minsAgo', { count: mins });
     const hrs = Math.floor(mins / 60);
-    if (hrs < 24) return `${hrs}h ago`;
-    return `${Math.floor(hrs / 24)}d ago`;
+    if (hrs < 24) return t('dashboard.time.hoursAgo', { count: hrs });
+    return t('dashboard.time.daysAgo', { count: Math.floor(hrs / 24) });
   }
 
   const filteredAlerts = alerts.filter(a => {
@@ -196,6 +249,12 @@ function Dashboard() {
     return true;
   });
 
+  const alertFilterLabels = {
+    active: t('dashboard.alerts.active'),
+    all: t('dashboard.alerts.all'),
+    resolved: t('dashboard.alerts.resolved'),
+  };
+
   return (
     <div className="bg-[#050A07] min-h-screen text-[var(--ui-ghost)] font-sans flex flex-col selection:bg-[var(--alert-signal)] selection:text-white relative">
       
@@ -203,7 +262,7 @@ function Dashboard() {
       {loading && (
         <div className="fixed inset-0 z-[100] bg-[#050A07] flex flex-col items-center justify-center gap-4">
           <div className="w-12 h-12 border-4 border-[var(--alert-signal)] border-t-transparent rounded-full animate-spin"></div>
-          <p className="font-data text-xs uppercase tracking-[0.3em] text-white/40 animate-pulse">Initializing Telemetry...</p>
+          <p className="font-data text-xs uppercase tracking-[0.3em] text-white/40 animate-pulse">{t('app.initTelemetry')}</p>
         </div>
       )}
 
@@ -213,40 +272,77 @@ function Dashboard() {
           <Link to="/" aria-label="Back to Protocol" className="flex items-center justify-center min-w-[44px] min-h-[44px] hover:text-white text-white/50 transition-colors focus:ring-2 focus:ring-[var(--alert-signal)] rounded-md outline-none">
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-2">
             <Target className="text-[var(--alert-signal)] w-6 h-6" />
             <div>
-              <h1 className="font-bold text-lg tracking-tight leading-none">Command Center</h1>
-              <p className="text-[10px] font-data text-white/40 uppercase tracking-widest mt-1">Live Telemetry</p>
+              <h1 className="font-bold text-lg tracking-tight leading-none">{t('dashboard.commandCenter')}</h1>
+              <p className="text-[10px] font-data text-white/40 uppercase tracking-widest mt-1">{t('dashboard.liveTelemetry')}</p>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 flex-wrap justify-end">
+          {/* Language Switcher */}
+          <div className="flex items-center rounded-full border border-white/10 bg-white/5 overflow-hidden">
+            {['en', 'ar', 'fr'].map(lng => (
+              <button key={lng} onClick={() => changeLang(lng)}
+                className={`px-2.5 py-1.5 text-[10px] font-data uppercase tracking-widest transition-colors ${i18n.language === lng ? 'bg-white/15 text-white' : 'text-white/40 hover:text-white/70'}`}>
+                {lng.toUpperCase()}
+              </button>
+            ))}
+          </div>
+
+          {/* Country Filter */}
+          <div className="relative">
+            <select value={selectedCountry} onChange={e => { setSelectedCountry(e.target.value); if (!e.target.value) { setMapCenter(MENA_CENTER); setMapZoom(MENA_ZOOM); } }}
+              className="appearance-none bg-white/5 border border-white/10 rounded-full px-3 py-1.5 pe-7 text-[10px] font-data uppercase tracking-widest text-white/60 hover:text-white hover:border-white/20 transition-colors cursor-pointer focus:outline-none focus:border-green-500/50"
+              aria-label={t('dashboard.filterCountry')}>
+              <option value="">{t('dashboard.allCountries')}</option>
+              {countries.map(c => (
+                <option key={c.code} value={c.code}>{i18n.language === 'ar' ? c.nameAr : c.name} ({c.forestCount})</option>
+              ))}
+            </select>
+            <ChevronDown className="w-3 h-3 absolute end-2 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none" />
+          </div>
+
           {/* WebSocket Status */}
           <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[10px] font-data uppercase tracking-widest ${connected ? 'border-green-500/20 text-green-500 bg-green-500/10' : 'border-red-500/20 text-red-500 bg-red-500/10 animate-pulse'}`}>
             {connected ? <Wifi className="w-3 h-3" /> : <WifiOff className="w-3 h-3" />}
-            {connected ? 'Live' : 'Reconnecting'}
+            {connected ? t('dashboard.live') : t('dashboard.reconnecting')}
           </div>
 
           {/* Analytics Button */}
           <button onClick={() => setShowAnalytics(true)} aria-label="Open analytics dashboard"
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/10 text-[10px] font-data uppercase tracking-widest text-white/60 hover:text-white hover:border-white/20 bg-white/5 transition-colors">
-            <TrendingUp className="w-3 h-3" /> Analytics
+            <TrendingUp className="w-3 h-3" /> {t('dashboard.analytics')}
           </button>
 
           {/* Report Button */}
           <button onClick={() => setShowReportForm(true)} aria-label="Submit a new report"
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-green-500/30 text-[10px] font-data uppercase tracking-widest text-green-400 hover:text-green-300 hover:border-green-500/50 bg-green-500/10 transition-colors">
-            <Plus className="w-3 h-3" /> Report
+            <Plus className="w-3 h-3" /> {t('dashboard.report')}
           </button>
 
-          {/* Demo Button */}
-          <button onClick={handleDemoToggle} aria-label={demoActive ? 'Stop demo scenario' : 'Start demo scenario'}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[10px] font-data uppercase tracking-widest transition-colors ${demoActive ? 'border-red-500/30 text-red-400 hover:text-red-300 hover:border-red-500/50 bg-red-500/10' : 'border-yellow-500/30 text-yellow-400 hover:text-yellow-300 hover:border-yellow-500/50 bg-yellow-500/10'}`}>
-            {demoActive ? <Square className="w-3 h-3" /> : <Play className="w-3 h-3" />}
-            {demoActive ? 'Stop Demo' : 'Demo'}
-          </button>
+          {/* Demo Scenario Selector + Toggle */}
+          <div className="flex items-center gap-1">
+            {!demoActive && scenarios.length > 0 && (
+              <div className="relative">
+                <select value={selectedScenario} onChange={e => setSelectedScenario(e.target.value)}
+                  className="appearance-none bg-yellow-500/5 border border-yellow-500/20 rounded-s-full px-3 py-1.5 pe-7 text-[10px] font-data uppercase tracking-widest text-yellow-400/70 hover:text-yellow-300 transition-colors cursor-pointer focus:outline-none focus:border-yellow-500/50"
+                  aria-label={t('dashboard.selectScenario')}>
+                  {scenarios.map(s => (
+                    <option key={s.id} value={s.id}>{s.name}</option>
+                  ))}
+                </select>
+                <ChevronDown className="w-3 h-3 absolute end-2 top-1/2 -translate-y-1/2 text-yellow-400/40 pointer-events-none" />
+              </div>
+            )}
+            <button onClick={handleDemoToggle} aria-label={demoActive ? 'Stop demo scenario' : 'Start demo scenario'}
+              className={`flex items-center gap-1.5 px-3 py-1.5 border text-[10px] font-data uppercase tracking-widest transition-colors ${!demoActive && scenarios.length > 0 ? 'rounded-e-full' : 'rounded-full'} ${demoActive ? 'border-red-500/30 text-red-400 hover:text-red-300 hover:border-red-500/50 bg-red-500/10' : 'border-yellow-500/30 text-yellow-400 hover:text-yellow-300 hover:border-yellow-500/50 bg-yellow-500/10'}`}>
+              {demoActive ? <Square className="w-3 h-3" /> : <Play className="w-3 h-3" />}
+              {demoActive ? t('dashboard.stopDemo') : t('dashboard.demo')}
+            </button>
+          </div>
         </div>
       </header>
 
@@ -256,7 +352,7 @@ function Dashboard() {
           <div className="max-w-[1600px] mx-auto flex items-center gap-4">
             <div className="flex items-center gap-2 flex-shrink-0">
               <div className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse"></div>
-              <span className="text-[10px] font-data uppercase tracking-widest text-yellow-400 font-bold">Demo Active</span>
+              <span className="text-[10px] font-data uppercase tracking-widest text-yellow-400 font-bold">{t('dashboard.demoActive')}</span>
             </div>
             <div className="flex-1 min-w-0">
               <div className="h-1.5 bg-black/30 rounded-full overflow-hidden">
@@ -278,11 +374,11 @@ function Dashboard() {
           {/* STATS ROW */}
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             {[
-              { label: '24h Fires', value: stats.fires_24h, icon: Flame, color: 'text-red-500', bg: 'bg-red-500/10' },
-              { label: 'Reports Today', value: stats.reports_24h, icon: FileText, color: 'text-blue-400', bg: 'bg-blue-400/10' },
-              { label: 'Active Alerts', value: stats.active_alerts, icon: AlertTriangle, color: 'text-orange-500', bg: 'bg-orange-500/10' },
-              { label: 'Avg FWI Risk', value: `${stats.avg_fire_risk}%`, icon: Thermometer, color: 'text-yellow-500', bg: 'bg-yellow-500/10' },
-              { label: 'Monitored Zones', value: stats.forests_monitored, icon: TreePine, color: 'text-green-500', bg: 'bg-green-500/10' },
+              { label: t('dashboard.stats.fires24h'), value: stats.fires_24h, icon: Flame, color: 'text-red-500', bg: 'bg-red-500/10' },
+              { label: t('dashboard.stats.reportsToday'), value: stats.reports_24h, icon: FileText, color: 'text-blue-400', bg: 'bg-blue-400/10' },
+              { label: t('dashboard.stats.activeAlerts'), value: stats.active_alerts, icon: AlertTriangle, color: 'text-orange-500', bg: 'bg-orange-500/10' },
+              { label: t('dashboard.stats.avgFWI'), value: `${stats.avg_fire_risk}%`, icon: Thermometer, color: 'text-yellow-500', bg: 'bg-yellow-500/10' },
+              { label: t('dashboard.stats.monitoredZones'), value: stats.forests_monitored, icon: TreePine, color: 'text-green-500', bg: 'bg-green-500/10' },
             ].map((stat, i) => (
               <div key={i} className="bg-[var(--canopy-green)] border border-white/5 rounded-[20px] p-5 flex flex-col gap-3 group hover:border-white/10 transition-colors">
                 <div className={`w-10 h-10 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center`}>
@@ -298,36 +394,37 @@ function Dashboard() {
 
           {/* MAP */}
           <div className="flex-1 bg-[var(--canopy-green)] border border-white/5 rounded-[24px] overflow-hidden relative min-h-[500px] ring-1 ring-white/5 shadow-2xl">
-            <div className="absolute top-4 left-4 z-[500] bg-black/60 backdrop-blur-md border border-white/10 px-4 py-2 rounded-xl flex items-center gap-2">
+            <div className="absolute top-4 start-4 z-[500] bg-black/60 backdrop-blur-md border border-white/10 px-4 py-2 rounded-xl flex items-center gap-2">
               <Map className="w-4 h-4 text-white/60" />
-              <span className="text-xs font-data text-white/80 uppercase tracking-widest">NASA FIRMS Telemetry</span>
-              <span className="text-[9px] font-data text-green-500/60 ml-2">Click map to report</span>
+              <span className="text-xs font-data text-white/80 uppercase tracking-widest">{t('dashboard.map.firmsTelemetry')}</span>
+              <span className="text-[9px] font-data text-green-500/60 ms-2">{t('dashboard.map.clickToReport')}</span>
             </div>
 
             {/* Subtle Map Vignette Overlay */}
             <div className="absolute inset-0 z-[400] pointer-events-none shadow-[inset_0_0_100px_rgba(0,0,0,0.8)]"></div>
 
-            <MapContainer center={[31.5, 36.5]} zoom={8} className="w-full h-full bg-[#050A07] z-10" zoomControl={false}>
+            <MapContainer center={MENA_CENTER} zoom={MENA_ZOOM} className="w-full h-full bg-[#050A07] z-10" zoomControl={false}>
               <TileLayer
                 url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
                 attribution='&copy; CartoDB'
                 className="opacity-70 contrast-125 grayscale-[0.8] sepia-[0.3] hue-rotate-180"
               />
 
+              <MapController center={mapCenter} zoom={mapZoom} />
               <MapClickHandler onMapClick={handleMapClick} />
 
               {/* Clicked location marker */}
               {clickedCoords && (
                 <Marker position={[clickedCoords.lat, clickedCoords.lng]} icon={clickIcon}>
                   <Popup className="tactical-popup">
-                    <div className="text-xs font-data text-green-400">Report Location</div>
+                    <div className="text-xs font-data text-green-400">{t('dashboard.map.reportLocation')}</div>
                   </Popup>
                 </Marker>
               )}
 
               {(stats.forests || []).map((f, i) => (
                 <Circle key={`forest-${i}`} center={[f.lat, f.lng]} radius={f.radius * 1000} pathOptions={{ color: '#22c55e', fillColor: '#22c55e', fillOpacity: 0.1, weight: 1 }}>
-                  <Popup className="tactical-popup"><b>{f.name}</b></Popup>
+                  <Popup className="tactical-popup"><b>{f.nameAr ? `${f.nameAr} / ${f.name}` : f.name}</b></Popup>
                 </Circle>
               ))}
 
@@ -335,8 +432,8 @@ function Dashboard() {
                 <Marker key={`fire-${i}`} position={[f.latitude, f.longitude]} icon={fireIcon}>
                   <Popup className="tactical-popup">
                     <div className="text-xs font-data">
-                      <b className="text-red-500">Thermal Anomaly</b><br />
-                      Conf: {f.confidence}% | Src: {f.satellite}
+                      <b className="text-red-500">{t('dashboard.map.thermalAnomaly')}</b><br />
+                      {t('dashboard.map.confidence')}: {f.confidence}% | {t('dashboard.map.source')}: {f.satellite}
                     </div>
                   </Popup>
                 </Marker>
@@ -346,13 +443,13 @@ function Dashboard() {
                 <Marker key={`rep-${i}`} position={[r.latitude, r.longitude]} icon={reportIcon}>
                   <Popup className="tactical-popup">
                     <div className="text-xs font-data">
-                      <b className="text-blue-400">Ground Report</b><br />
-                      By: {r.username || 'Web'} | Type: {r.report_type}
+                      <b className="text-blue-400">{t('dashboard.map.groundReport')}</b><br />
+                      {t('dashboard.map.by')}: {r.username || 'Web'} | {t('dashboard.map.type')}: {r.report_type}
                       {r.description && (
                         <><br /><span className="text-white/70 italic">{r.description}</span></>
                       )}
                       {r.ai_classification && r.ai_classification !== 'none' && (
-                        <><br /><span className="text-purple-400">AI: {r.ai_classification} ({r.ai_confidence}%)</span></>
+                        <><br /><span className="text-purple-400">{t('dashboard.map.ai')}: {r.ai_classification} ({r.ai_confidence}%)</span></>
                       )}
                     </div>
                   </Popup>
@@ -371,7 +468,7 @@ function Dashboard() {
               <div className="flex justify-between items-center mb-3">
                 <div className="flex items-center gap-2">
                   <Bell className="w-4 h-4 text-orange-400" />
-                  <h3 className="text-sm font-bold uppercase tracking-widest text-white/80">Alerts</h3>
+                  <h3 className="text-sm font-bold uppercase tracking-widest text-white/80">{t('dashboard.alerts.title')}</h3>
                 </div>
                 <span className="text-[10px] font-data bg-orange-500/20 text-orange-400 px-2 py-0.5 rounded-full">{alerts.filter(a => !a.resolved).length}</span>
               </div>
@@ -380,7 +477,7 @@ function Dashboard() {
                 {['active', 'all', 'resolved'].map(f => (
                   <button key={f} onClick={() => setAlertFilter(f)} aria-label={`Filter ${f} alerts`}
                     className={`px-2.5 py-1 rounded-lg text-[9px] font-data uppercase tracking-widest transition-colors ${alertFilter === f ? 'bg-white/10 text-white/80' : 'text-white/30 hover:text-white/50'}`}>
-                    {f}
+                    {alertFilterLabels[f]}
                   </button>
                 ))}
               </div>
@@ -389,7 +486,7 @@ function Dashboard() {
               {filteredAlerts.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-white/20">
                   <CheckCircle className="w-8 h-8 mb-2" />
-                  <span className="text-xs font-data uppercase tracking-widest">No {alertFilter === 'resolved' ? 'Resolved' : 'Active'} Threats</span>
+                  <span className="text-xs font-data uppercase tracking-widest">{alertFilter === 'resolved' ? t('dashboard.alerts.noResolved') : t('dashboard.alerts.noActive')}</span>
                 </div>
               ) : filteredAlerts.slice(0, 8).map((a, i) => (
                 <div key={a.id || i} className={`p-3 rounded-xl border flex gap-3 items-start transition-all ${a.resolved ? 'border-white/5 bg-white/[0.02] opacity-60' : a.level === 'CRITICAL' ? 'border-red-500/30 bg-red-500/5' : 'border-orange-500/20 bg-orange-500/5'}`}>
@@ -413,7 +510,7 @@ function Dashboard() {
                   {!a.resolved && a.id && (
                     <button onClick={() => handleResolveAlert(a.id)} aria-label={`Resolve alert ${a.id}`}
                       className="flex-shrink-0 px-2 py-1 rounded-lg bg-green-500/10 border border-green-500/20 text-green-500 text-[9px] font-data uppercase hover:bg-green-500/20 transition-colors">
-                      Resolve
+                      {t('dashboard.alerts.resolve')}
                     </button>
                   )}
                 </div>
@@ -425,14 +522,14 @@ function Dashboard() {
           <div className="bg-[var(--canopy-green)] border border-white/5 rounded-[24px] flex flex-col flex-1 min-h-[200px] overflow-hidden">
             <div className="p-5 border-b border-white/5 flex items-center gap-2 bg-black/20">
               <Thermometer className="w-4 h-4 text-yellow-400" />
-              <h3 className="text-sm font-bold uppercase tracking-widest text-white/80">FWI Risk</h3>
-              <Shield className="w-3 h-3 text-green-500/50 ml-auto" />
+              <h3 className="text-sm font-bold uppercase tracking-widest text-white/80">{t('dashboard.risk.title')}</h3>
+              <Shield className="w-3 h-3 text-green-500/50 ms-auto" />
             </div>
             <div className="p-4 overflow-y-auto flex-1 space-y-4 custom-scrollbar">
               {risks.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-white/20">
                   <Thermometer className="w-6 h-6 mb-2" />
-                  <span className="text-[10px] font-data uppercase tracking-widest">Awaiting data...</span>
+                  <span className="text-[10px] font-data uppercase tracking-widest">{t('dashboard.risk.awaiting')}</span>
                 </div>
               ) : risks.slice(0, 8).map((r, i) => (
                 <div key={i} className="flex items-center gap-3">
@@ -450,14 +547,14 @@ function Dashboard() {
           <div className="bg-[var(--canopy-green)] border border-white/5 rounded-[24px] flex flex-col overflow-hidden">
             <div className="p-5 border-b border-white/5 flex items-center gap-2 bg-black/20">
               <Trophy className="w-4 h-4 text-yellow-400" />
-              <h3 className="text-sm font-bold uppercase tracking-widest text-white/80">Leaderboard</h3>
-              <span className="text-[10px] font-data bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded-full ml-auto">{leaderboard.length} Rangers</span>
+              <h3 className="text-sm font-bold uppercase tracking-widest text-white/80">{t('dashboard.leaderboard.title')}</h3>
+              <span className="text-[10px] font-data bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded-full ms-auto">{leaderboard.length} {t('dashboard.leaderboard.rangers')}</span>
             </div>
             <div className="p-4 overflow-y-auto space-y-2 custom-scrollbar max-h-[180px]">
               {leaderboard.length === 0 ? (
                 <div className="py-6 flex flex-col items-center justify-center text-white/20">
                   <Trophy className="w-6 h-6 mb-2" />
-                  <span className="text-[10px] font-data uppercase tracking-widest">No reports yet</span>
+                  <span className="text-[10px] font-data uppercase tracking-widest">{t('dashboard.leaderboard.noReports')}</span>
                 </div>
               ) : leaderboard.map((entry, i) => (
                 <div key={i} className="flex items-center gap-3 p-2 rounded-xl hover:bg-white/[0.03] transition-colors">
@@ -465,8 +562,8 @@ function Dashboard() {
                     {i + 1}
                   </span>
                   <span className="text-xs text-white/80 flex-1 truncate">{entry.username}</span>
-                  <span className="text-[9px] font-data text-white/40">{entry.report_count} reports</span>
-                  <span className="text-[10px] font-data font-bold text-yellow-400">{entry.total_points} pts</span>
+                  <span className="text-[9px] font-data text-white/40">{entry.report_count} {t('dashboard.leaderboard.reports')}</span>
+                  <span className="text-[10px] font-data font-bold text-yellow-400">{entry.total_points} {t('dashboard.leaderboard.pts')}</span>
                 </div>
               ))}
             </div>
@@ -477,14 +574,14 @@ function Dashboard() {
             <div className="p-4 border-b border-white/5 flex justify-between items-center bg-[#111]">
               <div className="flex items-center gap-2">
                 <Radio className="w-4 h-4 text-green-500" />
-                <h3 className="text-xs font-data uppercase tracking-widest text-green-500">Live Relays</h3>
+                <h3 className="text-xs font-data uppercase tracking-widest text-green-500">{t('dashboard.terminal.title')}</h3>
               </div>
             </div>
             <div className="p-4 overflow-y-auto flex-1 font-data text-[10px] custom-scrollbar space-y-3">
               {reports.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-green-500/20">
                   <Radio className="w-6 h-6 mb-2" />
-                  <span className="text-[10px] uppercase tracking-widest">Listening...</span>
+                  <span className="text-[10px] uppercase tracking-widest">{t('dashboard.terminal.listening')}</span>
                 </div>
               ) : reports.slice(0, 6).map((r, i) => (
                 <div key={i} className="flex gap-2 text-green-400/80">
@@ -492,12 +589,12 @@ function Dashboard() {
                   <div>
                     <span className="text-white/60">{timeAgo(r.created_at)}</span>{' '}
                     <span className="text-green-300">[{r.username || 'WEB'}]</span>{' '}
-                    <span>{r.report_type?.toUpperCase()} DETECTED</span>
+                    <span>{r.report_type?.toUpperCase()} {t('dashboard.terminal.detected')}</span>
                     {r.description && (
-                      <span className="text-white/40 ml-1">— {r.description}</span>
+                      <span className="text-white/40 ms-1">— {r.description}</span>
                     )}
                     {r.ai_classification && r.ai_classification !== 'none' && (
-                      <span className="text-purple-400 ml-1">AI:{r.ai_classification}({r.ai_confidence}%)</span>
+                      <span className="text-purple-400 ms-1">AI:{r.ai_classification}({r.ai_confidence}%)</span>
                     )}
                   </div>
                 </div>

@@ -1,40 +1,74 @@
 import { Router } from 'express';
-import { JORDAN_FORESTS } from '../services/firms.js';
+import { FORESTS, getForestsByCountry, getAllCountries, findNearestForest } from '../data/forests.js';
 import { validate, reportSchema, validateId } from '../middleware/validation.js';
 
 const router = Router();
 
-// GET /api/fires — active fire hotspots
+// GET /api/fires — active fire hotspots (optional ?country=JO filter)
 router.get('/fires', (req, res) => {
   const db = req.app.locals.db;
-  const fires = db.prepare(`
-    SELECT * FROM fire_hotspots
-    ORDER BY created_at DESC LIMIT 100
-  `).all();
+  const { country } = req.query;
+
+  let fires;
+  if (country) {
+    fires = db.prepare(`
+      SELECT * FROM fire_hotspots
+      WHERE country = ?
+      ORDER BY created_at DESC LIMIT 200
+    `).all(country.toUpperCase());
+  } else {
+    fires = db.prepare(`
+      SELECT * FROM fire_hotspots
+      ORDER BY created_at DESC LIMIT 200
+    `).all();
+  }
   res.json(fires);
 });
 
-// GET /api/risk — fire risk for all regions
+// GET /api/risk — fire risk for all regions (optional ?country=JO filter)
 router.get('/risk', (req, res) => {
   const db = req.app.locals.db;
-  // Get latest risk per region
-  const risks = db.prepare(`
-    SELECT * FROM fire_risk
-    WHERE id IN (
-      SELECT MAX(id) FROM fire_risk GROUP BY region
-    )
-    ORDER BY risk_score DESC
-  `).all();
+  const { country } = req.query;
+
+  let risks;
+  if (country) {
+    risks = db.prepare(`
+      SELECT * FROM fire_risk
+      WHERE country = ? AND id IN (
+        SELECT MAX(id) FROM fire_risk WHERE country = ? GROUP BY region
+      )
+      ORDER BY risk_score DESC
+    `).all(country.toUpperCase(), country.toUpperCase());
+  } else {
+    risks = db.prepare(`
+      SELECT * FROM fire_risk
+      WHERE id IN (
+        SELECT MAX(id) FROM fire_risk GROUP BY region
+      )
+      ORDER BY risk_score DESC
+    `).all();
+  }
   res.json(risks);
 });
 
-// GET /api/reports — community reports
+// GET /api/reports — community reports (optional ?country=JO filter)
 router.get('/reports', (req, res) => {
   const db = req.app.locals.db;
-  const reports = db.prepare(`
-    SELECT * FROM reports
-    ORDER BY created_at DESC LIMIT 50
-  `).all();
+  const { country } = req.query;
+
+  let reports;
+  if (country) {
+    reports = db.prepare(`
+      SELECT * FROM reports
+      WHERE country = ?
+      ORDER BY created_at DESC LIMIT 100
+    `).all(country.toUpperCase());
+  } else {
+    reports = db.prepare(`
+      SELECT * FROM reports
+      ORDER BY created_at DESC LIMIT 100
+    `).all();
+  }
   res.json(reports);
 });
 
@@ -44,10 +78,14 @@ router.post('/reports', validate(reportSchema), (req, res) => {
   const broadcast = req.app.locals.broadcast;
   const { latitude, longitude, report_type, description } = req.body;
 
+  // Auto-detect country from coordinates
+  const nearestResult = findNearestForest(latitude, longitude);
+  const country = nearestResult?.forest?.country || null;
+
   const result = db.prepare(`
-    INSERT INTO reports (latitude, longitude, report_type, description, status)
-    VALUES (?, ?, ?, ?, 'pending')
-  `).run(latitude, longitude, report_type || 'unknown', description || '');
+    INSERT INTO reports (latitude, longitude, country, report_type, description, status)
+    VALUES (?, ?, ?, ?, ?, 'pending')
+  `).run(latitude, longitude, country, report_type || 'unknown', description || '');
 
   const report = db.prepare('SELECT * FROM reports WHERE id = ?').get(result.lastInsertRowid);
   broadcast({ type: 'NEW_REPORT', data: report });
@@ -55,13 +93,24 @@ router.post('/reports', validate(reportSchema), (req, res) => {
   res.json({ success: true, report });
 });
 
-// GET /api/alerts — alert history
+// GET /api/alerts — alert history (optional ?country=JO filter)
 router.get('/alerts', (req, res) => {
   const db = req.app.locals.db;
-  const alerts = db.prepare(`
-    SELECT * FROM alerts
-    ORDER BY created_at DESC LIMIT 50
-  `).all();
+  const { country } = req.query;
+
+  let alerts;
+  if (country) {
+    alerts = db.prepare(`
+      SELECT * FROM alerts
+      WHERE country = ?
+      ORDER BY created_at DESC LIMIT 100
+    `).all(country.toUpperCase());
+  } else {
+    alerts = db.prepare(`
+      SELECT * FROM alerts
+      ORDER BY created_at DESC LIMIT 100
+    `).all();
+  }
   res.json(alerts);
 });
 
@@ -86,74 +135,128 @@ router.patch('/alerts/:id/resolve', validateId, (req, res) => {
   res.json({ success: true, alert: updated });
 });
 
-// GET /api/stats — dashboard statistics
+// GET /api/stats — dashboard statistics (optional ?country=JO filter)
 router.get('/stats', (req, res) => {
   const db = req.app.locals.db;
+  const { country } = req.query;
 
-  const totalFires = db.prepare(`SELECT COUNT(*) as count FROM fire_hotspots WHERE created_at > datetime('now', '-24 hours')`).get();
-  const totalReports = db.prepare(`SELECT COUNT(*) as count FROM reports WHERE created_at > datetime('now', '-24 hours')`).get();
-  const activeAlerts = db.prepare('SELECT COUNT(*) as count FROM alerts WHERE resolved = 0').get();
-  const avgRisk = db.prepare('SELECT AVG(risk_score) as avg FROM fire_risk WHERE id IN (SELECT MAX(id) FROM fire_risk GROUP BY region)').get();
+  let totalFires, totalReports, activeAlerts, avgRisk, forestCount, forestList;
+
+  if (country) {
+    const c = country.toUpperCase();
+    totalFires = db.prepare(`SELECT COUNT(*) as count FROM fire_hotspots WHERE country = ? AND created_at > datetime('now', '-24 hours')`).get(c);
+    totalReports = db.prepare(`SELECT COUNT(*) as count FROM reports WHERE country = ? AND created_at > datetime('now', '-24 hours')`).get(c);
+    activeAlerts = db.prepare('SELECT COUNT(*) as count FROM alerts WHERE country = ? AND resolved = 0').get(c);
+    avgRisk = db.prepare('SELECT AVG(risk_score) as avg FROM fire_risk WHERE country = ? AND id IN (SELECT MAX(id) FROM fire_risk WHERE country = ? GROUP BY region)').get(c, c);
+    forestList = getForestsByCountry(c);
+    forestCount = forestList.length;
+  } else {
+    totalFires = db.prepare(`SELECT COUNT(*) as count FROM fire_hotspots WHERE created_at > datetime('now', '-24 hours')`).get();
+    totalReports = db.prepare(`SELECT COUNT(*) as count FROM reports WHERE created_at > datetime('now', '-24 hours')`).get();
+    activeAlerts = db.prepare('SELECT COUNT(*) as count FROM alerts WHERE resolved = 0').get();
+    avgRisk = db.prepare('SELECT AVG(risk_score) as avg FROM fire_risk WHERE id IN (SELECT MAX(id) FROM fire_risk GROUP BY region)').get();
+    forestList = FORESTS;
+    forestCount = FORESTS.length;
+  }
 
   res.json({
     fires_24h: totalFires.count,
     reports_24h: totalReports.count,
     active_alerts: activeAlerts.count,
     avg_fire_risk: Math.round(avgRisk.avg || 0),
-    forests_monitored: JORDAN_FORESTS.length,
-    forests: JORDAN_FORESTS,
+    forests_monitored: forestCount,
+    forests: forestList,
   });
 });
 
-// GET /api/stats/history — historical data for charts
+// GET /api/stats/history — historical data for charts (optional ?country=JO filter)
 router.get('/stats/history', (req, res) => {
   const db = req.app.locals.db;
   const days = parseInt(req.query.days) || 7;
-
+  const { country } = req.query;
   const daysParam = `-${days} days`;
 
-  // Daily fire hotspot counts
-  const fireTrend = db.prepare(`
-    SELECT DATE(created_at) as date, COUNT(*) as count
-    FROM fire_hotspots
-    WHERE created_at > datetime('now', ?)
-    GROUP BY DATE(created_at)
-    ORDER BY date ASC
-  `).all(daysParam);
+  let fireTrend, alertTrend, riskDistribution, reportsByType, riskTrend;
 
-  // Daily alert counts by level
-  const alertTrend = db.prepare(`
-    SELECT DATE(created_at) as date, level, COUNT(*) as count
-    FROM alerts
-    WHERE created_at > datetime('now', ?)
-    GROUP BY DATE(created_at), level
-    ORDER BY date ASC
-  `).all(daysParam);
+  if (country) {
+    const c = country.toUpperCase();
 
-  // Risk distribution (latest per region)
-  const riskDistribution = db.prepare(`
-    SELECT region, risk_score
-    FROM fire_risk
-    WHERE id IN (SELECT MAX(id) FROM fire_risk GROUP BY region)
-    ORDER BY risk_score DESC
-  `).all();
+    fireTrend = db.prepare(`
+      SELECT DATE(created_at) as date, COUNT(*) as count
+      FROM fire_hotspots
+      WHERE country = ? AND created_at > datetime('now', ?)
+      GROUP BY DATE(created_at)
+      ORDER BY date ASC
+    `).all(c, daysParam);
 
-  // Reports by type
-  const reportsByType = db.prepare(`
-    SELECT report_type, COUNT(*) as count
-    FROM reports
-    WHERE created_at > datetime('now', ?)
-    GROUP BY report_type
-    ORDER BY count DESC
-  `).all(daysParam);
+    alertTrend = db.prepare(`
+      SELECT DATE(created_at) as date, level, COUNT(*) as count
+      FROM alerts
+      WHERE country = ? AND created_at > datetime('now', ?)
+      GROUP BY DATE(created_at), level
+      ORDER BY date ASC
+    `).all(c, daysParam);
 
-  // Hourly risk trend for top 3 at-risk regions
-  const riskTrend = db.prepare(`
-    SELECT region, risk_score, updated_at
-    FROM fire_risk
-    WHERE updated_at > datetime('now', '-48 hours')
-    ORDER BY updated_at ASC
-  `).all();
+    riskDistribution = db.prepare(`
+      SELECT region, risk_score
+      FROM fire_risk
+      WHERE country = ? AND id IN (SELECT MAX(id) FROM fire_risk WHERE country = ? GROUP BY region)
+      ORDER BY risk_score DESC
+    `).all(c, c);
+
+    reportsByType = db.prepare(`
+      SELECT report_type, COUNT(*) as count
+      FROM reports
+      WHERE country = ? AND created_at > datetime('now', ?)
+      GROUP BY report_type
+      ORDER BY count DESC
+    `).all(c, daysParam);
+
+    riskTrend = db.prepare(`
+      SELECT region, risk_score, updated_at
+      FROM fire_risk
+      WHERE country = ? AND updated_at > datetime('now', '-48 hours')
+      ORDER BY updated_at ASC
+    `).all(c);
+  } else {
+    fireTrend = db.prepare(`
+      SELECT DATE(created_at) as date, COUNT(*) as count
+      FROM fire_hotspots
+      WHERE created_at > datetime('now', ?)
+      GROUP BY DATE(created_at)
+      ORDER BY date ASC
+    `).all(daysParam);
+
+    alertTrend = db.prepare(`
+      SELECT DATE(created_at) as date, level, COUNT(*) as count
+      FROM alerts
+      WHERE created_at > datetime('now', ?)
+      GROUP BY DATE(created_at), level
+      ORDER BY date ASC
+    `).all(daysParam);
+
+    riskDistribution = db.prepare(`
+      SELECT region, risk_score
+      FROM fire_risk
+      WHERE id IN (SELECT MAX(id) FROM fire_risk GROUP BY region)
+      ORDER BY risk_score DESC
+    `).all();
+
+    reportsByType = db.prepare(`
+      SELECT report_type, COUNT(*) as count
+      FROM reports
+      WHERE created_at > datetime('now', ?)
+      GROUP BY report_type
+      ORDER BY count DESC
+    `).all(daysParam);
+
+    riskTrend = db.prepare(`
+      SELECT region, risk_score, updated_at
+      FROM fire_risk
+      WHERE updated_at > datetime('now', '-48 hours')
+      ORDER BY updated_at ASC
+    `).all();
+  }
 
   res.json({
     fireTrend,
@@ -164,9 +267,19 @@ router.get('/stats/history', (req, res) => {
   });
 });
 
-// GET /api/forests — Jordanian forest data
+// GET /api/forests — all monitored forests (optional ?country=JO filter)
 router.get('/forests', (req, res) => {
-  res.json(JORDAN_FORESTS);
+  const { country } = req.query;
+  if (country) {
+    res.json(getForestsByCountry(country.toUpperCase()));
+  } else {
+    res.json(FORESTS);
+  }
+});
+
+// GET /api/countries — all monitored countries with forest counts
+router.get('/countries', (req, res) => {
+  res.json(getAllCountries());
 });
 
 // GET /api/leaderboard — top community reporters by points

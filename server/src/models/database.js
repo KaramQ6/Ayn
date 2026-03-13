@@ -85,6 +85,11 @@ export function initDatabase() {
     "ALTER TABLE alerts ADD COLUMN resolved_at TEXT",
     "ALTER TABLE reports ADD COLUMN ai_analysis TEXT",
     "ALTER TABLE fire_risk ADD COLUMN rain_1h REAL DEFAULT 0",
+    // Multi-country expansion
+    "ALTER TABLE fire_hotspots ADD COLUMN country TEXT DEFAULT 'JO'",
+    "ALTER TABLE reports ADD COLUMN country TEXT",
+    "ALTER TABLE alerts ADD COLUMN country TEXT",
+    "ALTER TABLE fire_risk ADD COLUMN country TEXT DEFAULT 'JO'",
   ];
   for (const sql of migrations) {
     try { db.exec(sql); } catch (_) { /* column already exists */ }

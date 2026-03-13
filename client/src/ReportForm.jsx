@@ -1,21 +1,16 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { X, Send, MapPin, AlertTriangle } from 'lucide-react';
 
 const API_URL = '/api';
 
-const REPORT_TYPES = [
-  { value: 'fire', label: 'Fire', color: 'text-red-500' },
-  { value: 'smoke', label: 'Smoke', color: 'text-gray-400' },
-  { value: 'logging', label: 'Illegal Logging', color: 'text-orange-500' },
-  { value: 'desertification', label: 'Desertification', color: 'text-yellow-600' },
-  { value: 'pollution', label: 'Pollution', color: 'text-purple-400' },
-  { value: 'wildlife', label: 'Endangered Wildlife', color: 'text-blue-400' },
-  { value: 'other', label: 'Other', color: 'text-white/50' },
-];
-
 const typeIcons = { fire: '\uD83D\uDD25', smoke: '\uD83D\uDCA8', logging: '\uD83E\uDE93', desertification: '\uD83C\uDFDC\uFE0F', pollution: '\uD83D\uDDD1\uFE0F', wildlife: '\uD83E\uDD85', other: '\u2753' };
 
+const REPORT_TYPE_KEYS = ['fire', 'smoke', 'logging', 'desertification', 'pollution', 'wildlife', 'other'];
+const REPORT_TYPE_COLORS = { fire: 'text-red-500', smoke: 'text-gray-400', logging: 'text-orange-500', desertification: 'text-yellow-600', pollution: 'text-purple-400', wildlife: 'text-blue-400', other: 'text-white/50' };
+
 function ReportForm({ isOpen, onClose, clickedCoords, onSubmitted }) {
+  const { t } = useTranslation();
   const [reportType, setReportType] = useState('fire');
   const [description, setDescription] = useState('');
   const [latitude, setLatitude] = useState(clickedCoords?.lat?.toFixed(6) || '');
@@ -51,13 +46,10 @@ function ReportForm({ isOpen, onClose, clickedCoords, onSubmitted }) {
     const lat = parseFloat(latitude);
     const lng = parseFloat(longitude);
     if (isNaN(lat) || isNaN(lng)) {
-      setError('Please enter valid coordinates or click on the map');
+      setError(t('reportForm.errorCoords'));
       return;
     }
-    if (lat < 29 || lat > 34 || lng < 34 || lng > 40) {
-      setError('Coordinates must be within Jordan');
-      return;
-    }
+    // Server-side validation handles MENA-wide coordinate bounds
 
     setSubmitting(true);
     try {
@@ -72,23 +64,23 @@ function ReportForm({ isOpen, onClose, clickedCoords, onSubmitted }) {
         onSubmitted?.(data.report);
         setTimeout(() => { onClose(); setSuccess(false); setDescription(''); }, 1500);
       } else {
-        setError(data.error || 'Failed to submit report');
+        setError(data.error || t('reportForm.errorSubmit'));
       }
     } catch (err) {
-      setError('Network error. Please try again.');
+      setError(t('reportForm.errorNetwork'));
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
-    <div className="fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Submit Report" onClick={onClose}>
+    <div className="fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label={t('reportForm.title')} onClick={onClose}>
       <div className="bg-[#0a140e] border border-white/10 rounded-[24px] w-full max-w-md overflow-hidden" onClick={e => e.stopPropagation()}>
         {/* Header */}
         <div className="border-b border-white/5 p-5 flex justify-between items-center bg-black/20">
           <div className="flex items-center gap-3">
             <AlertTriangle className="w-5 h-5 text-orange-400" />
-            <h2 className="text-base font-bold text-white/90">Submit Report</h2>
+            <h2 className="text-base font-bold text-white/90">{t('reportForm.title')}</h2>
           </div>
           <button onClick={onClose} aria-label="Close report form" className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 text-white/50 hover:text-white transition-colors">
             <X className="w-4 h-4" />
@@ -98,21 +90,21 @@ function ReportForm({ isOpen, onClose, clickedCoords, onSubmitted }) {
         {success ? (
           <div className="p-10 flex flex-col items-center gap-3 text-green-400">
             <div className="w-14 h-14 rounded-full bg-green-500/20 flex items-center justify-center text-2xl">&#10003;</div>
-            <p className="font-bold">Report Submitted!</p>
-            <p className="text-xs text-white/40">Cross-validation will begin automatically</p>
+            <p className="font-bold">{t('reportForm.success')}</p>
+            <p className="text-xs text-white/40">{t('reportForm.crossValidation')}</p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="p-5 space-y-5">
             {/* Report Type */}
             <div>
-              <label className="text-[10px] font-data uppercase tracking-widest text-white/40 mb-2 block">Threat Type</label>
+              <label className="text-[10px] font-data uppercase tracking-widest text-white/40 mb-2 block">{t('reportForm.threatType')}</label>
               <div className="grid grid-cols-4 gap-2">
-                {REPORT_TYPES.map(type => (
-                  <button key={type.value} type="button"
-                    className={`p-2.5 rounded-xl border text-center transition-all text-xs ${reportType === type.value ? 'border-green-500/50 bg-green-500/10 text-green-400' : 'border-white/5 bg-white/5 text-white/50 hover:border-white/10'}`}
-                    onClick={() => setReportType(type.value)}>
-                    <span className="text-lg block mb-1">{typeIcons[type.value]}</span>
-                    <span className="text-[9px] font-data">{type.label}</span>
+                {REPORT_TYPE_KEYS.map(typeKey => (
+                  <button key={typeKey} type="button"
+                    className={`p-2.5 rounded-xl border text-center transition-all text-xs ${reportType === typeKey ? 'border-green-500/50 bg-green-500/10 text-green-400' : 'border-white/5 bg-white/5 text-white/50 hover:border-white/10'}`}
+                    onClick={() => setReportType(typeKey)}>
+                    <span className="text-lg block mb-1">{typeIcons[typeKey]}</span>
+                    <span className="text-[9px] font-data">{t(`reportForm.types.${typeKey}`)}</span>
                   </button>
                 ))}
               </div>
@@ -121,14 +113,14 @@ function ReportForm({ isOpen, onClose, clickedCoords, onSubmitted }) {
             {/* Coordinates */}
             <div>
               <label htmlFor="report-lat" className="text-[10px] font-data uppercase tracking-widest text-white/40 mb-2 flex items-center gap-1">
-                <MapPin className="w-3 h-3" /> Location
-                <span className="text-green-500 normal-case tracking-normal ml-1">(click on map to set)</span>
+                <MapPin className="w-3 h-3" /> {t('reportForm.location')}
+                <span className="text-green-500 normal-case tracking-normal ms-1">{t('reportForm.clickMapHint')}</span>
               </label>
               <div className="grid grid-cols-2 gap-3">
-                <input id="report-lat" type="number" step="any" placeholder="Latitude" value={latitude}
+                <input id="report-lat" type="number" step="any" placeholder={t('reportForm.latitude')} value={latitude}
                   onChange={e => setLatitude(e.target.value)}
                   className="bg-black/40 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white/80 focus:border-green-500/50 focus:outline-none transition-colors font-data" />
-                <input id="report-lng" type="number" step="any" placeholder="Longitude" value={longitude}
+                <input id="report-lng" type="number" step="any" placeholder={t('reportForm.longitude')} value={longitude}
                   onChange={e => setLongitude(e.target.value)}
                   className="bg-black/40 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white/80 focus:border-green-500/50 focus:outline-none transition-colors font-data" />
               </div>
@@ -136,8 +128,8 @@ function ReportForm({ isOpen, onClose, clickedCoords, onSubmitted }) {
 
             {/* Description */}
             <div>
-              <label htmlFor="report-desc" className="text-[10px] font-data uppercase tracking-widest text-white/40 mb-2 block">Description (Optional)</label>
-              <textarea id="report-desc" value={description} onChange={e => setDescription(e.target.value)} rows={3} placeholder="Describe what you observed..."
+              <label htmlFor="report-desc" className="text-[10px] font-data uppercase tracking-widest text-white/40 mb-2 block">{t('reportForm.description')}</label>
+              <textarea id="report-desc" value={description} onChange={e => setDescription(e.target.value)} rows={3} placeholder={t('reportForm.descPlaceholder')}
                 className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white/80 focus:border-green-500/50 focus:outline-none transition-colors resize-none" />
             </div>
 
@@ -153,7 +145,7 @@ function ReportForm({ isOpen, onClose, clickedCoords, onSubmitted }) {
               ) : (
                 <>
                   <Send className="w-4 h-4" />
-                  Submit Report
+                  {t('reportForm.submit')}
                 </>
               )}
             </button>

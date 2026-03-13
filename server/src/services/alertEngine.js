@@ -1,4 +1,4 @@
-import { JORDAN_FORESTS } from './firms.js';
+import { findNearestForest } from '../data/forests.js';
 import { getDistanceKm } from '../utils/geo.js';
 import { notifyRangers } from '../bot/telegramBot.js';
 
@@ -59,22 +59,18 @@ export function crossValidate(db, broadcast, newData) {
   }
 
   // --- 3. Weather risk for nearest region ---
-  let nearestForest = null;
-  let minDistance = Infinity;
-  for (const forest of JORDAN_FORESTS) {
-    const dist = getDistanceKm(latitude, longitude, forest.lat, forest.lng);
-    if (dist < minDistance) {
-      minDistance = dist;
-      nearestForest = forest;
-    }
-  }
+  const nearestResult = findNearestForest(latitude, longitude);
+  const nearestForest = nearestResult?.forest || null;
+  const minDistance = nearestResult?.distance ?? Infinity;
 
   if (nearestForest) {
+    // Region name format: "nameAr - name" (matches weather.js insert format)
+    const regionName = `${nearestForest.nameAr} - ${nearestForest.name}`;
     const latestRisk = db.prepare(`
       SELECT * FROM fire_risk
       WHERE region = ?
       ORDER BY updated_at DESC LIMIT 1
-    `).get(nearestForest.name);
+    `).get(regionName);
 
     if (latestRisk && latestRisk.risk_score >= 40) {
       evidence.WEATHER_RISK = latestRisk.risk_score;
@@ -133,12 +129,21 @@ export function crossValidate(db, broadcast, newData) {
 
   finalConfidence = Math.round(finalConfidence);
 
+  // Build bilingual forest name for alert message
+  const forestLabel = nearestForest
+    ? `${nearestForest.nameAr} / ${nearestForest.name}`
+    : 'منطقة غير محددة';
+
+  // Detect country from nearest forest
+  const country = nearestForest?.country || null;
+
   const alert = {
     level,
     type: 'cross_validated',
     latitude,
     longitude,
-    message: `${levelEmoji(level)} تنبيه ${levelArabic(level)} — ${sourceCount} مصادر مؤكدة بالقرب من ${nearestForest?.name || 'منطقة غير محددة'} (${minDistance.toFixed(1)} كم) — ثقة: ${finalConfidence}%`,
+    country,
+    message: `${levelEmoji(level)} تنبيه ${levelArabic(level)} — ${sourceCount} مصادر مؤكدة بالقرب من ${forestLabel} (${minDistance.toFixed(1)} كم) — ثقة: ${finalConfidence}%`,
     sources: uniqueSources.join(','),
     confidence: finalConfidence,
   };
@@ -146,12 +151,12 @@ export function crossValidate(db, broadcast, newData) {
   // Only create alert if we have 2+ sources OR a single source with high confidence
   if (sourceCount >= 2 || (sourceCount === 1 && finalConfidence >= 40)) {
     db.prepare(`
-      INSERT INTO alerts (level, type, latitude, longitude, message, sources, confidence)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `).run(alert.level, alert.type, alert.latitude, alert.longitude, alert.message, alert.sources, alert.confidence);
+      INSERT INTO alerts (level, type, latitude, longitude, country, message, sources, confidence)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(alert.level, alert.type, alert.latitude, alert.longitude, alert.country, alert.message, alert.sources, alert.confidence);
 
     broadcast({ type: 'NEW_ALERT', data: alert });
-    console.log(`🚨 Cross-validated alert [${sourceCount} sources, ${finalConfidence}% confidence]: ${alert.level}`);
+    console.log(`🚨 Cross-validated alert [${sourceCount} sources, ${finalConfidence}% confidence]: ${alert.level} (${country || '??'})`);
 
     // Notify registered rangers via Telegram for HIGH/CRITICAL alerts
     if (level === 'HIGH' || level === 'CRITICAL') {
@@ -175,5 +180,3 @@ function levelArabic(level) {
   const map = { LOW: 'منخفض', MEDIUM: 'متوسط', HIGH: 'عالي', CRITICAL: 'حرج' };
   return map[level] || level;
 }
-
-

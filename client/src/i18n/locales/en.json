@@ -1,0 +1,207 @@
+{
+  "app": {
+    "name": "ForestGuard AI",
+    "loading": "Loading ForestGuard",
+    "initTelemetry": "Initializing Telemetry...",
+    "notFound": {
+      "code": "404",
+      "title": "Sector Not Found",
+      "description": "The coordinates you entered are outside our monitored zones.",
+      "returnBase": "Return to Base",
+      "commandCenter": "Command Center"
+    }
+  },
+
+  "nav": {
+    "mission": "Mission",
+    "tech": "Tech",
+    "impact": "Impact",
+    "accessDashboard": "Access Dashboard"
+  },
+
+  "hero": {
+    "eyesInSky": "Eyes in the Sky.",
+    "voicesOn": "Voices on the",
+    "ground": "Ground.",
+    "description": "Real-time wildfire disaster management powered by NASA FIRMS satellite telemetry and community ground-truth validation."
+  },
+
+  "pillars": {
+    "crossValidation": {
+      "title": "Cross-Validation Engine",
+      "subtitle": "AI Alert Diagnostics",
+      "validated": "Validated"
+    },
+    "community": {
+      "title": "Community Ground-Truth",
+      "subtitle": "Telegram Bot Relays",
+      "userReport": "USER_092: Smoke spotted <",
+      "locating": "...Locating Sector 4 <"
+    },
+    "satellite": {
+      "title": "Satellite Telemetry",
+      "subtitle": "NASA FIRMS VIIRS/MODIS",
+      "coordsScanned": "Coordinates Scanned"
+    }
+  },
+
+  "philosophy": {
+    "problem": "Most disaster systems rely solely on delayed orbital imagery.",
+    "focusOn": "We focus on",
+    "solution": "Real-time Cross-Validation."
+  },
+
+  "protocol": {
+    "step1": {
+      "title": "Step 1: Detect",
+      "description": "Ingesting NASA FIRMS VIIRS/MODIS thermal scans, OpenWeatherMap conditions & real-time weather data streams directly from orbit."
+    },
+    "step2": {
+      "title": "Step 2: Verify",
+      "description": "The localized Telegram Bot aggregates and structures civilian reports instantly, layering human ground-truth over satellite anomalies."
+    },
+    "step3": {
+      "title": "Step 3: Act",
+      "description": "The Node.js & React command center dispatches verified, high-confidence alerts to authorities minutes before standard APIs register the threat."
+    },
+    "launchCenter": "Launch Command Center"
+  },
+
+  "impact": {
+    "sysArch": "System Architecture",
+    "globalGoals": "Global Impact Goals",
+    "sdg09": "Industry, Innovation & Infrastructure",
+    "sdg13": "Climate Action",
+    "sdg15": "Life on Land"
+  },
+
+  "footer": {
+    "tagline": "Global Real-Time Monitoring Network"
+  },
+
+  "dashboard": {
+    "commandCenter": "Command Center",
+    "liveTelemetry": "Live Telemetry",
+    "live": "Live",
+    "reconnecting": "Reconnecting",
+    "analytics": "Analytics",
+    "report": "Report",
+    "demo": "Demo",
+    "stopDemo": "Stop Demo",
+    "demoActive": "Demo Active",
+    "demoInit": "Demo scenario initializing...",
+    "demoComplete": "Demo complete",
+    "selectScenario": "Select Scenario",
+    "allCountries": "All Countries",
+    "filterCountry": "Filter Country",
+
+    "stats": {
+      "fires24h": "24h Fires",
+      "reportsToday": "Reports Today",
+      "activeAlerts": "Active Alerts",
+      "avgFWI": "Avg FWI Risk",
+      "monitoredZones": "Monitored Zones"
+    },
+
+    "map": {
+      "firmsTelemetry": "NASA FIRMS Telemetry",
+      "clickToReport": "Click map to report",
+      "reportLocation": "Report Location",
+      "thermalAnomaly": "Thermal Anomaly",
+      "confidence": "Conf",
+      "source": "Src",
+      "groundReport": "Ground Report",
+      "by": "By",
+      "type": "Type",
+      "ai": "AI"
+    },
+
+    "alerts": {
+      "title": "Alerts",
+      "active": "active",
+      "all": "all",
+      "resolved": "resolved",
+      "noActive": "No Active Threats",
+      "noResolved": "No Resolved Threats",
+      "resolve": "Resolve"
+    },
+
+    "risk": {
+      "title": "FWI Risk",
+      "awaiting": "Awaiting data..."
+    },
+
+    "leaderboard": {
+      "title": "Leaderboard",
+      "rangers": "Rangers",
+      "noReports": "No reports yet",
+      "reports": "reports",
+      "pts": "pts"
+    },
+
+    "terminal": {
+      "title": "Live Relays",
+      "listening": "Listening...",
+      "detected": "DETECTED"
+    },
+
+    "time": {
+      "justNow": "Just now",
+      "minsAgo": "{{count}}m ago",
+      "hoursAgo": "{{count}}h ago",
+      "daysAgo": "{{count}}d ago"
+    }
+  },
+
+  "reportForm": {
+    "title": "Submit Report",
+    "threatType": "Threat Type",
+    "types": {
+      "fire": "Fire",
+      "smoke": "Smoke",
+      "logging": "Illegal Logging",
+      "desertification": "Desertification",
+      "pollution": "Pollution",
+      "wildlife": "Endangered Wildlife",
+      "other": "Other"
+    },
+    "location": "Location",
+    "clickMapHint": "(click on map to set)",
+    "latitude": "Latitude",
+    "longitude": "Longitude",
+    "description": "Description (Optional)",
+    "descPlaceholder": "Describe what you observed...",
+    "submit": "Submit Report",
+    "success": "Report Submitted!",
+    "crossValidation": "Cross-validation will begin automatically",
+    "errorCoords": "Please enter valid coordinates or click on the map",
+    "errorSubmit": "Failed to submit report",
+    "errorNetwork": "Network error. Please try again."
+  },
+
+  "analyticsPanel": {
+    "title": "Analytics Dashboard",
+    "period": "7 Day",
+    "loading": "Loading Analytics...",
+    "fireTrend": "Fire Hotspots Trend",
+    "alertDist": "Alert Distribution",
+    "forestRisk": "Forest Risk Index",
+    "reportsByType": "Reports by Type",
+    "hotspots": "Hotspots",
+    "critical": "Critical",
+    "high": "High",
+    "medium": "Medium",
+    "riskScore": "Risk Score",
+    "noReports": "No reports yet",
+    "reportTypes": {
+      "fire": "Fire",
+      "logging": "Logging",
+      "smoke": "Smoke",
+      "unknown": "Unknown",
+      "desertification": "Desertification",
+      "pollution": "Pollution",
+      "wildlife": "Wildlife",
+      "other": "Other"
+    }
+  }
+}

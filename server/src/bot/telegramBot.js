@@ -1,7 +1,7 @@
 import TelegramBot from 'node-telegram-bot-api';
 import { crossValidate } from '../services/alertEngine.js';
 import { analyzePhoto } from '../services/visionAI.js';
-import { JORDAN_FORESTS } from '../services/firms.js';
+import { findNearestForest } from '../data/forests.js';
 
 let bot = null;
 
@@ -17,7 +17,7 @@ export function initBot(db, broadcast) {
     bot.sendMessage(chatId,
       `🌳 *مرحباً بك في ForestGuard AI!*\n` +
       `━━━━━━━━━━━━━━━━━━━━━\n` +
-      `نظام حماية الغابات الأردنية الذكي\n\n` +
+      `نظام حماية الغابات الذكي — الشرق الأوسط وشمال أفريقيا\n\n` +
       `🔹 /report — الإبلاغ عن تهديد\n` +
       `🔹 /status — حالة الغابات الآن\n` +
       `🔹 /alerts — آخر التنبيهات\n` +
@@ -103,10 +103,14 @@ export function initBot(db, broadcast) {
     `).get(String(chatId));
 
     if (pendingReport) {
+      // Detect country from coordinates
+      const nearestResult = findNearestForest(latitude, longitude);
+      const country = nearestResult?.forest?.country || null;
+
       db.prepare(`
-        UPDATE reports SET latitude = ?, longitude = ?, status = 'pending'
+        UPDATE reports SET latitude = ?, longitude = ?, country = ?, status = 'pending'
         WHERE id = ?
-      `).run(latitude, longitude, pendingReport.id);
+      `).run(latitude, longitude, country, pendingReport.id);
 
       const report = db.prepare(`
         SELECT * FROM reports WHERE telegram_user_id = ? ORDER BY id DESC LIMIT 1
@@ -131,19 +135,16 @@ export function initBot(db, broadcast) {
       // Broadcast to dashboard
       broadcast({ type: 'NEW_REPORT', data: report });
 
-      // Find nearest forest
-      let nearest = JORDAN_FORESTS[0];
-      let minDist = Infinity;
-      for (const f of JORDAN_FORESTS) {
-        const d = Math.sqrt((latitude - f.lat) ** 2 + (longitude - f.lng) ** 2) * 111;
-        if (d < minDist) { minDist = d; nearest = f; }
-      }
+      // Find nearest forest using registry
+      const nearest = nearestResult;
+      const forestName = nearest ? nearest.forest.nameAr : 'غابة غير محددة';
+      const forestDist = nearest ? nearest.distance.toFixed(1) : '?';
 
       bot.sendMessage(chatId,
         `✅ *تم استلام بلاغك!*\n` +
         `━━━━━━━━━━━━━━━━━━━━━\n` +
         `📍 الموقع: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}\n` +
-        `🌳 أقرب غابة: ${nearest.name} (${minDist.toFixed(1)} كم)\n` +
+        `🌳 أقرب غابة: ${forestName} (${forestDist} كم)\n` +
         `🏆 +10 نقاط\n\n` +
         `سيتم التحقق من بلاغك مع بيانات الأقمار الصناعية. شكراً لمساهمتك! 🙏`,
         { parse_mode: 'Markdown', reply_markup: { remove_keyboard: true } }
@@ -254,13 +255,14 @@ export function initBot(db, broadcast) {
     }
   });
 
-  // /status command
+  // /status command — shows all monitored forests (top risks first)
   bot.onText(/\/status/, (msg) => {
     const chatId = msg.chat.id;
     const risks = db.prepare(`
       SELECT * FROM fire_risk
       WHERE id IN (SELECT MAX(id) FROM fire_risk GROUP BY region)
       ORDER BY risk_score DESC
+      LIMIT 20
     `).all();
 
     if (risks.length === 0) {
@@ -268,7 +270,7 @@ export function initBot(db, broadcast) {
       return;
     }
 
-    let statusMsg = `🌳 *حالة الغابات الأردنية*\n━━━━━━━━━━━━━━━━━━━━━\n\n`;
+    let statusMsg = `🌳 *حالة الغابات المراقبة*\n━━━━━━━━━━━━━━━━━━━━━\n\n`;
     for (const r of risks) {
       const emoji = r.risk_score >= 80 ? '🔴' : r.risk_score >= 50 ? '🟠' : r.risk_score >= 30 ? '🟡' : '🟢';
       statusMsg += `${emoji} ${r.region}\n   خطر: ${r.risk_score}/100 | 🌡️ ${r.temperature?.toFixed(0)}°C | 💧 ${r.humidity?.toFixed(0)}%\n\n`;

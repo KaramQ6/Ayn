@@ -14,7 +14,7 @@ import { fetchFIRMSData } from './services/firms.js';
 import { updateFireRisk } from './services/weather.js';
 import { initDatabase } from './models/database.js';
 import { initBot } from './bot/telegramBot.js';
-import { startDemo, stopDemo, isDemoActive } from './services/demoEngine.js';
+import { startDemo, stopDemo, isDemoActive, getScenarios, getActiveScenario } from './services/demoEngine.js';
 import { seedDatabase } from './data/seedData.js';
 
 dotenv.config({ path: '../.env' });
@@ -117,15 +117,30 @@ app.locals.broadcast = broadcast;
 // API Routes
 app.use('/api', apiRoutes);
 
-// Health check
+  // Health check
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', name: 'ForestGuard AI Server', demo: isDemoActive() });
+  res.json({
+    status: 'ok',
+    name: 'ForestGuard AI Server',
+    demo: isDemoActive(),
+    activeScenario: getActiveScenario(),
+  });
 });
 
 // Demo mode routes (only available when DEMO_MODE is enabled)
 if (process.env.DEMO_MODE === 'true') {
+  // List available scenarios
+  app.get('/api/demo/scenarios', (req, res) => {
+    res.json({
+      scenarios: getScenarios(),
+      active: getActiveScenario(),
+      isRunning: isDemoActive(),
+    });
+  });
+  // Start a scenario (optional ?scenario=lebanon-cedar, default: ajloun)
   app.get('/api/demo/start', (req, res) => {
-    const result = startDemo(db, broadcast);
+    const scenarioId = req.query.scenario || 'ajloun';
+    const result = startDemo(db, broadcast, scenarioId);
     res.json(result);
   });
   app.get('/api/demo/stop', (req, res) => {
@@ -135,7 +150,7 @@ if (process.env.DEMO_MODE === 'true') {
   app.get('/api/demo/seed', (req, res) => {
     seedDatabase(db);
     broadcast({ type: 'DEMO_STARTED', data: { seeded: true } });
-    res.json({ success: true, message: 'Database seeded with 7 days of demo data' });
+    res.json({ success: true, message: 'Database seeded with multi-region demo data' });
   });
 } else {
   app.get('/api/demo/*', (req, res) => {

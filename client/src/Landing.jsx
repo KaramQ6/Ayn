@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Target, Satellite, ShieldCheck, Activity, Globe, Zap, Cpu, MapPin, Podcast } from 'lucide-react';
@@ -7,6 +8,7 @@ import { Target, Satellite, ShieldCheck, Activity, Globe, Zap, Cpu, MapPin, Podc
 gsap.registerPlugin(ScrollTrigger);
 
 export default function Landing() {
+  const { t } = useTranslation();
   const comp = useRef(null);
 
   useEffect(() => {
@@ -123,19 +125,19 @@ export default function Landing() {
     <div ref={comp} className="bg-[var(--deep-forest)] font-sans text-[var(--ui-ghost)] selection:bg-[var(--alert-signal)] selection:text-white">
       
       {/* A. NAVBAR — "The Floating Island" */}
-      <nav className="navbar fixed top-0 left-0 w-full z-50 transition-all duration-300">
+      <nav className="navbar fixed top-0 start-0 w-full z-50 transition-all duration-300">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-2">
             <Target className="text-[var(--alert-signal)]" />
-            <span className="font-bold text-xl tracking-tighter">ForestGuard AI</span>
+            <span className="font-bold text-xl tracking-tighter">{t('app.name')}</span>
           </div>
-          <div className="hidden md:flex space-x-8 text-sm font-medium text-[var(--ui-ghost)]/70">
-            <a href="#mission" aria-label="Go to Mission section" className="flex items-center justify-center min-h-[44px] min-w-[44px] hover:text-white transition-colors duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-[var(--alert-signal)] focus:ring-offset-2 focus:ring-offset-[var(--deep-forest)] rounded-md px-2 pointer-events-auto cursor-pointer">Mission</a>
-            <a href="#tech" aria-label="Go to Tech section" className="flex items-center justify-center min-h-[44px] min-w-[44px] hover:text-white transition-colors duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-[var(--alert-signal)] focus:ring-offset-2 focus:ring-offset-[var(--deep-forest)] rounded-md px-2 pointer-events-auto cursor-pointer">Tech</a>
-            <a href="#impact" aria-label="Go to Impact section" className="flex items-center justify-center min-h-[44px] min-w-[44px] hover:text-white transition-colors duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-[var(--alert-signal)] focus:ring-offset-2 focus:ring-offset-[var(--deep-forest)] rounded-md px-2 pointer-events-auto cursor-pointer">Impact</a>
+          <div className="hidden md:flex gap-8 text-sm font-medium text-[var(--ui-ghost)]/70">
+            <a href="#mission" aria-label={t('nav.mission')} className="flex items-center justify-center min-h-[44px] min-w-[44px] hover:text-white transition-colors duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-[var(--alert-signal)] focus:ring-offset-2 focus:ring-offset-[var(--deep-forest)] rounded-md px-2 pointer-events-auto cursor-pointer">{t('nav.mission')}</a>
+            <a href="#tech" aria-label={t('nav.tech')} className="flex items-center justify-center min-h-[44px] min-w-[44px] hover:text-white transition-colors duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-[var(--alert-signal)] focus:ring-offset-2 focus:ring-offset-[var(--deep-forest)] rounded-md px-2 pointer-events-auto cursor-pointer">{t('nav.tech')}</a>
+            <a href="#impact" aria-label={t('nav.impact')} className="flex items-center justify-center min-h-[44px] min-w-[44px] hover:text-white transition-colors duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-[var(--alert-signal)] focus:ring-offset-2 focus:ring-offset-[var(--deep-forest)] rounded-md px-2 pointer-events-auto cursor-pointer">{t('nav.impact')}</a>
           </div>
-          <Link to="/dashboard" aria-label="Access Dashboard command center" className="flex items-center justify-center min-h-[44px] px-5 bg-[var(--alert-signal)] hover:bg-red-600 text-white rounded-full font-bold text-sm btn-magnetic focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[var(--deep-forest)] cursor-pointer">
-            Access Dashboard
+          <Link to="/dashboard" aria-label={t('nav.accessDashboard')} className="flex items-center justify-center min-h-[44px] px-5 bg-[var(--alert-signal)] hover:bg-red-600 text-white rounded-full font-bold text-sm btn-magnetic focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[var(--deep-forest)] cursor-pointer">
+            {t('nav.accessDashboard')}
           </Link>
         </div>
       </nav>
@@ -162,14 +164,14 @@ export default function Landing() {
         {/* Content */}
         <div className="relative z-10 max-w-5xl">
           <h2 className="hero-text text-xl md:text-3xl font-medium tracking-tight mb-2 text-[var(--ui-ghost)]/80">
-            Eyes in the Sky.
+            {t('hero.eyesInSky')}
           </h2>
           <h1 className="hero-text text-5xl md:text-8xl lg:text-9xl font-drama tracking-tight leading-[0.9] mb-8">
-            Voices on the <br/>
-            <span className="text-[var(--alert-signal)]">Ground.</span>
+            {t('hero.voicesOn')} <br/>
+            <span className="text-[var(--alert-signal)]">{t('hero.ground')}</span>
           </h1>
-          <p className="hero-text font-data text-xs md:text-sm text-[var(--ui-ghost)]/60 max-w-xl leading-relaxed uppercase tracking-widest border-l-2 border-[var(--alert-signal)] pl-4">
-            Real-time wildfire disaster management powered by NASA FIRMS satellite telemetry and community ground-truth validation.
+          <p className="hero-text font-data text-xs md:text-sm text-[var(--ui-ghost)]/60 max-w-xl leading-relaxed uppercase tracking-widest border-s-2 border-[var(--alert-signal)] ps-4">
+            {t('hero.description')}
           </p>
         </div>
       </section>
@@ -179,18 +181,18 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
           
           {/* Card 1: Cross-Validation Engine */}
-          <div aria-label="Cross-Validation Engine Artifact" className="pillar-card bg-[var(--canopy-green)] p-6 md:p-8 rounded-[24px] md:rounded-[32px] border border-white/5 relative overflow-hidden group btn-magnetic flex flex-col h-80 hover:border-white/10 cursor-pointer focus-within:ring-2 focus-within:ring-[var(--alert-signal)] focus-within:ring-offset-2 focus-within:ring-offset-[var(--deep-forest)]">
+          <div aria-label={t('pillars.crossValidation.title')} className="pillar-card bg-[var(--canopy-green)] p-6 md:p-8 rounded-[24px] md:rounded-[32px] border border-white/5 relative overflow-hidden group btn-magnetic flex flex-col h-80 hover:border-white/10 cursor-pointer focus-within:ring-2 focus-within:ring-[var(--alert-signal)] focus-within:ring-offset-2 focus-within:ring-offset-[var(--deep-forest)]">
             <div className="flex justify-end mb-auto">
               <Cpu className="text-white/80 w-7 h-7" strokeWidth={1.5} />
             </div>
-            <div className="text-right mb-6 mt-8">
-              <h3 className="text-xl font-bold mb-1 text-white/95">Cross-Validation Engine</h3>
-              <p className="text-xs text-white/50 font-data tracking-wide">AI Alert Diagnostics</p>
+            <div className="text-end mb-6 mt-8">
+              <h3 className="text-xl font-bold mb-1 text-white/95">{t('pillars.crossValidation.title')}</h3>
+              <p className="text-xs text-white/50 font-data tracking-wide">{t('pillars.crossValidation.subtitle')}</p>
             </div>
             
             <div className="mt-auto flex items-center justify-between font-data bg-black/30 p-4 rounded-xl">
               <div className="text-green-400 flex items-center gap-2 text-xs">
-                Validated <ShieldCheck size={14} className="opacity-80" />
+                {t('pillars.crossValidation.validated')} <ShieldCheck size={14} className="opacity-80" />
               </div>
               <div className="flex gap-2">
                 <div className="w-7 h-7 rounded-full bg-blue-500/20 border border-blue-500/40 flex items-center justify-center"><Podcast size={11} className="text-blue-500"/></div>
@@ -200,38 +202,38 @@ export default function Landing() {
           </div>
 
           {/* Card 2: Community Ground-Truth */}
-          <div aria-label="Community Ground-Truth Artifact" className="pillar-card bg-[var(--canopy-green)] p-6 md:p-8 rounded-[24px] md:rounded-[32px] border border-white/5 relative overflow-hidden group btn-magnetic flex flex-col h-80 hover:border-white/10 cursor-pointer focus-within:ring-2 focus-within:ring-[var(--alert-signal)] focus-within:ring-offset-2 focus-within:ring-offset-[var(--deep-forest)]">
+          <div aria-label={t('pillars.community.title')} className="pillar-card bg-[var(--canopy-green)] p-6 md:p-8 rounded-[24px] md:rounded-[32px] border border-white/5 relative overflow-hidden group btn-magnetic flex flex-col h-80 hover:border-white/10 cursor-pointer focus-within:ring-2 focus-within:ring-[var(--alert-signal)] focus-within:ring-offset-2 focus-within:ring-offset-[var(--deep-forest)]">
             <div className="flex justify-end mb-auto">
               <Podcast className="text-white/80 w-7 h-7" strokeWidth={1.5} />
             </div>
-            <div className="text-right mb-6 mt-8">
-              <h3 className="text-xl font-bold mb-1 text-white/95">Community Ground-Truth</h3>
-              <p className="text-xs text-white/50 font-data tracking-wide">Telegram Bot Relays</p>
+            <div className="text-end mb-6 mt-8">
+              <h3 className="text-xl font-bold mb-1 text-white/95">{t('pillars.community.title')}</h3>
+              <p className="text-xs text-white/50 font-data tracking-wide">{t('pillars.community.subtitle')}</p>
             </div>
             
             <div className="mt-auto bg-black/30 p-4 pt-5 rounded-xl flex justify-between items-start h-[4.5rem] relative">
               <div className="w-1.5 h-1.5 rounded-full bg-green-500 mt-1 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
-              <div className="text-right font-data text-[10px] text-green-400 leading-tight">
-                <p>USER_092: Smoke spotted &lt;</p>
-                <p className="opacity-50 mt-1.5">...Locating Sector 4 &lt;</p>
+              <div className="text-end font-data text-[10px] text-green-400 leading-tight">
+                <p>{t('pillars.community.userReport')}</p>
+                <p className="opacity-50 mt-1.5">{t('pillars.community.locating')}</p>
               </div>
-              <div className="absolute bottom-2.5 right-4 w-6 h-3 bg-[#44554A] rounded-sm animate-pulse"></div>
+              <div className="absolute bottom-2.5 end-4 w-6 h-3 bg-[#44554A] rounded-sm animate-pulse"></div>
             </div>
           </div>
 
           {/* Card 3: Satellite Telemetry */}
-          <div aria-label="Satellite Telemetry Artifact" className="pillar-card bg-[var(--canopy-green)] p-6 md:p-8 rounded-[24px] md:rounded-[32px] border border-white/5 relative overflow-hidden group btn-magnetic flex flex-col h-80 hover:border-white/10 cursor-pointer focus-within:ring-2 focus-within:ring-[var(--alert-signal)] focus-within:ring-offset-2 focus-within:ring-offset-[var(--deep-forest)]">
+          <div aria-label={t('pillars.satellite.title')} className="pillar-card bg-[var(--canopy-green)] p-6 md:p-8 rounded-[24px] md:rounded-[32px] border border-white/5 relative overflow-hidden group btn-magnetic flex flex-col h-80 hover:border-white/10 cursor-pointer focus-within:ring-2 focus-within:ring-[var(--alert-signal)] focus-within:ring-offset-2 focus-within:ring-offset-[var(--deep-forest)]">
             <div className="flex justify-end mb-auto">
               <Satellite className="text-white/80 w-7 h-7" strokeWidth={1.5} />
             </div>
-            <div className="text-right mb-6 mt-8">
-              <h3 className="text-xl font-bold mb-1 text-white/95">Satellite Telemetry</h3>
-              <p className="text-xs text-white/50 font-data tracking-wide">NASA FIRMS VIIRS/MODIS</p>
+            <div className="text-end mb-6 mt-8">
+              <h3 className="text-xl font-bold mb-1 text-white/95">{t('pillars.satellite.title')}</h3>
+              <p className="text-xs text-white/50 font-data tracking-wide">{t('pillars.satellite.subtitle')}</p>
             </div>
             
             <div className="mt-auto bg-black/30 p-4 rounded-xl flex justify-between items-center h-[4.5rem]">
                <div className="w-0.5 h-full bg-blue-500/80 rounded-full"></div>
-               <div className="text-[11px] font-data text-white/80 tracking-wide mt-1">Coordinates Scanned</div>
+               <div className="text-[11px] font-data text-white/80 tracking-wide mt-1">{t('pillars.satellite.coordsScanned')}</div>
             </div>
           </div>
           
@@ -250,11 +252,11 @@ export default function Landing() {
         </div>
         <div className="relative z-10 max-w-5xl mx-auto px-6 md:px-16 text-center">
           <p className="reveal-text text-sm md:text-base text-white/50 font-data uppercase tracking-[0.2em] mb-8">
-            Most disaster systems rely solely on delayed orbital imagery.
+            {t('philosophy.problem')}
           </p>
           <h2 className="reveal-text text-4xl md:text-6xl lg:text-7xl font-drama leading-[1.1]">
-            We focus on <br/>
-            <span className="text-[var(--alert-signal)]">Real-time Cross-Validation.</span>
+            {t('philosophy.focusOn')} <br/>
+            <span className="text-[var(--alert-signal)]">{t('philosophy.solution')}</span>
           </h2>
         </div>
       </section>
@@ -264,26 +266,26 @@ export default function Landing() {
         <div className="max-w-5xl mx-auto px-6 md:px-16 relative">
           
           <div className="protocol-card min-h-[70vh] w-full bg-[#111] border border-white/10 rounded-[2.5rem] p-10 md:p-16 mb-8 flex flex-col justify-center relative overflow-hidden shadow-2xl">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-50"></div>
+            <div className="absolute top-0 start-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-50"></div>
             <div className="text-blue-500 mb-6"><Globe size={48} strokeWidth={1}/></div>
-            <h2 className="text-5xl font-bold tracking-tight mb-6">Step 1: Detect</h2>
-            <p className="text-xl text-white/60 max-w-2xl font-light">Ingesting NASA FIRMS VIIRS/MODIS thermal scans, OpenWeatherMap conditions &amp; real-time weather data streams directly from orbit.</p>
+            <h2 className="text-5xl font-bold tracking-tight mb-6">{t('protocol.step1.title')}</h2>
+            <p className="text-xl text-white/60 max-w-2xl font-light">{t('protocol.step1.description')}</p>
           </div>
           
           <div className="protocol-card min-h-[70vh] w-full bg-[#151515] border border-white/10 rounded-[2.5rem] p-10 md:p-16 mb-8 flex flex-col justify-center relative overflow-hidden shadow-2xl">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-green-500 to-transparent opacity-50"></div>
+            <div className="absolute top-0 start-0 w-full h-1 bg-gradient-to-r from-transparent via-green-500 to-transparent opacity-50"></div>
             <div className="text-green-500 mb-6"><MapPin size={48} strokeWidth={1}/></div>
-            <h2 className="text-5xl font-bold tracking-tight mb-6">Step 2: Verify</h2>
-            <p className="text-xl text-white/60 max-w-2xl font-light">The localized Telegram Bot aggregates and structures civilian reports instantly, layering human ground-truth over satellite anomalies.</p>
+            <h2 className="text-5xl font-bold tracking-tight mb-6">{t('protocol.step2.title')}</h2>
+            <p className="text-xl text-white/60 max-w-2xl font-light">{t('protocol.step2.description')}</p>
           </div>
           
           <div className="protocol-card min-h-[70vh] w-full bg-[#1a1a1a] border border-white/10 rounded-[2.5rem] p-10 md:p-16 mb-8 flex flex-col justify-center relative overflow-hidden shadow-2xl">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent opacity-50"></div>
+            <div className="absolute top-0 start-0 w-full h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent opacity-50"></div>
             <div className="text-[var(--alert-signal)] mb-6"><Activity size={48} strokeWidth={1}/></div>
-            <h2 className="text-5xl font-bold tracking-tight mb-6">Step 3: Act</h2>
-            <p className="text-xl text-white/60 max-w-2xl font-light">The Node.js &amp; React command center dispatches verified, high-confidence alerts to authorities minutes before standard APIs register the threat.</p>
-            <Link to="/dashboard" aria-label="Launch Command Center" className="mt-12 px-8 py-4 min-h-[56px] min-w-[56px] bg-[var(--alert-signal)] hover:bg-red-600 text-white rounded-full font-bold btn-magnetic self-start flex items-center justify-center gap-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[#1a1a1a]">
-              Launch Command Center <Zap size={20} className="w-5 h-5 flex-shrink-0" />
+            <h2 className="text-5xl font-bold tracking-tight mb-6">{t('protocol.step3.title')}</h2>
+            <p className="text-xl text-white/60 max-w-2xl font-light">{t('protocol.step3.description')}</p>
+            <Link to="/dashboard" aria-label={t('protocol.launchCenter')} className="mt-12 px-8 py-4 min-h-[56px] min-w-[56px] bg-[var(--alert-signal)] hover:bg-red-600 text-white rounded-full font-bold btn-magnetic self-start flex items-center justify-center gap-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[#1a1a1a]">
+              {t('protocol.launchCenter')} <Zap size={20} className="w-5 h-5 flex-shrink-0" />
             </Link>
           </div>
 
@@ -295,7 +297,7 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
             <div>
-               <h2 className="text-3xl font-drama mb-8">System Architecture</h2>
+               <h2 className="text-3xl font-drama mb-8">{t('impact.sysArch')}</h2>
                <div className="flex flex-wrap gap-4">
                  {['React 19', 'Node.js', 'SQLite', 'NASA FIRMS', 'Google Cloud Vision', 'Telegram Bot API', 'OpenWeatherMap'].map((tech) => (
                    <span key={tech} className="impact-item px-4 py-2 rounded-full border border-white/10 bg-white/5 text-sm font-data">
@@ -305,12 +307,12 @@ export default function Landing() {
                </div>
             </div>
             <div>
-               <h2 className="text-3xl font-drama mb-8 text-right">Global Impact Goals</h2>
+               <h2 className="text-3xl font-drama mb-8 text-end">{t('impact.globalGoals')}</h2>
                <div className="space-y-4">
                  {[
-                   { sdg: "09", title: "Industry, Innovation & Infrastructure" },
-                   { sdg: "13", title: "Climate Action" },
-                   { sdg: "15", title: "Life on Land" }
+                   { sdg: "09", title: t('impact.sdg09') },
+                   { sdg: "13", title: t('impact.sdg13') },
+                   { sdg: "15", title: t('impact.sdg15') }
                  ].map((goal) => (
                    <div key={goal.sdg} className="impact-item flex items-center justify-end gap-6 border-b border-white/10 pb-4">
                      <span className="text-xl font-light text-white/70">{goal.title}</span>
@@ -333,16 +335,16 @@ export default function Landing() {
         />
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center z-10 relative">
           <div className="mb-8 md:mb-0">
-            <div className="flex items-center space-x-2 mb-2">
+            <div className="flex items-center gap-2 mb-2">
               <Target className="text-[var(--alert-signal)]" />
-              <span className="font-bold text-2xl tracking-tighter">ForestGuard AI</span>
+              <span className="font-bold text-2xl tracking-tighter">{t('app.name')}</span>
             </div>
-            <p className="text-white/40 text-sm font-data">Global Real-Time Monitoring Network</p>
+            <p className="text-white/40 text-sm font-data">{t('footer.tagline')}</p>
           </div>
 
         </div>
         
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[300px] bg-[var(--canopy-green)] opacity-20 blur-[100px] rounded-full pointer-events-none"></div>
+        <div className="absolute top-0 start-1/2 -translate-x-1/2 w-[1000px] h-[300px] bg-[var(--canopy-green)] opacity-20 blur-[100px] rounded-full pointer-events-none"></div>
       </footer>
 
     </div>
