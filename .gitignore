@@ -1,0 +1,26 @@
+# Environment
+.env
+
+# Google Cloud credentials
+*-service-account*.json
+*.credentials.json
+
+# Database
+server/*.db
+server/*.db-shm
+server/*.db-wal
+
+# Dependencies
+node_modules/
+
+# Build
+client/dist/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor
+.vscode/
+.idea/
+.DS_Store
