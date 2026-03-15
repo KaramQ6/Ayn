@@ -13,6 +13,7 @@ function createTestDb() {
       latitude REAL NOT NULL, longitude REAL NOT NULL,
       brightness REAL, confidence TEXT, acq_date TEXT, acq_time TEXT,
       satellite TEXT, source TEXT DEFAULT 'FIRMS',
+      country TEXT,
       created_at TEXT DEFAULT (datetime('now'))
     );
     CREATE TABLE reports (
@@ -23,6 +24,7 @@ function createTestDb() {
       status TEXT DEFAULT 'pending',
       ai_classification TEXT, ai_confidence REAL, ai_analysis TEXT,
       points_awarded INTEGER DEFAULT 0,
+      country TEXT,
       created_at TEXT DEFAULT (datetime('now'))
     );
     CREATE TABLE alerts (
@@ -31,6 +33,7 @@ function createTestDb() {
       latitude REAL, longitude REAL, message TEXT,
       sources TEXT, confidence REAL DEFAULT 0,
       resolved INTEGER DEFAULT 0, resolved_at TEXT,
+      country TEXT,
       created_at TEXT DEFAULT (datetime('now'))
     );
     CREATE TABLE fire_risk (
@@ -38,6 +41,9 @@ function createTestDb() {
       region TEXT NOT NULL, latitude REAL, longitude REAL,
       temperature REAL, humidity REAL, wind_speed REAL, rain_1h REAL,
       risk_score INTEGER,
+      rain_probability REAL,
+      rain_label TEXT,
+      country TEXT,
       updated_at TEXT DEFAULT (datetime('now'))
     );
     CREATE TABLE rangers (

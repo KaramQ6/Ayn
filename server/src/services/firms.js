@@ -1,6 +1,15 @@
 import { getDistanceKm } from '../utils/geo.js';
 import { FORESTS, FIRMS_QUERY_REGIONS, COUNTRY_BOUNDS, findNearestForest } from '../data/forests.js';
 
+// Convert FIRMS text confidence to numeric (0-100)
+function firmsConfidenceToNumber(conf) {
+  if (conf === 'high' || conf === 'h') return 90;
+  if (conf === 'nominal' || conf === 'n') return 70;
+  if (conf === 'low' || conf === 'l') return 40;
+  const num = parseInt(conf);
+  return isNaN(num) ? 70 : num;
+}
+
 // Legacy alias — keeps old imports working during transition
 export const JORDAN_FORESTS = FORESTS.filter(f => f.country === 'JO').map(f => ({
   name: `${f.nameAr} - ${f.name}`,
@@ -59,11 +68,20 @@ export async function fetchFIRMSData(db, broadcast) {
           }
         }
 
+        // Deduplicate: skip if near-identical coordinates exist within 24h
+        const existingHotspot = db.prepare(`
+          SELECT id FROM fire_hotspots
+          WHERE ABS(latitude - ?) < 0.001 AND ABS(longitude - ?) < 0.001
+          AND created_at > datetime('now', '-24 hours')
+        `).get(lat, lng);
+        if (existingHotspot) continue;
+
         const hotspot = {
           latitude: lat,
           longitude: lng,
           brightness: parseFloat(row.bright_ti4 || row.brightness || 0),
           confidence: row.confidence || 'nominal',
+          confidenceNum: firmsConfidenceToNumber(row.confidence),
           acq_date: row.acq_date,
           acq_time: row.acq_time,
           satellite: row.satellite || 'VIIRS',
@@ -88,8 +106,9 @@ export async function fetchFIRMSData(db, broadcast) {
   }
 
   if (allHotspots.length === 0) {
-    console.log('📡 No active fires detected across all regions');
-    return insertDemoFireData(db, broadcast);
+    console.log('📡 ✅ No active fires detected across all monitored regions — forests are safe!');
+    broadcast({ type: 'FIRE_UPDATE', data: [] });
+    return [];
   }
 
   // Broadcast to dashboard
@@ -108,20 +127,30 @@ function checkForestProximity(hotspot, db, broadcast) {
   for (const forest of FORESTS) {
     const distance = getDistanceKm(hotspot.latitude, hotspot.longitude, forest.lat, forest.lng);
     if (distance <= forest.radius) {
+      // Dedup: skip if an alert for this forest already exists within 6 hours
+      const existingAlert = db.prepare(`
+        SELECT id FROM alerts
+        WHERE type = 'fire' AND country = ?
+        AND message LIKE ? AND created_at > datetime('now', '-6 hours')
+      `).get(forest.country, `%${forest.name}%`);
+      if (existingAlert) continue;
+
+      const confNum = hotspot.confidenceNum || firmsConfidenceToNumber(hotspot.confidence);
       const alert = {
-        level: String(hotspot.confidence) === 'high' || Number(hotspot.confidence) > 85 ? 'CRITICAL' : 'HIGH',
+        level: confNum >= 85 ? 'CRITICAL' : 'HIGH',
         type: 'fire',
         latitude: hotspot.latitude,
         longitude: hotspot.longitude,
         message: `🔥 حريق مكتشف بالقرب من ${forest.nameAr} / ${forest.name} (${distance.toFixed(1)} كم)`,
         sources: 'FIRMS',
+        confidence: confNum,
         country: forest.country,
       };
 
       db.prepare(`
-        INSERT INTO alerts (level, type, latitude, longitude, message, sources, country)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-      `).run(alert.level, alert.type, alert.latitude, alert.longitude, alert.message, alert.sources, alert.country);
+        INSERT INTO alerts (level, type, latitude, longitude, message, sources, confidence, country)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(alert.level, alert.type, alert.latitude, alert.longitude, alert.message, alert.sources, alert.confidence, alert.country);
 
       broadcast({ type: 'NEW_ALERT', data: alert });
       console.log(`🚨 ALERT: ${alert.message}`);

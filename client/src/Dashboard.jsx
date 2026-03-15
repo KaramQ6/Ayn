@@ -63,6 +63,7 @@ function Dashboard() {
   const [demoActive, setDemoActive] = useState(false);
   const [demoProgress, setDemoProgress] = useState(0);
   const [demoEventText, setDemoEventText] = useState('');
+  const [dataMode, setDataMode] = useState(null); // 'live' | 'demo'
 
   // Pan-Arab: country filter & scenarios
   const [countries, setCountries] = useState([]);
@@ -74,9 +75,15 @@ function Dashboard() {
 
   // Fetch countries and scenarios on mount
   useEffect(() => {
-    fetch(`${API_URL}/countries`).then(r => r.json()).then(data => setCountries(data || [])).catch(() => {});
+    fetch(`${API_URL}/countries`)
+      .then(r => r.json())
+      .then(data => setCountries(Array.isArray(data) ? data : []))
+      .catch(() => { setCountries([]); });
     fetch(`${API_URL}/demo/scenarios`).then(r => r.json()).then(data => {
       if (data.scenarios) setScenarios(data.scenarios);
+    }).catch(() => {});
+    fetch(`${API_URL}/data-status`).then(r => r.json()).then(data => {
+      setDataMode(data.mode || 'live');
     }).catch(() => {});
   }, []);
 
@@ -93,11 +100,11 @@ function Dashboard() {
       fetch(`${API_URL}/leaderboard${cp}`).then(r => r.json()).catch(() => []),
     ]).then(([statsData, firesData, reportsData, alertsData, risksData, leaderboardData]) => {
       setStats(statsData);
-      setFires(firesData);
-      setReports(reportsData);
-      setAlerts(alertsData);
-      setRisks(risksData);
-      setLeaderboard(leaderboardData);
+      setFires(Array.isArray(firesData) ? firesData : []);
+      setReports(Array.isArray(reportsData) ? reportsData : []);
+      setAlerts(Array.isArray(alertsData) ? alertsData : []);
+      setRisks(Array.isArray(risksData) ? risksData : []);
+      setLeaderboard(Array.isArray(leaderboardData) ? leaderboardData : []);
     });
   }, [selectedCountry]);
 
@@ -232,6 +239,17 @@ function Dashboard() {
     return 'bg-green-500';
   };
 
+  const rainyZones = risks.filter(r => typeof r.rain_probability === 'number' && r.rain_probability >= 50).length;
+  const safeRisks = Array.isArray(risks) ? risks : [];
+  const avgRainProb = safeRisks.length
+    ? Math.round(
+        safeRisks
+          .filter(r => typeof r.rain_probability === 'number')
+          .reduce((sum, r) => sum + r.rain_probability, 0) /
+        Math.max(1, safeRisks.filter(r => typeof r.rain_probability === 'number').length)
+      )
+    : 0;
+
   function timeAgo(dateStr) {
     if (!dateStr) return '';
     const diff = Date.now() - new Date(dateStr + 'Z').getTime();
@@ -243,7 +261,8 @@ function Dashboard() {
     return t('dashboard.time.daysAgo', { count: Math.floor(hrs / 24) });
   }
 
-  const filteredAlerts = alerts.filter(a => {
+  const safeAlerts = Array.isArray(alerts) ? alerts : [];
+  const filteredAlerts = safeAlerts.filter(a => {
     if (alertFilter === 'active') return !a.resolved;
     if (alertFilter === 'resolved') return a.resolved;
     return true;
@@ -255,8 +274,11 @@ function Dashboard() {
     resolved: t('dashboard.alerts.resolved'),
   };
 
+  const safeReports = Array.isArray(reports) ? reports : [];
+  const safeCountries = Array.isArray(countries) ? countries : [];
+
   return (
-    <div className="bg-[#050A07] min-h-screen text-[var(--ui-ghost)] font-sans flex flex-col selection:bg-[var(--alert-signal)] selection:text-white relative">
+    <div className="bg-[#050A07] h-screen text-[var(--ui-ghost)] font-sans flex flex-col selection:bg-[var(--alert-signal)] selection:text-white relative overflow-hidden">
       
       {/* LOADING OVERLAY */}
       {loading && (
@@ -267,21 +289,25 @@ function Dashboard() {
       )}
 
       {/* HEADER */}
-      <header className="sticky top-0 z-50 bg-[#0A140E]/80 backdrop-blur-xl border-b border-white/5 py-3 px-6 flex justify-between items-center">
-        <div className="flex items-center gap-6">
-          <Link to="/" aria-label="Back to Protocol" className="flex items-center justify-center min-w-[44px] min-h-[44px] hover:text-white text-white/50 transition-colors focus:ring-2 focus:ring-[var(--alert-signal)] rounded-md outline-none">
+      <header className="flex-shrink-0 z-50 bg-[#0A140E]/80 backdrop-blur-xl border-b border-white/5 py-2 md:py-3 px-3 md:px-6 flex flex-col md:flex-row md:justify-between md:items-center gap-3 md:gap-4">
+        
+        {/* Top Row on Mobile, Left Side on Desktop */}
+        <div className="flex items-center justify-between md:justify-start w-full md:w-auto gap-3 md:gap-6">
+          <div className="flex items-center gap-3 md:gap-6">
+            <Link to="/" aria-label="Back to Protocol" className="flex items-center justify-center min-w-[36px] min-h-[36px] md:min-w-[44px] md:min-h-[44px] hover:text-white text-white/50 transition-colors focus:ring-2 focus:ring-[var(--alert-signal)] rounded-md outline-none">
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <div className="flex items-center gap-2">
             <Target className="text-[var(--alert-signal)] w-6 h-6" />
             <div>
-              <h1 className="font-bold text-lg tracking-tight leading-none">{t('dashboard.commandCenter')}</h1>
-              <p className="text-[10px] font-data text-white/40 uppercase tracking-widest mt-1">{t('dashboard.liveTelemetry')}</p>
+              <h1 className="font-bold text-sm md:text-lg tracking-tight leading-none">{t('dashboard.commandCenter')}</h1>
+              <p className="hidden md:block text-[10px] font-data text-white/40 uppercase tracking-widest mt-1">{t('dashboard.liveTelemetry')}</p>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap justify-end">
+        {/* Controls: Scrollable row on mobile, Right aligned on desktop */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0 hide-scrollbar md:flex-wrap md:justify-end w-full md:w-auto snap-x">
           {/* Language Switcher */}
           <div className="flex items-center rounded-full border border-white/10 bg-white/5 overflow-hidden">
             {['en', 'ar', 'fr'].map(lng => (
@@ -294,16 +320,33 @@ function Dashboard() {
 
           {/* Country Filter */}
           <div className="relative">
-            <select value={selectedCountry} onChange={e => { setSelectedCountry(e.target.value); if (!e.target.value) { setMapCenter(MENA_CENTER); setMapZoom(MENA_ZOOM); } }}
-              className="appearance-none bg-white/5 border border-white/10 rounded-full px-3 py-1.5 pe-7 text-[10px] font-data uppercase tracking-widest text-white/60 hover:text-white hover:border-white/20 transition-colors cursor-pointer focus:outline-none focus:border-green-500/50"
-              aria-label={t('dashboard.filterCountry')}>
+            <select
+              value={selectedCountry}
+              onChange={e => {
+                setSelectedCountry(e.target.value);
+                if (!e.target.value) {
+                  setMapCenter(MENA_CENTER);
+                  setMapZoom(MENA_ZOOM);
+                }
+              }}
+              className="appearance-none bg-black/40 border border-white/20 rounded-full px-3 py-1.5 pe-7 text-[10px] md:text-[11px] font-data uppercase tracking-widest text-white hover:text-white hover:border-white/40 transition-colors cursor-pointer focus:outline-none focus:border-green-400/80 min-w-[140px] md:min-w-[230px]"
+              aria-label={t('dashboard.filterCountry')}
+            >
               <option value="">{t('dashboard.allCountries')}</option>
-              {countries.map(c => (
+              {safeCountries.map(c => (
                 <option key={c.code} value={c.code}>{i18n.language === 'ar' ? c.nameAr : c.name} ({c.forestCount})</option>
               ))}
             </select>
             <ChevronDown className="w-3 h-3 absolute end-2 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none" />
           </div>
+
+          {/* Data Mode Badge */}
+          {dataMode && (
+            <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[10px] font-data uppercase tracking-widest ${dataMode === 'live' ? 'border-emerald-500/20 text-emerald-400 bg-emerald-500/10' : 'border-yellow-500/20 text-yellow-400 bg-yellow-500/10'}`}>
+              <div className={`w-1.5 h-1.5 rounded-full ${dataMode === 'live' ? 'bg-emerald-400 animate-pulse' : 'bg-yellow-400'}`}></div>
+              {dataMode === 'live' ? t('dashboard.liveData', 'LIVE DATA') : t('dashboard.demoData', 'DEMO')}
+            </div>
+          )}
 
           {/* WebSocket Status */}
           <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[10px] font-data uppercase tracking-widest ${connected ? 'border-green-500/20 text-green-500 bg-green-500/10' : 'border-red-500/20 text-red-500 bg-red-500/10 animate-pulse'}`}>
@@ -366,101 +409,43 @@ function Dashboard() {
       )}
 
       {/* MAIN DASHBOARD */}
-      <main className="flex-1 p-4 md:p-6 grid grid-cols-1 lg:grid-cols-4 gap-6 overflow-hidden max-w-[1600px] mx-auto w-full">
+      <main className="flex-1 p-3 md:p-6 flex flex-col-reverse lg:flex-row gap-4 md:gap-6 overflow-hidden max-w-[1800px] mx-auto w-full">
 
-        {/* LEFT COLUMN: Map & Stats */}
-        <div className="lg:col-span-3 flex flex-col gap-6">
+        {/* LEFT SIDEBAR: Stats & Feeds */}
+        <div className="w-full lg:w-[360px] xl:w-[400px] flex-shrink-0 flex flex-col gap-4 overflow-y-auto hide-scrollbar lg:pe-2">
 
-          {/* STATS ROW */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          {/* STATS: Horizontally scrollable on mobile to save space, grid on desktop */}
+          <div className="flex overflow-x-auto lg:grid lg:grid-cols-2 gap-3 pb-2 lg:pb-0 snap-x hide-scrollbar">
             {[
               { label: t('dashboard.stats.fires24h'), value: stats.fires_24h, icon: Flame, color: 'text-red-500', bg: 'bg-red-500/10' },
               { label: t('dashboard.stats.reportsToday'), value: stats.reports_24h, icon: FileText, color: 'text-blue-400', bg: 'bg-blue-400/10' },
               { label: t('dashboard.stats.activeAlerts'), value: stats.active_alerts, icon: AlertTriangle, color: 'text-orange-500', bg: 'bg-orange-500/10' },
               { label: t('dashboard.stats.avgFWI'), value: `${stats.avg_fire_risk}%`, icon: Thermometer, color: 'text-yellow-500', bg: 'bg-yellow-500/10' },
               { label: t('dashboard.stats.monitoredZones'), value: stats.forests_monitored, icon: TreePine, color: 'text-green-500', bg: 'bg-green-500/10' },
+              {
+                label: t('dashboard.stats.rainyZones'),
+                value: `${rainyZones}/${stats.forests_monitored || (risks.length || 0)}`,
+                icon: Globe,
+                color: 'text-sky-400',
+                bg: 'bg-sky-500/10',
+                sub: avgRainProb ? t('dashboard.rain.avgShort', { value: avgRainProb }) : null,
+              },
             ].map((stat, i) => (
-              <div key={i} className="bg-[var(--canopy-green)] border border-white/5 rounded-[20px] p-5 flex flex-col gap-3 group hover:border-white/10 transition-colors">
-                <div className={`w-10 h-10 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center`}>
-                  <stat.icon className="w-5 h-5" />
+              <div key={i} className="min-w-[140px] lg:min-w-0 flex-shrink-0 snap-center bg-[var(--canopy-green)] border border-white/5 rounded-[16px] p-4 flex flex-col gap-2 relative overflow-hidden group hover:border-[#10B981]/50 transition-colors">
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#10B981]/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div className={`w-8 h-8 rounded-lg ${stat.bg} ${stat.color} flex items-center justify-center`}>
+                  <stat.icon className="w-4 h-4" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold tracking-tight text-white/95">{stat.value}</div>
-                  <div className="text-[10px] font-data text-white/40 uppercase tracking-widest mt-1">{stat.label}</div>
+                  <div className="text-xl font-bold tracking-tight text-white/95">{stat.value}</div>
+                  <div className="text-[9px] font-data text-white/40 uppercase tracking-widest mt-1">{stat.label}</div>
+                  {stat.sub && <div className="text-[9px] font-data text-sky-300/80 mt-0.5 truncate">{stat.sub}</div>}
                 </div>
               </div>
             ))}
           </div>
 
-          {/* MAP */}
-          <div className="flex-1 bg-[var(--canopy-green)] border border-white/5 rounded-[24px] overflow-hidden relative min-h-[500px] ring-1 ring-white/5 shadow-2xl">
-            <div className="absolute top-4 start-4 z-[500] bg-black/60 backdrop-blur-md border border-white/10 px-4 py-2 rounded-xl flex items-center gap-2">
-              <Map className="w-4 h-4 text-white/60" />
-              <span className="text-xs font-data text-white/80 uppercase tracking-widest">{t('dashboard.map.firmsTelemetry')}</span>
-              <span className="text-[9px] font-data text-green-500/60 ms-2">{t('dashboard.map.clickToReport')}</span>
-            </div>
-
-            {/* Subtle Map Vignette Overlay */}
-            <div className="absolute inset-0 z-[400] pointer-events-none shadow-[inset_0_0_100px_rgba(0,0,0,0.8)]"></div>
-
-            <MapContainer center={MENA_CENTER} zoom={MENA_ZOOM} className="w-full h-full bg-[#050A07] z-10" zoomControl={false}>
-              <TileLayer
-                url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-                attribution='&copy; CartoDB'
-                className="opacity-70 contrast-125 grayscale-[0.8] sepia-[0.3] hue-rotate-180"
-              />
-
-              <MapController center={mapCenter} zoom={mapZoom} />
-              <MapClickHandler onMapClick={handleMapClick} />
-
-              {/* Clicked location marker */}
-              {clickedCoords && (
-                <Marker position={[clickedCoords.lat, clickedCoords.lng]} icon={clickIcon}>
-                  <Popup className="tactical-popup">
-                    <div className="text-xs font-data text-green-400">{t('dashboard.map.reportLocation')}</div>
-                  </Popup>
-                </Marker>
-              )}
-
-              {(stats.forests || []).map((f, i) => (
-                <Circle key={`forest-${i}`} center={[f.lat, f.lng]} radius={f.radius * 1000} pathOptions={{ color: '#22c55e', fillColor: '#22c55e', fillOpacity: 0.1, weight: 1 }}>
-                  <Popup className="tactical-popup"><b>{f.nameAr ? `${f.nameAr} / ${f.name}` : f.name}</b></Popup>
-                </Circle>
-              ))}
-
-              {fires.map((f, i) => (
-                <Marker key={`fire-${i}`} position={[f.latitude, f.longitude]} icon={fireIcon}>
-                  <Popup className="tactical-popup">
-                    <div className="text-xs font-data">
-                      <b className="text-red-500">{t('dashboard.map.thermalAnomaly')}</b><br />
-                      {t('dashboard.map.confidence')}: {f.confidence}% | {t('dashboard.map.source')}: {f.satellite}
-                    </div>
-                  </Popup>
-                </Marker>
-              ))}
-
-              {reports.filter(r => r.latitude).map((r, i) => (
-                <Marker key={`rep-${i}`} position={[r.latitude, r.longitude]} icon={reportIcon}>
-                  <Popup className="tactical-popup">
-                    <div className="text-xs font-data">
-                      <b className="text-blue-400">{t('dashboard.map.groundReport')}</b><br />
-                      {t('dashboard.map.by')}: {r.username || 'Web'} | {t('dashboard.map.type')}: {r.report_type}
-                      {r.description && (
-                        <><br /><span className="text-white/70 italic">{r.description}</span></>
-                      )}
-                      {r.ai_classification && r.ai_classification !== 'none' && (
-                        <><br /><span className="text-purple-400">{t('dashboard.map.ai')}: {r.ai_classification} ({r.ai_confidence}%)</span></>
-                      )}
-                    </div>
-                  </Popup>
-                </Marker>
-              ))}
-            </MapContainer>
-          </div>
-        </div>
-
-        {/* RIGHT COLUMN: Feeds & Alerts */}
-        <div className="flex flex-col gap-6 lg:h-[calc(100vh-120px)] overflow-hidden">
+          {/* SIDEBAR FEEDS FOLLOW */}
 
           {/* ACTIVE ALERTS */}
           <div className="flex-1 bg-[var(--canopy-green)] border border-white/5 rounded-[24px] flex flex-col min-h-[250px] overflow-hidden">
@@ -494,7 +479,20 @@ function Dashboard() {
                     {a.resolved ? <CheckCircle className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs text-white/80 leading-snug truncate">{a.message}</p>
+                    <p className="text-xs text-white/90 leading-snug truncate">
+                      {t(`dashboard.alerts.level.${a.level}`, a.level)} {a.country && `· ${a.country}`}
+                    </p>
+                    <p className="text-[10px] text-white/50 leading-snug truncate">
+                      {t('dashboard.alerts.meta', {
+                        confidence: a.confidence ?? 0,
+                        sources: (a.sources || '').split(',').filter(Boolean).length || 1,
+                      })}
+                    </p>
+                    {a.message && (
+                      <p className="text-[10px] text-white/30 mt-0.5 truncate" title={a.message}>
+                        {a.message}
+                      </p>
+                    )}
                     <div className="flex items-center gap-2 mt-1.5">
                       <span className="text-[9px] font-data text-white/40">{timeAgo(a.created_at)}</span>
                       {a.confidence > 0 && (
@@ -533,7 +531,18 @@ function Dashboard() {
                 </div>
               ) : risks.slice(0, 8).map((r, i) => (
                 <div key={i} className="flex items-center gap-3">
-                  <span className="text-[10px] font-data text-white/60 w-24 truncate">{r.region?.split(' - ')[1] || r.region}</span>
+                  <div className="flex flex-col w-28">
+                    <span className="text-[10px] font-data text-white/60 truncate">
+                      {r.region?.split(' - ')[1] || r.region}
+                    </span>
+                    {typeof r.rain_probability === 'number' && (
+                      <span className="text-[9px] font-data text-sky-300/80 flex items-center gap-1 truncate">
+                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-sky-400/80" />
+                        {t('dashboard.rain.probShort', { value: r.rain_probability })}{' '}
+                        {r.rain_label && t(`dashboard.rain.label.${r.rain_label.toLowerCase()}`, r.rain_label)}
+                      </span>
+                    )}
+                  </div>
                   <div className="flex-1 h-1.5 bg-black/50 rounded-full overflow-hidden">
                     <div className={`h-full rounded-full transition-all duration-1000 ${getRiskBg(r.risk_score)}`} style={{ width: `${r.risk_score}%` }}></div>
                   </div>
@@ -578,12 +587,12 @@ function Dashboard() {
               </div>
             </div>
             <div className="p-4 overflow-y-auto flex-1 font-data text-[10px] custom-scrollbar space-y-3">
-              {reports.length === 0 ? (
+              {safeReports.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-green-500/20">
                   <Radio className="w-6 h-6 mb-2" />
                   <span className="text-[10px] uppercase tracking-widest">{t('dashboard.terminal.listening')}</span>
                 </div>
-              ) : reports.slice(0, 6).map((r, i) => (
+              ) : safeReports.slice(0, 6).map((r, i) => (
                 <div key={i} className="flex gap-2 text-green-400/80">
                   <span className="text-green-600">&gt;</span>
                   <div>
@@ -605,6 +614,100 @@ function Dashboard() {
             </div>
           </div>
 
+        </div>
+
+        {/* MAIN MAP AREA (75% Width) */}
+        <div className="flex-1 relative bg-[var(--canopy-green)] border border-white/10 rounded-[28px] overflow-hidden shadow-2xl min-h-[500px] flex flex-col">
+          
+          {/* Top Left Floating Pill */}
+          <div className="absolute top-6 start-6 z-[500] bg-[#0A140E]/80 backdrop-blur-xl border border-white/10 px-4 py-2.5 rounded-2xl flex items-center gap-3 shadow-lg">
+            <Map className="w-4 h-4 text-[#10B981]" />
+            <span className="text-xs font-data text-white/90 uppercase tracking-widest">{t('dashboard.map.firmsTelemetry')}</span>
+            <div className="h-4 w-px bg-white/10 mx-1"></div>
+            <span className="text-[10px] font-data text-[#10B981]/80">{t('dashboard.map.clickToReport')}</span>
+          </div>
+
+          {/* Floating Risk Index Overlay (Bottom Right) */}
+          <div className="absolute bottom-6 end-6 z-[500] w-[320px] pointer-events-auto hidden md:flex flex-col">
+            <div className="bg-[#0A140E]/90 backdrop-blur-2xl border border-white/10 rounded-[24px] shadow-[0_8px_32px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden max-h-[300px]">
+              <div className="p-4 border-b border-white/5 flex items-center gap-2 bg-[#1A211D]/50 w-full">
+                <Thermometer className="w-4 h-4 text-[#10B981]" />
+                <h3 className="text-xs font-bold uppercase tracking-widest text-white/90">{t('dashboard.risk.title')}</h3>
+                <Shield className="w-3 h-3 text-[#10B981]/50 ms-auto" />
+              </div>
+              <div className="p-4 overflow-y-auto flex-1 space-y-4 custom-scrollbar">
+                {risks.length === 0 ? (
+                  <div className="h-full flex flex-col items-center justify-center text-white/20 py-4">
+                    <span className="text-[10px] font-data uppercase tracking-widest">{t('dashboard.risk.awaiting')}</span>
+                  </div>
+                ) : risks.slice(0, 5).map((r, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <div className="flex flex-col w-24">
+                      <span className="text-[10px] font-data text-white/80 truncate">
+                        {r.region?.split(' - ')[1] || r.region}
+                      </span>
+                    </div>
+                    <div className="flex-1 h-1.5 bg-black/50 rounded-full overflow-hidden">
+                      <div className={`h-full rounded-full transition-all duration-1000 ${getRiskBg(r.risk_score)}`} style={{ width: `${r.risk_score}%` }}></div>
+                    </div>
+                    <span className={`text-[10px] font-data font-bold w-6 text-right ${getRiskColorClass(r.risk_score).split(' ')[0]}`}>{r.risk_score}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Subtle Map Vignette Overlay */}
+          <div className="absolute inset-0 z-[400] pointer-events-none shadow-[inset_0_0_120px_rgba(5,10,7,0.9)]"></div>
+
+          <MapContainer center={MENA_CENTER} zoom={MENA_ZOOM} className="w-full h-full bg-[#050A07] z-10 custom-map" zoomControl={false}>
+            <TileLayer
+              url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+              attribution='&copy; CartoDB'
+              className="opacity-80 contrast-125 grayscale-[0.5] sepia-[0.2] hue-rotate-180"
+            />
+
+            <MapController center={mapCenter} zoom={mapZoom} />
+            <MapClickHandler onMapClick={handleMapClick} />
+
+            {/* Clicked location marker */}
+            {clickedCoords && (
+              <Marker position={[clickedCoords.lat, clickedCoords.lng]} icon={clickIcon}>
+                <Popup className="tactical-popup">
+                  <div className="text-xs font-data text-green-400">{t('dashboard.map.reportLocation')}</div>
+                </Popup>
+              </Marker>
+            )}
+
+            {(stats.forests || []).map((f, i) => (
+              <Circle key={`forest-${i}`} center={[f.lat, f.lng]} radius={f.radius * 1000} pathOptions={{ color: '#10B981', fillColor: '#10B981', fillOpacity: 0.1, weight: 1 }}>
+                <Popup className="tactical-popup"><b className="text-white">{f.nameAr ? `${f.nameAr} / ${f.name}` : f.name}</b></Popup>
+              </Circle>
+            ))}
+
+            {(Array.isArray(fires) ? fires : []).map((f, i) => (
+              <Marker key={`fire-${i}`} position={[f.latitude, f.longitude]} icon={fireIcon}>
+                <Popup className="tactical-popup">
+                  <div className="text-xs font-data">
+                    <b className="text-red-500">{t('dashboard.map.thermalAnomaly')}</b><br />
+                    {t('dashboard.map.confidence')}: {f.confidence}% | {t('dashboard.map.source')}: {f.satellite}
+                  </div>
+                </Popup>
+              </Marker>
+            ))}
+
+            {safeReports.filter(r => r.latitude).map((r, i) => (
+              <Marker key={`rep-${i}`} position={[r.latitude, r.longitude]} icon={reportIcon}>
+                <Popup className="tactical-popup">
+                  <div className="text-xs font-data">
+                    <b className="text-[#10B981]">{t('dashboard.map.groundReport')}</b><br />
+                    {t('dashboard.map.by')}: {r.username || 'Web'} | {t('dashboard.map.type')}: {r.report_type}
+                    {r.description && <><br /><span className="text-white/70 italic">{r.description}</span></>}
+                  </div>
+                </Popup>
+              </Marker>
+            ))}
+          </MapContainer>
         </div>
       </main>
 

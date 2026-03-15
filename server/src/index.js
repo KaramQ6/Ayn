@@ -1,3 +1,4 @@
+// ForestGuard AI Server - Refreshed to pick up env changes
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -18,6 +19,14 @@ import { startDemo, stopDemo, isDemoActive, getScenarios, getActiveScenario } fr
 import { seedDatabase } from './data/seedData.js';
 
 dotenv.config({ path: '../.env' });
+
+// Data loading status tracker
+const dataStatus = {
+  mode: process.env.DEMO_MODE === 'true' ? 'demo' : 'live',
+  firms: { status: 'pending', lastUpdate: null, count: 0 },
+  weather: { status: 'pending', lastUpdate: null, count: 0 },
+  startedAt: new Date().toISOString(),
+};
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -49,23 +58,25 @@ app.use(cors({
   credentials: true,
 }));
 
-// Rate limiting
-const globalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 200,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'Too many requests, please try again later.' },
-});
-const writeLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 20,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'Too many submissions, please slow down.' },
-});
-app.use('/api', globalLimiter);
-app.use('/api/reports', writeLimiter);
+// Rate limiting (disabled in development for easier local testing)
+if (!isDev) {
+  const globalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 200,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Too many requests, please try again later.' },
+  });
+  const writeLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 20,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Too many submissions, please slow down.' },
+  });
+  app.use('/api', globalLimiter);
+  app.use('/api/reports', writeLimiter);
+}
 
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
@@ -122,14 +133,25 @@ app.get('/health', (req, res) => {
   res.json({
     status: 'ok',
     name: 'ForestGuard AI Server',
+    mode: dataStatus.mode,
     demo: isDemoActive(),
     activeScenario: getActiveScenario(),
   });
 });
 
-// Demo mode routes (only available when DEMO_MODE is enabled)
-if (process.env.DEMO_MODE === 'true') {
-  // List available scenarios
+// Data loading status — tells the frontend what data is available
+app.get('/api/data-status', (req, res) => {
+  const db = req.app.locals.db;
+  const fireCount = db.prepare('SELECT COUNT(*) as c FROM fire_hotspots').get().c;
+  const riskCount = db.prepare('SELECT COUNT(*) as c FROM fire_risk').get().c;
+  const reportCount = db.prepare('SELECT COUNT(*) as c FROM reports').get().c;
+  const alertCount = db.prepare('SELECT COUNT(*) as c FROM alerts').get().c;
+  res.json({
+    ...dataStatus,
+    database: { fires: fireCount, risks: riskCount, reports: reportCount, alerts: alertCount },
+  });
+});
+
   app.get('/api/demo/scenarios', (req, res) => {
     res.json({
       scenarios: getScenarios(),
@@ -137,6 +159,9 @@ if (process.env.DEMO_MODE === 'true') {
       isRunning: isDemoActive(),
     });
   });
+
+// Demo mode routes (only available when DEMO_MODE is enabled)
+if (process.env.DEMO_MODE === 'true') {
   // Start a scenario (optional ?scenario=lebanon-cedar, default: ajloun)
   app.get('/api/demo/start', (req, res) => {
     const scenarioId = req.query.scenario || 'ajloun';
@@ -224,8 +249,33 @@ server.listen(PORT, () => {
     }, 3000);
   } else {
     // Normal mode: fetch real data
-    console.log('📡 Running initial data fetch...');
-    fetchFIRMSData(db, broadcast).catch(() => {});
-    updateFireRisk(db, broadcast).catch(() => {});
+    console.log('📡 LIVE MODE — Fetching real satellite and weather data...');
+    console.log('  🛰️ Querying NASA FIRMS for active fire hotspots...');
+    dataStatus.firms.status = 'loading';
+    fetchFIRMSData(db, broadcast)
+      .then((result) => {
+        dataStatus.firms.status = 'ready';
+        dataStatus.firms.lastUpdate = new Date().toISOString();
+        dataStatus.firms.count = Array.isArray(result) ? result.length : 0;
+        console.log(`  ✅ FIRMS data ready (${dataStatus.firms.count} hotspots)`);
+      })
+      .catch((err) => {
+        dataStatus.firms.status = 'error';
+        console.error('  ❌ FIRMS fetch failed:', err.message);
+      });
+
+    console.log('  🌡️ Fetching OpenWeatherMap data for 61 forests (may take 2-3 min)...');
+    dataStatus.weather.status = 'loading';
+    updateFireRisk(db, broadcast)
+      .then((result) => {
+        dataStatus.weather.status = 'ready';
+        dataStatus.weather.lastUpdate = new Date().toISOString();
+        dataStatus.weather.count = Array.isArray(result) ? result.length : 0;
+        console.log(`  ✅ Weather data ready (${dataStatus.weather.count} forests)`);
+      })
+      .catch((err) => {
+        dataStatus.weather.status = 'error';
+        console.error('  ❌ Weather fetch failed:', err.message);
+      });
   }
 });

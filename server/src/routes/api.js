@@ -213,7 +213,7 @@ router.get('/stats/history', (req, res) => {
     `).all(c, daysParam);
 
     riskTrend = db.prepare(`
-      SELECT region, risk_score, updated_at
+      SELECT region, risk_score, rain_probability, rain_1h, updated_at
       FROM fire_risk
       WHERE country = ? AND updated_at > datetime('now', '-48 hours')
       ORDER BY updated_at ASC
@@ -251,7 +251,7 @@ router.get('/stats/history', (req, res) => {
     `).all(daysParam);
 
     riskTrend = db.prepare(`
-      SELECT region, risk_score, updated_at
+      SELECT region, risk_score, rain_probability, rain_1h, updated_at
       FROM fire_risk
       WHERE updated_at > datetime('now', '-48 hours')
       ORDER BY updated_at ASC

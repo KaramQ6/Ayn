@@ -51,6 +51,36 @@ const CLIMATE_ADJUSTMENTS = {
 
 const DEFAULT_CLIMATE = { extremeThreshold: 85, highThreshold: 65 };
 
+/**
+ * Fetch real precipitation probability from OpenWeatherMap 5-day/3h Forecast API.
+ * The free tier returns a `pop` field (0.0–1.0) representing real meteorological
+ * probability of precipitation — much more accurate than guessing from clouds.
+ *
+ * @param {number} lat
+ * @param {number} lng
+ * @param {string} apiKey
+ * @returns {Promise<{ pop: number, rain3h: number } | null>}
+ */
+async function fetchRainForecast(lat, lng, apiKey) {
+  try {
+    const url = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lng}&cnt=1&appid=${apiKey}&units=metric`;
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data.cod != '200' || !Array.isArray(data.list) || data.list.length === 0) {
+      return null;
+    }
+
+    const entry = data.list[0];
+    return {
+      pop: typeof entry.pop === 'number' ? Math.round(entry.pop * 100) : null,
+      rain3h: entry.rain?.['3h'] || 0,
+    };
+  } catch {
+    return null;
+  }
+}
+
 export async function updateFireRisk(db, broadcast) {
   const apiKey = process.env.OPENWEATHER_API_KEY;
 
@@ -65,11 +95,13 @@ export async function updateFireRisk(db, broadcast) {
   for (const forest of FORESTS) {
     try {
       // Rate limit: OpenWeatherMap free tier = 60 calls/min
-      if (requestCount > 0 && requestCount % 55 === 0) {
-        console.log('⏳ Pausing 60s for OpenWeatherMap rate limit...');
-        await new Promise(resolve => setTimeout(resolve, 60000));
+      // We make 2 calls per forest (current + forecast), so pause every 27 forests
+      if (requestCount > 0 && requestCount % 54 === 0) {
+        console.log('⏳ Pausing 65s for OpenWeatherMap rate limit...');
+        await new Promise(resolve => setTimeout(resolve, 65000));
       }
 
+      // --- 1. Current Weather (for temperature, humidity, wind, FWI) ---
       const url = `https://api.openweathermap.org/data/2.5/weather?lat=${forest.lat}&lon=${forest.lng}&appid=${apiKey}&units=metric`;
       const response = await fetch(url);
       requestCount++;
@@ -87,6 +119,25 @@ export async function updateFireRisk(db, broadcast) {
       const climate = CLIMATE_ADJUSTMENTS[forest.forestType] || DEFAULT_CLIMATE;
       const fwi = calculateFireRisk(data, climate);
 
+      const rainAmount = data.rain?.['1h'] || 0;
+
+      // --- 2. Forecast API (for real precipitation probability) ---
+      const forecast = await fetchRainForecast(forest.lat, forest.lng, apiKey);
+      requestCount++;
+
+      let rainProbability;
+      if (forecast && typeof forecast.pop === 'number') {
+        // Use real meteorological precipitation probability
+        rainProbability = forecast.pop;
+      } else {
+        // Fallback: estimate from current weather data (less accurate)
+        const clouds = typeof data.clouds?.all === 'number' ? data.clouds.all : 0;
+        const weatherCode = Array.isArray(data.weather) && data.weather[0]?.id ? data.weather[0].id : null;
+        rainProbability = estimateRainProbability({ rainAmount, clouds, weatherCode });
+      }
+
+      const rainLabel = classifyRain({ rainAmount, rainProbability });
+
       const region = `${forest.nameAr} - ${forest.name}`;
       const riskData = {
         region,
@@ -95,8 +146,10 @@ export async function updateFireRisk(db, broadcast) {
         temperature: data.main.temp,
         humidity: data.main.humidity,
         wind_speed: data.wind.speed * 3.6, // m/s to km/h
-        rain_1h: data.rain?.['1h'] || 0,
+        rain_1h: rainAmount,
         risk_score: fwi.score,
+        rain_probability: rainProbability,
+        rain_label: rainLabel,
         risk_label: fwi.riskLabel,
         fwi_components: fwi.components,
         country: forest.country,
@@ -104,11 +157,28 @@ export async function updateFireRisk(db, broadcast) {
       };
 
       db.prepare(`
-        INSERT INTO fire_risk (region, latitude, longitude, temperature, humidity, wind_speed, rain_1h, risk_score, country, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
-      `).run(riskData.region, riskData.latitude, riskData.longitude, riskData.temperature, riskData.humidity, riskData.wind_speed, riskData.rain_1h, riskData.risk_score, riskData.country);
+        INSERT INTO fire_risk (region, latitude, longitude, temperature, humidity, wind_speed, rain_1h, risk_score, rain_probability, rain_label, country, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+      `).run(
+        riskData.region,
+        riskData.latitude,
+        riskData.longitude,
+        riskData.temperature,
+        riskData.humidity,
+        riskData.wind_speed,
+        riskData.rain_1h,
+        riskData.risk_score,
+        riskData.rain_probability,
+        riskData.rain_label,
+        riskData.country
+      );
 
       results.push(riskData);
+
+      // Progress log every 10 forests
+      if (results.length % 10 === 0) {
+        console.log(`  🌡️ Progress: ${results.length}/${FORESTS.length} forests updated...`);
+      }
 
       // Create alert if risk is HIGH or above
       if (riskData.risk_score >= climate.highThreshold) {
@@ -244,6 +314,103 @@ function calculateFireRisk(weatherData, climate = DEFAULT_CLIMATE) {
   return { score: normalized, riskLabel, components: { FFMC: Math.round(FFMC * 10) / 10, DMC: Math.round(DMC * 10) / 10, BUI: Math.round(BUI * 10) / 10, ISI: Math.round(ISI * 10) / 10, rawFWI: Math.round(rawFWI * 10) / 10 } };
 }
 
+/**
+ * Fallback rain probability estimator — used ONLY when the Forecast API is unavailable.
+ * Deterministic (no random jitter) — uses current weather signals to approximate POP.
+ */
+function estimateRainProbability({ rainAmount, clouds, weatherCode }) {
+  let base = 0;
+
+  if (typeof clouds === 'number') {
+    base += clouds * 0.6;
+  }
+
+  if (typeof weatherCode === 'number') {
+    if (weatherCode >= 200 && weatherCode < 300) {
+      base += 40; // Thunderstorm group
+    } else if (weatherCode >= 300 && weatherCode < 600) {
+      base += 25; // Drizzle / Rain group
+    } else if (weatherCode >= 600 && weatherCode < 700) {
+      base += 10; // Snow group
+    }
+  }
+
+  if (rainAmount > 0) {
+    base = Math.max(base, 70 + Math.min(30, rainAmount * 5));
+  }
+
+  return Math.max(0, Math.min(100, Math.round(base)));
+}
+
+function classifyRain({ rainAmount, rainProbability }) {
+  if (rainAmount === 0 && rainProbability < 25) return 'NONE';
+  if (rainAmount < 1 && rainProbability < 40) return 'LIGHT';
+  if (rainAmount < 3 || rainProbability < 70) return 'MODERATE';
+  return 'HEAVY';
+}
+
+// Climate-realistic rain probability ranges by forest biome.
+// These reflect typical March precipitation patterns in the MENA region.
+const BIOME_RAIN_RANGES = {
+  'Mediterranean':        { minPop: 25, maxPop: 55, rainChance: 0.4 },
+  'Cedar montane':        { minPop: 30, maxPop: 60, rainChance: 0.45 },
+  'Cedar-oak mixed':      { minPop: 30, maxPop: 60, rainChance: 0.45 },
+  'Cedar-fir mixed':      { minPop: 30, maxPop: 60, rainChance: 0.45 },
+  'Atlas cedar':          { minPop: 25, maxPop: 55, rainChance: 0.40 },
+  'Atlas cedar-pine':     { minPop: 25, maxPop: 55, rainChance: 0.40 },
+  'Mountain oak':         { minPop: 20, maxPop: 50, rainChance: 0.35 },
+  'Oak woodland':         { minPop: 20, maxPop: 45, rainChance: 0.30 },
+  'Cork oak':             { minPop: 25, maxPop: 55, rainChance: 0.40 },
+  'Cork oak wetland':     { minPop: 35, maxPop: 65, rainChance: 0.50 },
+  'Mediterranean oak':    { minPop: 25, maxPop: 50, rainChance: 0.35 },
+  'Mediterranean maquis': { minPop: 20, maxPop: 45, rainChance: 0.30 },
+  'Juniper woodland':     { minPop: 10, maxPop: 30, rainChance: 0.20 },
+  'Juniper highland':     { minPop: 10, maxPop: 30, rainChance: 0.20 },
+  'Juniper-acacia':       { minPop: 8,  maxPop: 25, rainChance: 0.15 },
+  'Juniper relict':       { minPop: 10, maxPop: 30, rainChance: 0.20 },
+  'Juniper-boxwood':      { minPop: 12, maxPop: 35, rainChance: 0.25 },
+  'Fir-cedar mixed':      { minPop: 30, maxPop: 60, rainChance: 0.45 },
+  'High Atlas juniper':   { minPop: 10, maxPop: 30, rainChance: 0.20 },
+  'Argan woodland':       { minPop: 8,  maxPop: 25, rainChance: 0.15 },
+  'Acacia savanna':       { minPop: 5,  maxPop: 20, rainChance: 0.10 },
+  'Mangrove':             { minPop: 15, maxPop: 40, rainChance: 0.25 },
+  'Mangrove coastal':     { minPop: 10, maxPop: 35, rainChance: 0.20 },
+  'Wetland':              { minPop: 35, maxPop: 65, rainChance: 0.50 },
+  'Wetland marsh':        { minPop: 30, maxPop: 60, rainChance: 0.45 },
+  'Wetland savanna':      { minPop: 25, maxPop: 55, rainChance: 0.40 },
+  'Coastal wetland':      { minPop: 25, maxPop: 55, rainChance: 0.40 },
+  'Palm oasis':           { minPop: 3,  maxPop: 15, rainChance: 0.08 },
+  'Desert oasis':         { minPop: 2,  maxPop: 12, rainChance: 0.05 },
+  'Mountain desert':      { minPop: 5,  maxPop: 20, rainChance: 0.10 },
+  'Semi-arid scrub':      { minPop: 5,  maxPop: 20, rainChance: 0.10 },
+  'Rift valley':          { minPop: 15, maxPop: 40, rainChance: 0.25 },
+  'Mixed arid':           { minPop: 10, maxPop: 30, rainChance: 0.15 },
+  'Terraced olive':       { minPop: 25, maxPop: 50, rainChance: 0.35 },
+  'Terraced highland':    { minPop: 20, maxPop: 45, rainChance: 0.30 },
+  'Mountain terrace':     { minPop: 15, maxPop: 40, rainChance: 0.25 },
+  'Savanna woodland':     { minPop: 10, maxPop: 35, rainChance: 0.20 },
+  'Volcanic highland':    { minPop: 15, maxPop: 40, rainChance: 0.25 },
+  'Tropical cloud':       { minPop: 40, maxPop: 70, rainChance: 0.55 },
+  'Dragon blood endemic': { minPop: 10, maxPop: 30, rainChance: 0.15 },
+  'Riverine forest':      { minPop: 20, maxPop: 45, rainChance: 0.30 },
+};
+const DEFAULT_BIOME_RAIN = { minPop: 15, maxPop: 40, rainChance: 0.25 };
+
+/**
+ * Deterministic hash-based pseudo-random — gives consistent per-forest values
+ * across restarts (not truly random, but realistic and reproducible).
+ */
+function seededRandom(seed) {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) {
+    h = Math.imul(31, h) + seed.charCodeAt(i) | 0;
+  }
+  h = (h ^ (h >>> 16)) * 0x45d9f3b;
+  h = (h ^ (h >>> 16)) * 0x45d9f3b;
+  h = h ^ (h >>> 16);
+  return (h >>> 0) / 4294967295; // 0.0 – 1.0
+}
+
 function insertDemoRiskData(db, broadcast) {
   // Demo data for a representative subset of forests (avoids 60+ dummy records)
   const demoForests = FORESTS.filter((_, i) => i % 3 === 0 || i < 8); // All Jordan + every 3rd
@@ -251,6 +418,14 @@ function insertDemoRiskData(db, broadcast) {
   const demoData = demoForests.map((forest) => {
     const riskScore = Math.floor(Math.random() * 60) + 20;
     const region = `${forest.nameAr} - ${forest.name}`;
+
+    // Climate-realistic rain probability based on biome
+    const biomeRain = BIOME_RAIN_RANGES[forest.forestType] || DEFAULT_BIOME_RAIN;
+    const r = seededRandom(forest.id + '-rain');
+    const hasRain = r < biomeRain.rainChance;
+    const rainPop = Math.round(biomeRain.minPop + r * (biomeRain.maxPop - biomeRain.minPop));
+    const rainAmount = hasRain ? +(r * 4).toFixed(1) : 0;
+
     const data = {
       region,
       latitude: forest.lat,
@@ -258,20 +433,34 @@ function insertDemoRiskData(db, broadcast) {
       temperature: 28 + Math.random() * 12,
       humidity: 20 + Math.random() * 40,
       wind_speed: 5 + Math.random() * 25,
-      rain_1h: Math.random() > 0.7 ? Math.random() * 5 : 0,
+      rain_1h: rainAmount,
       risk_score: riskScore,
+      rain_probability: rainPop,
+      rain_label: classifyRain({ rainAmount, rainProbability: rainPop }),
       country: forest.country,
     };
 
     db.prepare(`
-      INSERT INTO fire_risk (region, latitude, longitude, temperature, humidity, wind_speed, rain_1h, risk_score, country, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
-    `).run(data.region, data.latitude, data.longitude, data.temperature, data.humidity, data.wind_speed, data.rain_1h, data.risk_score, data.country);
+      INSERT INTO fire_risk (region, latitude, longitude, temperature, humidity, wind_speed, rain_1h, risk_score, rain_probability, rain_label, country, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+    `).run(
+      data.region,
+      data.latitude,
+      data.longitude,
+      data.temperature,
+      data.humidity,
+      data.wind_speed,
+      data.rain_1h,
+      data.risk_score,
+      data.rain_probability,
+      data.rain_label,
+      data.country
+    );
 
     return data;
   });
 
   broadcast({ type: 'RISK_UPDATE', data: demoData });
-  console.log(`🌡️ Loaded demo risk data for ${demoData.length} forests`);
+  console.log(`🌡️ Loaded demo risk data for ${demoData.length} forests (climate-realistic rain)`);
   return demoData;
 }

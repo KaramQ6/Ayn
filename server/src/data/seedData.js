@@ -163,9 +163,62 @@ export function seedDatabase(db) {
 
   // --- 4. Fire Risk for all forests (across 7 days, daily) ---
   // We insert data for ALL 60 forests so the dashboard has rich data
+  // Climate-realistic rain probability ranges by forest biome (March, MENA region)
+  const BIOME_RAIN = {
+    'Mediterranean':        { minPop: 25, maxPop: 55, rainChance: 0.40 },
+    'Cedar montane':        { minPop: 30, maxPop: 60, rainChance: 0.45 },
+    'Cedar-oak mixed':      { minPop: 30, maxPop: 60, rainChance: 0.45 },
+    'Cedar-fir mixed':      { minPop: 30, maxPop: 60, rainChance: 0.45 },
+    'Atlas cedar':          { minPop: 25, maxPop: 55, rainChance: 0.40 },
+    'Atlas cedar-pine':     { minPop: 25, maxPop: 55, rainChance: 0.40 },
+    'Mountain oak':         { minPop: 20, maxPop: 50, rainChance: 0.35 },
+    'Oak woodland':         { minPop: 20, maxPop: 45, rainChance: 0.30 },
+    'Cork oak':             { minPop: 25, maxPop: 55, rainChance: 0.40 },
+    'Cork oak wetland':     { minPop: 35, maxPop: 65, rainChance: 0.50 },
+    'Mediterranean oak':    { minPop: 25, maxPop: 50, rainChance: 0.35 },
+    'Mediterranean maquis': { minPop: 20, maxPop: 45, rainChance: 0.30 },
+    'Juniper woodland':     { minPop: 10, maxPop: 30, rainChance: 0.20 },
+    'Juniper highland':     { minPop: 10, maxPop: 30, rainChance: 0.20 },
+    'Juniper-acacia':       { minPop: 8,  maxPop: 25, rainChance: 0.15 },
+    'Juniper relict':       { minPop: 10, maxPop: 30, rainChance: 0.20 },
+    'Juniper-boxwood':      { minPop: 12, maxPop: 35, rainChance: 0.25 },
+    'Fir-cedar mixed':      { minPop: 30, maxPop: 60, rainChance: 0.45 },
+    'High Atlas juniper':   { minPop: 10, maxPop: 30, rainChance: 0.20 },
+    'Argan woodland':       { minPop: 8,  maxPop: 25, rainChance: 0.15 },
+    'Acacia savanna':       { minPop: 5,  maxPop: 20, rainChance: 0.10 },
+    'Mangrove':             { minPop: 15, maxPop: 40, rainChance: 0.25 },
+    'Mangrove coastal':     { minPop: 10, maxPop: 35, rainChance: 0.20 },
+    'Wetland':              { minPop: 35, maxPop: 65, rainChance: 0.50 },
+    'Wetland marsh':        { minPop: 30, maxPop: 60, rainChance: 0.45 },
+    'Wetland savanna':      { minPop: 25, maxPop: 55, rainChance: 0.40 },
+    'Coastal wetland':      { minPop: 25, maxPop: 55, rainChance: 0.40 },
+    'Palm oasis':           { minPop: 3,  maxPop: 15, rainChance: 0.08 },
+    'Desert oasis':         { minPop: 2,  maxPop: 12, rainChance: 0.05 },
+    'Mountain desert':      { minPop: 5,  maxPop: 20, rainChance: 0.10 },
+    'Semi-arid scrub':      { minPop: 5,  maxPop: 20, rainChance: 0.10 },
+    'Rift valley':          { minPop: 15, maxPop: 40, rainChance: 0.25 },
+    'Mixed arid':           { minPop: 10, maxPop: 30, rainChance: 0.15 },
+    'Terraced olive':       { minPop: 25, maxPop: 50, rainChance: 0.35 },
+    'Terraced highland':    { minPop: 20, maxPop: 45, rainChance: 0.30 },
+    'Mountain terrace':     { minPop: 15, maxPop: 40, rainChance: 0.25 },
+    'Savanna woodland':     { minPop: 10, maxPop: 35, rainChance: 0.20 },
+    'Volcanic highland':    { minPop: 15, maxPop: 40, rainChance: 0.25 },
+    'Tropical cloud':       { minPop: 40, maxPop: 70, rainChance: 0.55 },
+    'Dragon blood endemic': { minPop: 10, maxPop: 30, rainChance: 0.15 },
+    'Riverine forest':      { minPop: 20, maxPop: 45, rainChance: 0.30 },
+  };
+  const DEFAULT_BIOME = { minPop: 15, maxPop: 40, rainChance: 0.25 };
+
+  function classifyRainSeed(rainAmount, pop) {
+    if (rainAmount === 0 && pop < 25) return 'NONE';
+    if (rainAmount < 1 && pop < 40) return 'LIGHT';
+    if (rainAmount < 3 || pop < 70) return 'MODERATE';
+    return 'HEAVY';
+  }
+
   const insertRisk = db.prepare(`
-    INSERT INTO fire_risk (region, latitude, longitude, country, temperature, humidity, wind_speed, rain_1h, risk_score, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now', ?))
+    INSERT INTO fire_risk (region, latitude, longitude, country, temperature, humidity, wind_speed, rain_1h, risk_score, rain_probability, rain_label, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now', ?))
   `);
 
   let riskCount = 0;
@@ -193,15 +246,23 @@ export function seedDatabase(db) {
       const temp = 28 + (risk / 100) * 14 + Math.random() * 3;
       const humidity = 60 - (risk / 100) * 40 + Math.random() * 5;
       const windSpeed = 5 + (risk / 100) * 30 + Math.random() * 5;
-      const rain = risk < 30 ? Math.random() * 3 : 0;
+
+      // Climate-realistic rain probability based on biome
+      const biome = BIOME_RAIN[forest.forestType] || DEFAULT_BIOME;
+      // Higher risk → less rain (inverse relationship, realistic)
+      const riskFactor = 1 - (risk / 100) * 0.6; // 0.4–1.0
+      const pop = Math.round((biome.minPop + Math.random() * (biome.maxPop - biome.minPop)) * riskFactor);
+      const hasRain = Math.random() < biome.rainChance * riskFactor;
+      const rain = hasRain ? +(Math.random() * 3).toFixed(1) : 0;
+      const rainLabel = classifyRainSeed(rain, pop);
 
       const regionName = `${forest.nameAr} - ${forest.name}`;
       const offset = `-${day * 24} hours`;
-      insertRisk.run(regionName, forest.lat, forest.lng, forest.country, temp, humidity, windSpeed, rain, risk, offset);
+      insertRisk.run(regionName, forest.lat, forest.lng, forest.country, temp, humidity, windSpeed, rain, risk, pop, rainLabel, offset);
       riskCount++;
     }
   }
-  console.log(`  🌡️ Inserted ${riskCount} fire risk records (${FORESTS.length} forests × 8 days)`);
+  console.log(`  🌡️ Inserted ${riskCount} fire risk records (${FORESTS.length} forests × 8 days) with climate-realistic rain`);
 
   // --- 5. Rangers (6 demo rangers across regions) ---
   const insertRanger = db.prepare(`

@@ -100,7 +100,8 @@
       "reportsToday": "Rapports aujourd'hui",
       "activeAlerts": "Alertes actives",
       "avgFWI": "Risque FWI moy.",
-      "monitoredZones": "Zones surveillees"
+      "monitoredZones": "Zones surveillees",
+      "rainyZones": "Zones impactees par la pluie"
     },
 
     "map": {
@@ -123,12 +124,31 @@
       "resolved": "resolues",
       "noActive": "Aucune menace active",
       "noResolved": "Aucune alerte resolue",
-      "resolve": "Resoudre"
+      "resolve": "Resoudre",
+      "level": {
+        "CRITICAL": "ALERTE CRITIQUE",
+        "HIGH": "Alerte elevee",
+        "MEDIUM": "Alerte moyenne",
+        "LOW": "Alerte faible"
+      },
+      "meta": "Confiance {{confidence}}% · {{sources}} sources"
     },
 
     "risk": {
       "title": "Risque FWI",
       "awaiting": "En attente de donnees..."
+    },
+
+    "rain": {
+      "title": "Probabilite de pluie",
+      "probShort": "P(🌧) {{value}}%",
+      "avgShort": "P(🌧) moy. {{value}}%",
+      "label": {
+        "none": "Pas de pluie",
+        "light": "Faible",
+        "moderate": "Moderee",
+        "heavy": "Forte"
+      }
     },
 
     "leaderboard": {
@@ -186,7 +206,9 @@
     "fireTrend": "Tendance des foyers",
     "alertDist": "Distribution des alertes",
     "forestRisk": "Indice de risque forestier",
-    "reportsByType": "Rapports par type",
+      "reportsByType": "Rapports par type",
+      "rainVsRisk": "Probabilite de pluie vs FWI",
+      "noRainData": "Aucune donnee recente pluie/FWI",
     "hotspots": "Foyers",
     "critical": "Critique",
     "high": "Eleve",

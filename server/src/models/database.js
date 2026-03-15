@@ -66,6 +66,8 @@ export function initDatabase() {
       wind_speed REAL,
       rain_1h REAL,
       risk_score INTEGER,
+      rain_probability REAL,
+      rain_label TEXT,
       updated_at TEXT DEFAULT (datetime('now'))
     );
 
@@ -85,6 +87,8 @@ export function initDatabase() {
     "ALTER TABLE alerts ADD COLUMN resolved_at TEXT",
     "ALTER TABLE reports ADD COLUMN ai_analysis TEXT",
     "ALTER TABLE fire_risk ADD COLUMN rain_1h REAL DEFAULT 0",
+    "ALTER TABLE fire_risk ADD COLUMN rain_probability REAL DEFAULT 0",
+    "ALTER TABLE fire_risk ADD COLUMN rain_label TEXT",
     // Multi-country expansion
     "ALTER TABLE fire_hotspots ADD COLUMN country TEXT DEFAULT 'JO'",
     "ALTER TABLE reports ADD COLUMN country TEXT",

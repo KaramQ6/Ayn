@@ -100,7 +100,8 @@
       "reportsToday": "بلاغات اليوم",
       "activeAlerts": "تنبيهات نشطة",
       "avgFWI": "متوسط خطر FWI",
-      "monitoredZones": "مناطق مراقبة"
+      "monitoredZones": "مناطق مراقبة",
+      "rainyZones": "مناطق ذات أمطار متوقعة"
     },
 
     "map": {
@@ -123,12 +124,31 @@
       "resolved": "محلول",
       "noActive": "لا توجد تهديدات نشطة",
       "noResolved": "لا توجد تنبيهات محلولة",
-      "resolve": "حل"
+      "resolve": "حل",
+      "level": {
+        "CRITICAL": "تنبيه حرج",
+        "HIGH": "تنبيه عالي",
+        "MEDIUM": "تنبيه متوسط",
+        "LOW": "تنبيه منخفض"
+      },
+      "meta": "ثقة {{confidence}}٪ · {{sources}} مصادر"
     },
 
     "risk": {
       "title": "مؤشر خطر FWI",
       "awaiting": "في انتظار البيانات..."
+    },
+
+    "rain": {
+      "title": "احتمال الأمطار",
+      "probShort": "P(🌧) {{value}}٪",
+      "avgShort": "متوسط P(🌧) {{value}}٪",
+      "label": {
+        "none": "لا أمطار",
+        "light": "أمطار خفيفة",
+        "moderate": "أمطار متوسطة",
+        "heavy": "أمطار غزيرة"
+      }
     },
 
     "leaderboard": {
@@ -186,7 +206,9 @@
     "fireTrend": "اتجاه البؤر الحرارية",
     "alertDist": "توزيع التنبيهات",
     "forestRisk": "مؤشر خطر الغابات",
-    "reportsByType": "البلاغات حسب النوع",
+      "reportsByType": "البلاغات حسب النوع",
+      "rainVsRisk": "احتمال الأمطار مقابل مؤشر FWI",
+      "noRainData": "لا توجد بيانات حديثة عن الأمطار/مؤشر الخطر",
     "hotspots": "بؤر حرارية",
     "critical": "حرج",
     "high": "عالي",

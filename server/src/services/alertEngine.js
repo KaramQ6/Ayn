@@ -63,6 +63,8 @@ export function crossValidate(db, broadcast, newData) {
   const nearestForest = nearestResult?.forest || null;
   const minDistance = nearestResult?.distance ?? Infinity;
 
+  let rainContext = null;
+
   if (nearestForest) {
     // Region name format: "nameAr - name" (matches weather.js insert format)
     const regionName = `${nearestForest.nameAr} - ${nearestForest.name}`;
@@ -74,6 +76,16 @@ export function crossValidate(db, broadcast, newData) {
 
     if (latestRisk && latestRisk.risk_score >= 40) {
       evidence.WEATHER_RISK = latestRisk.risk_score;
+    }
+
+    if (latestRisk) {
+      const rainProb = typeof latestRisk.rain_probability === 'number' ? latestRisk.rain_probability : null;
+      const rainAmount = latestRisk.rain_1h ?? null;
+      if ((rainProb !== null && rainProb < 25 && (!rainAmount || rainAmount === 0))) {
+        rainContext = 'بدون أمطار متوقعة قريباً';
+      } else if ((rainProb !== null && rainProb >= 70) || (rainAmount !== null && rainAmount >= 2)) {
+        rainContext = 'أمطار غزيرة محتملة قد تخفف من شدة الحريق';
+      }
     }
   }
 
@@ -143,7 +155,7 @@ export function crossValidate(db, broadcast, newData) {
     latitude,
     longitude,
     country,
-    message: `${levelEmoji(level)} تنبيه ${levelArabic(level)} — ${sourceCount} مصادر مؤكدة بالقرب من ${forestLabel} (${minDistance.toFixed(1)} كم) — ثقة: ${finalConfidence}%`,
+    message: `${levelEmoji(level)} تنبيه ${levelArabic(level)} — ${sourceCount} مصادر مؤكدة بالقرب من ${forestLabel} (${minDistance.toFixed(1)} كم) — ثقة: ${finalConfidence}%${rainContext ? ` — ${rainContext}` : ''}`,
     sources: uniqueSources.join(','),
     confidence: finalConfidence,
   };

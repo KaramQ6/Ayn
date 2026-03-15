@@ -100,7 +100,8 @@
       "reportsToday": "Reports Today",
       "activeAlerts": "Active Alerts",
       "avgFWI": "Avg FWI Risk",
-      "monitoredZones": "Monitored Zones"
+      "monitoredZones": "Monitored Zones",
+      "rainyZones": "Rain-impacted Zones"
     },
 
     "map": {
@@ -123,12 +124,31 @@
       "resolved": "resolved",
       "noActive": "No Active Threats",
       "noResolved": "No Resolved Threats",
-      "resolve": "Resolve"
+      "resolve": "Resolve",
+      "level": {
+        "CRITICAL": "CRITICAL ALERT",
+        "HIGH": "High alert",
+        "MEDIUM": "Medium alert",
+        "LOW": "Low alert"
+      },
+      "meta": "Confidence {{confidence}}% · {{sources}} sources"
     },
 
     "risk": {
       "title": "FWI Risk",
       "awaiting": "Awaiting data..."
+    },
+
+    "rain": {
+      "title": "Rain Probability",
+      "probShort": "P(🌧) {{value}}%",
+      "avgShort": "Avg P(🌧) {{value}}%",
+      "label": {
+        "none": "No rain",
+        "light": "Light",
+        "moderate": "Moderate",
+        "heavy": "Heavy"
+      }
     },
 
     "leaderboard": {
@@ -186,7 +206,9 @@
     "fireTrend": "Fire Hotspots Trend",
     "alertDist": "Alert Distribution",
     "forestRisk": "Forest Risk Index",
-    "reportsByType": "Reports by Type",
+      "reportsByType": "Reports by Type",
+      "rainVsRisk": "Rain Probability vs FWI",
+      "noRainData": "No recent rain/fwi data",
     "hotspots": "Hotspots",
     "critical": "Critical",
     "high": "High",
