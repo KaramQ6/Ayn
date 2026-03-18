@@ -285,47 +285,80 @@ export default function Landing() {
             <h2 className="text-5xl font-bold tracking-tight mb-6">{t('protocol.step3.title')}</h2>
             <p className="text-xl text-white/60 max-w-2xl font-light">{t('protocol.step3.description')}</p>
             <Link to="/dashboard" aria-label={t('protocol.launchCenter')} className="mt-12 px-8 py-4 min-h-[56px] min-w-[56px] bg-[var(--alert-signal)] hover:bg-red-600 text-white rounded-full font-bold btn-magnetic self-start flex items-center justify-center gap-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[#1a1a1a]">
-              {t('protocol.launchCenter')} <Zap size={20} className="w-5 h-5 flex-shrink-0" />
+           {t('protocol.launchCenter')} <Zap size={20} className="w-5 h-5 flex-shrink-0" />
             </Link>
           </div>
 
         </div>
       </section>
 
-      {/* F. IMPACT & TECH STACK */}
+      {/* F. COMMUNITY & EXPLORE SECTION */}
+      <section className="py-32 px-6 md:px-16 border-t border-white/5 bg-gradient-to-b from-transparent to-[var(--deep-forest)]/50">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-drama mb-4">{t('community.sectionTitle', 'Join the Community')}</h2>
+            <p className="text-sm md:text-base text-white/40 max-w-2xl mx-auto font-data">{t('community.sectionDesc', 'Share experiences, ask questions about hiking trails, and discover the most famous forests in our region.')}</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            {[
+              { icon: '❓', title: t('community.feature1Title', 'Ask Questions'), desc: t('community.feature1Desc', 'Get advice on hiking spots, camping areas, and trail conditions from the community.') },
+              { icon: '⭐', title: t('community.feature2Title', 'Share Recommendations'), desc: t('community.feature2Desc', 'Post your favorite forest trails, campgrounds, and mountain experiences.') },
+              { icon: '📷', title: t('community.feature3Title', 'Trip Reports'), desc: t('community.feature3Desc', 'Document your adventures with photos and detailed trip reports.') },
+            ].map((feature, i) => (
+              <div key={i} className="impact-item bg-[var(--canopy-green)] p-8 rounded-[24px] border border-white/5 hover:border-white/10 transition-colors">
+                <div className="text-3xl mb-4">{feature.icon}</div>
+                <h3 className="text-lg font-bold mb-2 text-white/90">{feature.title}</h3>
+                <p className="text-sm text-white/50">{feature.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link to="/community" className="px-8 py-4 bg-purple-600 hover:bg-purple-500 text-white rounded-full font-bold btn-magnetic flex items-center justify-center gap-2 no-underline">
+              {t('community.joinCTA', 'Join Community')} →
+            </Link>
+            <Link to="/dashboard" className="px-8 py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-full font-bold btn-magnetic flex items-center justify-center gap-2 no-underline">
+              {t('community.exploreCTA', 'Explore Forests')} 🌲
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* G. IMPACT & TECH STACK */}
       <section id="impact" className="impact-section py-32 px-6 md:px-16 border-t border-white/5 bg-gradient-to-b from-[var(--deep-forest)] to-black/50">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
             <div>
                <h2 className="text-3xl font-drama mb-8">{t('impact.sysArch')}</h2>
                <div className="flex flex-wrap gap-4">
-                 {['React 19', 'Node.js', 'SQLite', 'NASA FIRMS', 'Google Cloud Vision', 'Telegram Bot API', 'OpenWeatherMap'].map((tech) => (
-                   <span key={tech} className="impact-item px-4 py-2 rounded-full border border-white/10 bg-white/5 text-sm font-data">
-                     {tech}
-                   </span>
-                 ))}
+                 {['React 19', 'Node.js', 'SQLite', 'Supabase', 'NASA FIRMS', 'Google Cloud Vision', 'Telegram Bot API', 'OpenWeatherMap'].map((tech) => (
+                    <span key={tech} className="impact-item px-4 py-2 rounded-full border border-white/10 bg-white/5 text-sm font-data">
+                      {tech}
+                    </span>
+                  ))}
                </div>
             </div>
             <div>
                <h2 className="text-3xl font-drama mb-8 text-end">{t('impact.globalGoals')}</h2>
                <div className="space-y-4">
                  {[
-                   { sdg: "09", title: t('impact.sdg09') },
-                   { sdg: "13", title: t('impact.sdg13') },
-                   { sdg: "15", title: t('impact.sdg15') }
-                 ].map((goal) => (
-                   <div key={goal.sdg} className="impact-item flex items-center justify-end gap-6 border-b border-white/10 pb-4">
-                     <span className="text-xl font-light text-white/70">{goal.title}</span>
-                     <span className="text-4xl font-bold text-[var(--alert-signal)] font-data bg-red-500/10 px-4 py-2 rounded-xl">#{goal.sdg}</span>
-                   </div>
-                 ))}
+                    { sdg: "09", title: t('impact.sdg09') },
+                    { sdg: "13", title: t('impact.sdg13') },
+                    { sdg: "15", title: t('impact.sdg15') }
+                  ].map((goal) => (
+                    <div key={goal.sdg} className="impact-item flex items-center justify-end gap-6 border-b border-white/10 pb-4">
+                      <span className="text-xl font-light text-white/70">{goal.title}</span>
+                      <span className="text-4xl font-bold text-[var(--alert-signal)] font-data bg-red-500/10 px-4 py-2 rounded-xl">#{goal.sdg}</span>
+                    </div>
+                  ))}
                </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* G. FOOTER */}
+      {/* H. FOOTER */}
       <footer className="bg-[#050A07] rounded-t-[4rem] py-16 px-6 md:px-16 mt-20 relative overflow-hidden">
         <img 
           src="https://images.unsplash.com/photo-1473448912268-2022ce9509d8?q=80&w=2600&auto=format&fit=crop" 

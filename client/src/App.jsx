@@ -16,6 +16,8 @@ function lazyRetry(importFn) {
 
 const Landing = lazyRetry(() => import('./Landing'));
 const Dashboard = lazyRetry(() => import('./Dashboard'));
+const Community = lazyRetry(() => import('./Community'));
+const PostDetail = lazyRetry(() => import('./PostDetail'));
 
 function NotFound() {
   const { t } = useTranslation();
@@ -66,6 +68,8 @@ function App() {
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/community" element={<Community />} />
+            <Route path="/community/:postId" element={<PostDetail />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
