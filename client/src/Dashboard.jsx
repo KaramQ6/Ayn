@@ -10,12 +10,21 @@ import ForestExplorerPanel from './ForestExplorerPanel';
 import 'leaflet/dist/leaflet.css';
 import './index.css';
 
-const API_BASE = import.meta.env.VITE_API_URL || (() => {
-  if (typeof window !== 'undefined') {
-    return window.location.origin;
+const getBackendURL = () => {
+  const apiUrl = import.meta.env.VITE_API_URL;
+  if (apiUrl) {
+    // إذا كان يحتوي على protocol
+    if (apiUrl.startsWith('http://') || apiUrl.startsWith('https://')) {
+      return apiUrl;
+    }
+    // إذا لم يحتوي على protocol، أضف https
+    return 'https://' + apiUrl;
   }
-  return 'http://localhost:5000';
-})();
+  // الافتراضي: window.location.origin في الـ browser
+  return typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5000';
+};
+
+const API_BASE = getBackendURL();
 const API_URL = API_BASE + '/api';
 const WS_URL = API_BASE.replace(/^http/, 'ws') + '/ws';
 
