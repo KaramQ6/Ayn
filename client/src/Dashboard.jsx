@@ -11,17 +11,18 @@ import 'leaflet/dist/leaflet.css';
 import './index.css';
 
 const getBackendURL = () => {
+  // أولاً: تحقق من environment variable
   const apiUrl = import.meta.env.VITE_API_URL;
-  if (apiUrl) {
+  if (apiUrl && apiUrl.trim()) {
     // إذا كان يحتوي على protocol
-    if (apiUrl.startsWith('http://') || apiUrl.startsWith('https://')) {
-      return apiUrl;
+    if (apiUrl.includes('://')) {
+      return apiUrl.trim();
     }
     // إذا لم يحتوي على protocol، أضف https
-    return 'https://' + apiUrl;
+    return 'https://' + apiUrl.trim();
   }
-  // الافتراضي: window.location.origin في الـ browser
-  return typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5000';
+  // الافتراضي: http://localhost:5000
+  return 'http://localhost:5000';
 };
 
 const API_BASE = getBackendURL();
