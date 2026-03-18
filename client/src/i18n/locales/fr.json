@@ -162,7 +162,8 @@
     "terminal": {
       "title": "Relais en direct",
       "listening": "En ecoute...",
-      "detected": "DETECTE"
+      "detected": "DETECTE",
+      "noDetails": "Aucune description fournie"
     },
 
     "time": {

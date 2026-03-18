@@ -162,7 +162,8 @@
     "terminal": {
       "title": "البث المباشر",
       "listening": "في الانتظار...",
-      "detected": "تم الكشف"
+      "detected": "تم الكشف",
+      "noDetails": "لم يتم تقديم وصف"
     },
 
     "time": {

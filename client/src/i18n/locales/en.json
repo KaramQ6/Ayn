@@ -79,6 +79,60 @@
     "tagline": "Global Real-Time Monitoring Network"
   },
 
+
+  "community": {
+    "title": "Community",
+    "sectionTitle": "Join the Community",
+    "sectionDesc": "Share experiences, ask questions about hiking trails, and discover the most famous forests in our region.",
+    "feature1Title": "Ask Questions",
+    "feature1Desc": "Get advice on hiking spots, camping areas, and trail conditions from the community.",
+    "feature2Title": "Share Recommendations",
+    "feature2Desc": "Post your favorite forest trails, campgrounds, and mountain experiences.",
+    "feature3Title": "Trip Reports",
+    "feature3Desc": "Document your adventures with photos and detailed trip reports.",
+    "joinCTA": "Join Community",
+    "exploreCTA": "Explore Forests",
+    "newPost": "New Post",
+    "createPost": "Create Post",
+    "search": "Search posts...",
+    "noPosts": "No posts yet",
+    "beFirst": "Be the first to share!",
+    "createFirst": "Create First Post",
+    "trending": "Trending",
+    "noTrending": "No trending posts",
+    "popularTags": "Popular Tags",
+    "noTags": "No tags yet",
+    "postsCount": "posts",
+    "totalPosts": "total posts",
+    "totalTags": "tags in use",
+    "loading": "Loading posts...",
+    "setupRequired": "Supabase Setup Required",
+    "setupDesc": "Add your Supabase URL and Anon Key to the .env file (VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY) and run the migration SQL.",
+    "yourName": "Your name (optional)",
+    "postTitle": "Post title...",
+    "postContent": "Share your experience, ask a question, or recommend a place...",
+    "selectForest": "Link to a forest (optional)",
+    "locationName": "Location name (e.g., Ajloun Trail #3)",
+    "addTag": "Add tag...",
+    "submitting": "Posting...",
+    "submit": "Publish Post",
+    "addComment": "Add a Comment",
+    "comments": "Comments"
+  },
+
+  "explorer": {
+    "title": "Forest Explorer",
+    "searchPlaceholder": "Search forests, countries, types...",
+    "filters": "Filters",
+    "results": "forests",
+    "allCountries": "All Countries",
+    "allTypes": "All Types",
+    "unescoOnly": "UNESCO Sites Only",
+    "noResults": "No forests found",
+    "tryDifferent": "Try different search terms",
+    "famousNote": "Most Famous Forests in the MENA Region"
+  },
+
   "dashboard": {
     "commandCenter": "Command Center",
     "liveTelemetry": "Live Telemetry",
@@ -86,6 +140,8 @@
     "reconnecting": "Reconnecting",
     "analytics": "Analytics",
     "report": "Report",
+    "explore": "Explore",
+    "community": "Community",
     "demo": "Demo",
     "stopDemo": "Stop Demo",
     "demoActive": "Demo Active",
@@ -114,7 +170,9 @@
       "groundReport": "Ground Report",
       "by": "By",
       "type": "Type",
-      "ai": "AI"
+      "ai": "AI",
+      "treeCover": "Tree Cover",
+      "famousForest": "Famous Forest in the Region"
     },
 
     "alerts": {
@@ -162,7 +220,8 @@
     "terminal": {
       "title": "Live Relays",
       "listening": "Listening...",
-      "detected": "DETECTED"
+      "detected": "DETECTED",
+      "noDetails": "No description provided"
     },
 
     "time": {
@@ -206,9 +265,9 @@
     "fireTrend": "Fire Hotspots Trend",
     "alertDist": "Alert Distribution",
     "forestRisk": "Forest Risk Index",
-      "reportsByType": "Reports by Type",
-      "rainVsRisk": "Rain Probability vs FWI",
-      "noRainData": "No recent rain/fwi data",
+    "reportsByType": "Reports by Type",
+    "rainVsRisk": "Rain Probability vs FWI",
+    "noRainData": "No recent rain/fwi data",
     "hotspots": "Hotspots",
     "critical": "Critical",
     "high": "High",

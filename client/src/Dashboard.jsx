@@ -1,11 +1,12 @@
-import { useState, useEffect, useCallback, lazy, Suspense, useRef } from 'react';
+import React, { useState, useEffect, useCallback, lazy, Suspense, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Circle, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Target, Flame, FileText, AlertTriangle, Thermometer, TreePine, Map, Bell, ArrowLeft, Radio, CheckCircle, TrendingUp, Plus, Wifi, WifiOff, Brain, Shield, Play, Square, Trophy, Globe, ChevronDown } from 'lucide-react';
+import { Target, Flame, FileText, AlertTriangle, Thermometer, TreePine, Map, Bell, ArrowLeft, Radio, CheckCircle, TrendingUp, Plus, Wifi, WifiOff, Brain, Shield, Play, Square, Trophy, Globe, ChevronDown, Layers, Users, Star, Search, Compass } from 'lucide-react';
 const AnalyticsPanel = lazy(() => import('./AnalyticsPanel'));
 const ReportForm = lazy(() => import('./ReportForm'));
+import ForestExplorerPanel from './ForestExplorerPanel';
 import 'leaflet/dist/leaflet.css';
 import './index.css';
 
@@ -20,6 +21,7 @@ const MENA_ZOOM = 4;
 const fireIcon = L.divIcon({ html: '<div class="w-4 h-4 rounded-full bg-red-500 animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.8)] border-2 border-white/50"></div>', className: '', iconSize: [16, 16], iconAnchor: [8, 8] });
 const reportIcon = L.divIcon({ html: '<div class="w-3 h-3 rounded-full bg-blue-400 shadow-[0_0_10px_rgba(96,165,250,0.8)] border border-white/50"></div>', className: '', iconSize: [12, 12], iconAnchor: [6, 6] });
 const clickIcon = L.divIcon({ html: '<div class="w-5 h-5 rounded-full bg-green-500 animate-bounce shadow-[0_0_20px_rgba(34,197,94,0.8)] border-2 border-white"></div>', className: '', iconSize: [20, 20], iconAnchor: [10, 10] });
+const famousForestIcon = L.divIcon({ html: '<div class="relative flex items-center justify-center"><div class="w-6 h-6 rounded-full bg-gradient-to-br from-yellow-400 to-amber-600 shadow-[0_0_16px_rgba(245,158,11,0.6)] border-2 border-yellow-300/80 flex items-center justify-center"><span style="font-size:12px;line-height:1">⭐</span></div></div>', className: '', iconSize: [24, 24], iconAnchor: [12, 12] });
 
 // Map click handler component
 function MapClickHandler({ onMapClick }) {
@@ -64,6 +66,9 @@ function Dashboard() {
   const [demoProgress, setDemoProgress] = useState(0);
   const [demoEventText, setDemoEventText] = useState('');
   const [dataMode, setDataMode] = useState(null); // 'live' | 'demo'
+  const [showTreeCover, setShowTreeCover] = useState(false);
+  const [treeCoverOpacity, setTreeCoverOpacity] = useState(0.6);
+  const [showForestExplorer, setShowForestExplorer] = useState(false);
 
   // Pan-Arab: country filter & scenarios
   const [countries, setCountries] = useState([]);
@@ -278,34 +283,37 @@ function Dashboard() {
   const safeCountries = Array.isArray(countries) ? countries : [];
 
   return (
-    <div className="bg-[#050A07] h-screen text-[var(--ui-ghost)] font-sans flex flex-col selection:bg-[var(--alert-signal)] selection:text-white relative overflow-hidden">
+    <div className="bg-[#050A07] min-h-screen lg:h-screen text-[var(--ui-ghost)] font-sans flex flex-col selection:bg-[var(--alert-signal)] selection:text-white relative lg:overflow-hidden">
       
+      {/* SCANLINE EFFECT */}
+      <div className="scanline"></div>
+
       {/* LOADING OVERLAY */}
       {loading && (
         <div className="fixed inset-0 z-[100] bg-[#050A07] flex flex-col items-center justify-center gap-4">
-          <div className="w-12 h-12 border-4 border-[var(--alert-signal)] border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-12 h-12 border-4 border-[var(--accent-emerald)] border-t-transparent rounded-full animate-spin"></div>
           <p className="font-data text-xs uppercase tracking-[0.3em] text-white/40 animate-pulse">{t('app.initTelemetry')}</p>
         </div>
       )}
 
       {/* HEADER */}
-      <header className="flex-shrink-0 z-50 bg-[#0A140E]/80 backdrop-blur-xl border-b border-white/5 py-2 md:py-3 px-3 md:px-6 flex flex-col md:flex-row md:justify-between md:items-center gap-3 md:gap-4">
+      <header className="flex-shrink-0 z-50 bg-[#0A140E]/40 backdrop-blur-md border-b border-white/5 py-2 md:py-3 px-3 md:px-6 flex flex-col md:flex-row md:justify-between md:items-center gap-3 md:gap-4">
         
         {/* Top Row on Mobile, Left Side on Desktop */}
         <div className="flex items-center justify-between md:justify-start w-full md:w-auto gap-3 md:gap-6">
           <div className="flex items-center gap-3 md:gap-6">
             <Link to="/" aria-label="Back to Protocol" className="flex items-center justify-center min-w-[36px] min-h-[36px] md:min-w-[44px] md:min-h-[44px] hover:text-white text-white/50 transition-colors focus:ring-2 focus:ring-[var(--alert-signal)] rounded-md outline-none">
-            <ArrowLeft className="w-5 h-5" />
-          </Link>
-          <div className="flex items-center gap-2">
-            <Target className="text-[var(--alert-signal)] w-6 h-6" />
-            <div>
-              <h1 className="font-bold text-sm md:text-lg tracking-tight leading-none">{t('dashboard.commandCenter')}</h1>
-              <p className="hidden md:block text-[10px] font-data text-white/40 uppercase tracking-widest mt-1">{t('dashboard.liveTelemetry')}</p>
+              <ArrowLeft className="w-5 h-5" />
+            </Link>
+            <div className="flex items-center gap-2">
+              <Target className="text-[var(--accent-emerald)] w-6 h-6" />
+              <div>
+                <h1 className="font-bold text-sm md:text-lg tracking-tight leading-none text-white/90 whitespace-nowrap">{t('dashboard.commandCenter')}</h1>
+                <p className="hidden md:block text-[10px] font-data text-white/40 uppercase tracking-widest mt-1">{t('dashboard.liveTelemetry')}</p>
+              </div>
             </div>
           </div>
         </div>
-
         {/* Controls: Scrollable row on mobile, Right aligned on desktop */}
         <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0 hide-scrollbar md:flex-wrap md:justify-end w-full md:w-auto snap-x">
           {/* Language Switcher */}
@@ -329,7 +337,7 @@ function Dashboard() {
                   setMapZoom(MENA_ZOOM);
                 }
               }}
-              className="appearance-none bg-black/40 border border-white/20 rounded-full px-3 py-1.5 pe-7 text-[10px] md:text-[11px] font-data uppercase tracking-widest text-white hover:text-white hover:border-white/40 transition-colors cursor-pointer focus:outline-none focus:border-green-400/80 min-w-[140px] md:min-w-[230px]"
+              className="appearance-none bg-black/40 border border-white/20 rounded-full px-3 py-1.5 pe-7 text-[10px] md:text-[11px] font-data uppercase tracking-widest text-white hover:text-white hover:border-white/40 transition-colors cursor-pointer focus:outline-none focus:border-green-400/80 min-w-[140px] md:min-w-[200px]"
               aria-label={t('dashboard.filterCountry')}
             >
               <option value="">{t('dashboard.allCountries')}</option>
@@ -360,6 +368,18 @@ function Dashboard() {
             <TrendingUp className="w-3 h-3" /> {t('dashboard.analytics')}
           </button>
 
+          {/* Forest Explorer Button */}
+          <button onClick={() => setShowForestExplorer(true)} aria-label="Explore forests"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-emerald-500/30 text-[10px] font-data uppercase tracking-widest text-emerald-400 hover:text-emerald-300 hover:border-emerald-500/50 bg-emerald-500/10 transition-colors">
+            <Compass className="w-3 h-3" /> {t('dashboard.explore', 'Explore')}
+          </button>
+
+          {/* Community Button */}
+          <Link to="/community" aria-label="Open community"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-purple-500/30 text-[10px] font-data uppercase tracking-widest text-purple-400 hover:text-purple-300 hover:border-purple-500/50 bg-purple-500/10 transition-colors no-underline">
+            <Users className="w-3 h-3" /> {t('dashboard.community', 'Community')}
+          </Link>
+
           {/* Report Button */}
           <button onClick={() => setShowReportForm(true)} aria-label="Submit a new report"
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-green-500/30 text-[10px] font-data uppercase tracking-widest text-green-400 hover:text-green-300 hover:border-green-500/50 bg-green-500/10 transition-colors">
@@ -389,6 +409,7 @@ function Dashboard() {
         </div>
       </header>
 
+
       {/* DEMO MODE BANNER */}
       {demoActive && (
         <div className="sticky top-[57px] z-40 bg-gradient-to-r from-yellow-500/10 via-orange-500/10 to-red-500/10 border-b border-yellow-500/20 backdrop-blur-md px-6 py-2">
@@ -409,13 +430,13 @@ function Dashboard() {
       )}
 
       {/* MAIN DASHBOARD */}
-      <main className="flex-1 p-3 md:p-6 flex flex-col-reverse lg:flex-row gap-4 md:gap-6 overflow-hidden max-w-[1800px] mx-auto w-full">
+      <main className="flex-1 p-3 md:p-6 flex flex-col-reverse lg:flex-row gap-4 md:gap-6 lg:overflow-hidden max-w-[1800px] mx-auto w-full">
 
         {/* LEFT SIDEBAR: Stats & Feeds */}
         <div className="w-full lg:w-[360px] xl:w-[400px] flex-shrink-0 flex flex-col gap-4 overflow-y-auto hide-scrollbar lg:pe-2">
 
           {/* STATS: Horizontally scrollable on mobile to save space, grid on desktop */}
-          <div className="flex overflow-x-auto lg:grid lg:grid-cols-2 gap-3 pb-2 lg:pb-0 snap-x hide-scrollbar">
+          <div className="flex-shrink-0 flex overflow-x-auto lg:grid lg:grid-cols-2 gap-3 pb-2 lg:pb-0 snap-x hide-scrollbar">
             {[
               { label: t('dashboard.stats.fires24h'), value: stats.fires_24h, icon: Flame, color: 'text-red-500', bg: 'bg-red-500/10' },
               { label: t('dashboard.stats.reportsToday'), value: stats.reports_24h, icon: FileText, color: 'text-blue-400', bg: 'bg-blue-400/10' },
@@ -431,14 +452,14 @@ function Dashboard() {
                 sub: avgRainProb ? t('dashboard.rain.avgShort', { value: avgRainProb }) : null,
               },
             ].map((stat, i) => (
-              <div key={i} className="min-w-[140px] lg:min-w-0 flex-shrink-0 snap-center bg-[var(--canopy-green)] border border-white/5 rounded-[16px] p-4 flex flex-col gap-2 relative overflow-hidden group hover:border-[#10B981]/50 transition-colors">
+              <div key={i} className="min-w-[140px] lg:min-w-0 flex-shrink-0 snap-center bg-[#0A140E]/80 border border-white/10 backdrop-blur-md rounded-[16px] p-4 flex flex-col gap-2 relative group cursor-pointer hover:border-emerald-500/30 transition-all duration-300">
                 <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#10B981]/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <div className={`w-8 h-8 rounded-lg ${stat.bg} ${stat.color} flex items-center justify-center`}>
+                <div className={`w-8 h-8 rounded-lg ${stat.bg} ${stat.color} flex items-center justify-center relative z-10`}>
                   <stat.icon className="w-4 h-4" />
                 </div>
-                <div>
-                  <div className="text-xl font-bold tracking-tight text-white/95">{stat.value}</div>
-                  <div className="text-[9px] font-data text-white/40 uppercase tracking-widest mt-1">{stat.label}</div>
+                <div className="relative z-10">
+                  <div className="text-xl font-bold tracking-tight text-white">{stat.value}</div>
+                  <div className="text-[9px] font-data text-white/50 uppercase tracking-widest mt-1">{stat.label}</div>
                   {stat.sub && <div className="text-[9px] font-data text-sky-300/80 mt-0.5 truncate">{stat.sub}</div>}
                 </div>
               </div>
@@ -448,7 +469,7 @@ function Dashboard() {
           {/* SIDEBAR FEEDS FOLLOW */}
 
           {/* ACTIVE ALERTS */}
-          <div className="flex-1 bg-[var(--canopy-green)] border border-white/5 rounded-[24px] flex flex-col min-h-[250px] overflow-hidden">
+          <div className="glass-card rounded-[24px] flex flex-col">
             <div className="p-5 border-b border-white/5 bg-black/20">
               <div className="flex justify-between items-center mb-3">
                 <div className="flex items-center gap-2">
@@ -467,7 +488,7 @@ function Dashboard() {
                 ))}
               </div>
             </div>
-            <div className="p-4 overflow-y-auto flex-1 space-y-2 custom-scrollbar">
+            <div className="p-4 flex-1 space-y-2">
               {filteredAlerts.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-white/20">
                   <CheckCircle className="w-8 h-8 mb-2" />
@@ -517,13 +538,13 @@ function Dashboard() {
           </div>
 
           {/* RISK INDEX */}
-          <div className="bg-[var(--canopy-green)] border border-white/5 rounded-[24px] flex flex-col flex-1 min-h-[200px] overflow-hidden">
+          <div className="glass-card rounded-[24px] flex flex-col">
             <div className="p-5 border-b border-white/5 flex items-center gap-2 bg-black/20">
               <Thermometer className="w-4 h-4 text-yellow-400" />
               <h3 className="text-sm font-bold uppercase tracking-widest text-white/80">{t('dashboard.risk.title')}</h3>
               <Shield className="w-3 h-3 text-green-500/50 ms-auto" />
             </div>
-            <div className="p-4 overflow-y-auto flex-1 space-y-4 custom-scrollbar">
+            <div className="p-4 flex-1 space-y-4">
               {risks.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-white/20">
                   <Thermometer className="w-6 h-6 mb-2" />
@@ -553,63 +574,70 @@ function Dashboard() {
           </div>
 
           {/* COMMUNITY LEADERBOARD */}
-          <div className="bg-[var(--canopy-green)] border border-white/5 rounded-[24px] flex flex-col overflow-hidden">
+          <div className="glass-card rounded-[24px] flex flex-col">
             <div className="p-5 border-b border-white/5 flex items-center gap-2 bg-black/20">
               <Trophy className="w-4 h-4 text-yellow-400" />
               <h3 className="text-sm font-bold uppercase tracking-widest text-white/80">{t('dashboard.leaderboard.title')}</h3>
               <span className="text-[10px] font-data bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded-full ms-auto">{leaderboard.length} {t('dashboard.leaderboard.rangers')}</span>
             </div>
-            <div className="p-4 overflow-y-auto space-y-2 custom-scrollbar max-h-[180px]">
+            <div className="p-4 space-y-2">
               {leaderboard.length === 0 ? (
                 <div className="py-6 flex flex-col items-center justify-center text-white/20">
                   <Trophy className="w-6 h-6 mb-2" />
                   <span className="text-[10px] font-data uppercase tracking-widest">{t('dashboard.leaderboard.noReports')}</span>
                 </div>
               ) : leaderboard.map((entry, i) => (
-                <div key={i} className="flex items-center gap-3 p-2 rounded-xl hover:bg-white/[0.03] transition-colors">
-                  <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${i === 0 ? 'bg-yellow-500/20 text-yellow-400' : i === 1 ? 'bg-gray-400/20 text-gray-300' : i === 2 ? 'bg-orange-600/20 text-orange-400' : 'bg-white/5 text-white/30'}`}>
+                <div key={i} className="flex items-center gap-3 p-2 rounded-xl hover:bg-white/[0.03] transition-colors relative group">
+                  <div className="absolute inset-0 bg-gradient-to-r from-[var(--accent-emerald)]/0 to-[var(--accent-emerald)]/5 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl"></div>
+                  <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold z-10 ${i === 0 ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' : i === 1 ? 'bg-gray-400/20 text-gray-300 border border-gray-400/30' : i === 2 ? 'bg-orange-600/20 text-orange-400 border border-orange-600/30' : 'bg-white/5 text-white/30'}`}>
                     {i + 1}
                   </span>
-                  <span className="text-xs text-white/80 flex-1 truncate">{entry.username}</span>
-                  <span className="text-[9px] font-data text-white/40">{entry.report_count} {t('dashboard.leaderboard.reports')}</span>
-                  <span className="text-[10px] font-data font-bold text-yellow-400">{entry.total_points} {t('dashboard.leaderboard.pts')}</span>
+                  <span className="text-xs text-white/80 flex-1 truncate z-10 font-medium">{entry.username}</span>
+                  <span className="text-[9px] font-data text-white/40 z-10">{entry.report_count} {t('dashboard.leaderboard.reports')}</span>
+                  <span className="text-[10px] font-data font-bold text-yellow-400 z-10">{entry.total_points} {t('dashboard.leaderboard.pts')}</span>
                 </div>
               ))}
             </div>
           </div>
 
           {/* GROUND TRUTH TERMINAL */}
-          <div className="flex-1 bg-[#0a0a0a] border border-white/10 rounded-[24px] flex flex-col min-h-[200px] overflow-hidden shadow-[inset_0_4px_24px_rgba(0,0,0,0.5)]">
-            <div className="p-4 border-b border-white/5 flex justify-between items-center bg-[#111]">
+          <div className="terminal-output rounded-[24px] flex flex-col shadow-[inset_0_4px_24px_rgba(0,0,0,0.5)] border-emerald-500/10">
+            <div className="p-4 border-b border-white/5 flex justify-between items-center bg-black/40">
               <div className="flex items-center gap-2">
-                <Radio className="w-4 h-4 text-green-500" />
-                <h3 className="text-xs font-data uppercase tracking-widest text-green-500">{t('dashboard.terminal.title')}</h3>
+                <Radio className="w-4 h-4 text-emerald-500 animate-pulse" />
+                <h3 className="text-xs font-data uppercase tracking-[0.2em] text-emerald-500">{t('dashboard.terminal.title')}</h3>
+              </div>
+              <div className="flex gap-1.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/20"></div>
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/20"></div>
               </div>
             </div>
-            <div className="p-4 overflow-y-auto flex-1 font-data text-[10px] custom-scrollbar space-y-3">
+            <div className="p-4 flex-1 font-data text-[10px] space-y-3">
               {safeReports.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-green-500/20">
                   <Radio className="w-6 h-6 mb-2" />
                   <span className="text-[10px] uppercase tracking-widest">{t('dashboard.terminal.listening')}</span>
                 </div>
               ) : safeReports.slice(0, 6).map((r, i) => (
-                <div key={i} className="flex gap-2 text-green-400/80">
-                  <span className="text-green-600">&gt;</span>
-                  <div>
-                    <span className="text-white/60">{timeAgo(r.created_at)}</span>{' '}
-                    <span className="text-green-300">[{r.username || 'WEB'}]</span>{' '}
-                    <span>{r.report_type?.toUpperCase()} {t('dashboard.terminal.detected')}</span>
+                <div key={i} className="flex gap-2 text-emerald-400/80 group">
+                  <span className="text-emerald-600 shrink-0">&gt;</span>
+                  <div className="flex flex-col flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-white/40">{timeAgo(r.created_at)}</span>
+                      <span className="text-emerald-300 font-bold">[{r.username || 'WEB'}]</span>
+                      <span>{r.report_type?.toUpperCase()} {t('dashboard.terminal.detected')}</span>
+                      {r.ai_classification && r.ai_classification !== 'none' && (
+                        <span className="text-purple-400">AI:{r.ai_classification}({r.ai_confidence}%)</span>
+                      )}
+                    </div>
                     {r.description && (
-                      <span className="text-white/40 ms-1">— {r.description}</span>
-                    )}
-                    {r.ai_classification && r.ai_classification !== 'none' && (
-                      <span className="text-purple-400 ms-1">AI:{r.ai_classification}({r.ai_confidence}%)</span>
+                      <span className="text-white/40 mt-0.5 truncate">— {r.description}</span>
                     )}
                   </div>
                 </div>
               ))}
-              <div className="flex gap-2 text-green-400 animate-pulse">
-                <span className="text-green-600">&gt;</span> <div className="w-2 h-3 bg-green-500/50 mt-1"></div>
+              <div className="flex gap-2 text-emerald-400 animate-pulse">
+                <span className="text-emerald-600 font-bold">&gt;</span> <div className="w-2 h-3 bg-emerald-500/50 mt-1"></div>
               </div>
             </div>
           </div>
@@ -617,23 +645,52 @@ function Dashboard() {
         </div>
 
         {/* MAIN MAP AREA (75% Width) */}
-        <div className="flex-1 relative bg-[var(--canopy-green)] border border-white/10 rounded-[28px] overflow-hidden shadow-2xl min-h-[500px] flex flex-col">
+        <div className="flex-1 relative glass-card rounded-[28px] overflow-hidden shadow-2xl min-h-[500px] flex flex-col">
           
           {/* Top Left Floating Pill */}
-          <div className="absolute top-6 start-6 z-[500] bg-[#0A140E]/80 backdrop-blur-xl border border-white/10 px-4 py-2.5 rounded-2xl flex items-center gap-3 shadow-lg">
-            <Map className="w-4 h-4 text-[#10B981]" />
+          <div className="absolute top-6 start-6 z-[500] bg-[#0A140E]/60 backdrop-blur-xl border border-white/10 px-4 py-2.5 rounded-2xl flex items-center gap-3 shadow-lg">
+            <Map className="w-4 h-4 text-[var(--accent-emerald)]" />
             <span className="text-xs font-data text-white/90 uppercase tracking-widest">{t('dashboard.map.firmsTelemetry')}</span>
             <div className="h-4 w-px bg-white/10 mx-1"></div>
-            <span className="text-[10px] font-data text-[#10B981]/80">{t('dashboard.map.clickToReport')}</span>
+            <span className="text-[10px] font-data text-[var(--accent-emerald)]/80">{t('dashboard.map.clickToReport')}</span>
+          </div>
+
+          {/* Tree Cover Layer Toggle */}
+          <div className="absolute top-6 end-6 z-[500] flex flex-col gap-2">
+            <button
+              onClick={() => setShowTreeCover(prev => !prev)}
+              className={`bg-[#0A140E]/60 backdrop-blur-xl border px-3 py-2.5 rounded-2xl flex items-center gap-2 shadow-lg transition-all ${
+                showTreeCover ? 'border-emerald-500/40 text-emerald-400' : 'border-white/10 text-white/60 hover:text-white'
+              }`}
+              aria-label="Toggle tree cover layer"
+            >
+              <Layers className="w-4 h-4" />
+              <span className="text-[10px] font-data uppercase tracking-widest">{t('dashboard.map.treeCover', 'Tree Cover')}</span>
+            </button>
+            {showTreeCover && (
+              <div className="bg-[#0A140E]/60 backdrop-blur-xl border border-white/10 px-3 py-2 rounded-xl flex items-center gap-2">
+                <span className="text-[9px] font-data text-white/40">0%</span>
+                <input
+                  type="range"
+                  min="0.1"
+                  max="1"
+                  step="0.05"
+                  value={treeCoverOpacity}
+                  onChange={(e) => setTreeCoverOpacity(parseFloat(e.target.value))}
+                  className="flex-1 h-1 accent-emerald-500 cursor-pointer"
+                />
+                <span className="text-[9px] font-data text-white/40">100%</span>
+              </div>
+            )}
           </div>
 
           {/* Floating Risk Index Overlay (Bottom Right) */}
           <div className="absolute bottom-6 end-6 z-[500] w-[320px] pointer-events-auto hidden md:flex flex-col">
-            <div className="bg-[#0A140E]/90 backdrop-blur-2xl border border-white/10 rounded-[24px] shadow-[0_8px_32px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden max-h-[300px]">
+            <div className="bg-[#0A140E]/80 backdrop-blur-2xl border border-white/10 rounded-[24px] shadow-[0_8px_32px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden max-h-[300px]">
               <div className="p-4 border-b border-white/5 flex items-center gap-2 bg-[#1A211D]/50 w-full">
-                <Thermometer className="w-4 h-4 text-[#10B981]" />
+                <Thermometer className="w-4 h-4 text-[var(--accent-emerald)]" />
                 <h3 className="text-xs font-bold uppercase tracking-widest text-white/90">{t('dashboard.risk.title')}</h3>
-                <Shield className="w-3 h-3 text-[#10B981]/50 ms-auto" />
+                <Shield className="w-3 h-3 text-[var(--accent-emerald)]/50 ms-auto" />
               </div>
               <div className="p-4 overflow-y-auto flex-1 space-y-4 custom-scrollbar">
                 {risks.length === 0 ? (
@@ -658,7 +715,7 @@ function Dashboard() {
           </div>
 
           {/* Subtle Map Vignette Overlay */}
-          <div className="absolute inset-0 z-[400] pointer-events-none shadow-[inset_0_0_120px_rgba(5,10,7,0.9)]"></div>
+          <div className="absolute inset-0 z-[400] pointer-events-none shadow-[inset_0_0_120px_rgba(5,10,7,0.95)]"></div>
 
           <MapContainer center={MENA_CENTER} zoom={MENA_ZOOM} className="w-full h-full bg-[#050A07] z-10 custom-map" zoomControl={false}>
             <TileLayer
@@ -666,6 +723,16 @@ function Dashboard() {
               attribution='&copy; CartoDB'
               className="opacity-80 contrast-125 grayscale-[0.5] sepia-[0.2] hue-rotate-180"
             />
+
+            {/* Global Tree Cover Layer (Hansen / UMD / GFW) */}
+            {showTreeCover && (
+              <TileLayer
+                url="https://tiles.globalforestwatch.org/umd_tree_cover_density_2000/v1.11/tcd_30/{z}/{x}/{y}.png"
+                attribution='&copy; Global Forest Watch'
+                opacity={treeCoverOpacity}
+                maxZoom={12}
+              />
+            )}
 
             <MapController center={mapCenter} zoom={mapZoom} />
             <MapClickHandler onMapClick={handleMapClick} />
@@ -679,10 +746,31 @@ function Dashboard() {
               </Marker>
             )}
 
+            {/* Famous Forest Zones + Star Markers */}
             {(stats.forests || []).map((f, i) => (
-              <Circle key={`forest-${i}`} center={[f.lat, f.lng]} radius={f.radius * 1000} pathOptions={{ color: '#10B981', fillColor: '#10B981', fillOpacity: 0.1, weight: 1 }}>
-                <Popup className="tactical-popup"><b className="text-white">{f.nameAr ? `${f.nameAr} / ${f.name}` : f.name}</b></Popup>
-              </Circle>
+              <React.Fragment key={`forest-${i}`}>
+                <Circle center={[f.lat, f.lng]} radius={f.radius * 1000} pathOptions={{ color: '#F59E0B', fillColor: '#10B981', fillOpacity: 0.08, weight: 1, dashArray: '4 6' }}>
+                  <Popup className="tactical-popup">
+                    <div className="text-xs font-data space-y-1">
+                      <b className="text-amber-400">⭐ {f.nameAr ? `${f.nameAr} / ${f.name}` : f.name}</b><br/>
+                      <span className="text-white/70">{t('dashboard.map.famousForest', 'Famous Forest in the Region')}</span><br/>
+                      {f.forestType && <span className="text-emerald-400">🌲 {f.forestType}</span>}
+                      {f.area > 0 && <span className="text-white/50"> · {f.area} km²</span>}
+                      {f.elevation > 0 && <span className="text-white/50"> · {f.elevation}m</span>}
+                      {f.unescoStatus && <><br/><span className="text-yellow-300">🏛 {f.unescoStatus}</span></>}
+                    </div>
+                  </Popup>
+                </Circle>
+                <Marker position={[f.lat, f.lng]} icon={famousForestIcon}>
+                  <Popup className="tactical-popup">
+                    <div className="text-xs font-data space-y-1">
+                      <b className="text-amber-400">⭐ {f.nameAr ? `${f.nameAr} / ${f.name}` : f.name}</b><br/>
+                      <span className="text-white/70">{t('dashboard.map.famousForest', 'Famous Forest in the Region')}</span>
+                      {f.forestType && <><br/><span className="text-emerald-400">🌲 {f.forestType}</span></>}
+                    </div>
+                  </Popup>
+                </Marker>
+              </React.Fragment>
             ))}
 
             {(Array.isArray(fires) ? fires : []).map((f, i) => (
@@ -710,6 +798,19 @@ function Dashboard() {
           </MapContainer>
         </div>
       </main>
+
+      {/* Forest Explorer Slide-over */}
+      {showForestExplorer && (
+        <ForestExplorerPanel
+          forests={stats.forests || []}
+          onClose={() => setShowForestExplorer(false)}
+          onSelectForest={(f) => {
+            setMapCenter([f.lat, f.lng]);
+            setMapZoom(11);
+            setShowForestExplorer(false);
+          }}
+        />
+      )}
 
       {/* Modals */}
       <Suspense fallback={null}>
