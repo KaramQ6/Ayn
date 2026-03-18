@@ -51,10 +51,28 @@ app.use(helmet({
 
 // CORS
 const allowedOrigins = process.env.CORS_ORIGIN
-  ? process.env.CORS_ORIGIN.split(',')
+  ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
   : (isDev ? ['http://localhost:5173', 'http://localhost:3000'] : []);
+
+// Add Netlify domain for production
+if (process.env.NODE_ENV === 'production' && process.env.NETLIFY_URL) {
+  allowedOrigins.push(process.env.NETLIFY_URL);
+}
+
 app.use(cors({
-  origin: isDev ? true : allowedOrigins,
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin || isDev) {
+      return callback(null, true);
+    }
+    
+    // Check if origin is in allowedOrigins
+    if (allowedOrigins.some(o => origin.includes(o))) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
 }));
 
