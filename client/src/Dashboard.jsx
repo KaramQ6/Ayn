@@ -10,8 +10,14 @@ import ForestExplorerPanel from './ForestExplorerPanel';
 import 'leaflet/dist/leaflet.css';
 import './index.css';
 
-const API_URL = '/api';
-const WS_URL = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/ws`;
+const API_BASE = import.meta.env.VITE_API_URL || (() => {
+  if (typeof window !== 'undefined') {
+    return window.location.origin;
+  }
+  return 'http://localhost:5000';
+})();
+const API_URL = API_BASE + '/api';
+const WS_URL = API_BASE.replace(/^http/, 'ws') + '/ws';
 
 // MENA overview center
 const MENA_CENTER = [28, 35];
