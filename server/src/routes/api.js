@@ -4,8 +4,19 @@ import { validate, reportSchema, validateId } from '../middleware/validation.js'
 
 const router = Router();
 
+function safeRoute(handler) {
+  return (req, res) => {
+    try {
+      handler(req, res);
+    } catch (error) {
+      console.error('[API route error]', error?.message || error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  };
+}
+
 // GET /api/fires — active fire hotspots (optional ?country=JO filter)
-router.get('/fires', (req, res) => {
+router.get('/fires', safeRoute((req, res) => {
   const db = req.app.locals.db;
   const { country } = req.query;
 
@@ -23,10 +34,10 @@ router.get('/fires', (req, res) => {
     `).all();
   }
   res.json(fires);
-});
+}));
 
 // GET /api/risk — fire risk for all regions (optional ?country=JO filter)
-router.get('/risk', (req, res) => {
+router.get('/risk', safeRoute((req, res) => {
   const db = req.app.locals.db;
   const { country } = req.query;
 
@@ -49,10 +60,10 @@ router.get('/risk', (req, res) => {
     `).all();
   }
   res.json(risks);
-});
+}));
 
 // GET /api/reports — community reports (optional ?country=JO filter)
-router.get('/reports', (req, res) => {
+router.get('/reports', safeRoute((req, res) => {
   const db = req.app.locals.db;
   const { country } = req.query;
 
@@ -70,10 +81,79 @@ router.get('/reports', (req, res) => {
     `).all();
   }
   res.json(reports);
-});
+}));
+
+// GET /api/activities — lightweight merged activity feed
+router.get('/activities', safeRoute((req, res) => {
+  const db = req.app.locals.db;
+  const { country } = req.query;
+
+  let reportActivities;
+  let alertActivities;
+  if (country) {
+    const c = country.toUpperCase();
+    reportActivities = db.prepare(`
+      SELECT
+        'report-' || id AS id,
+        ('New ' || COALESCE(report_type, 'unknown') || ' report submitted') AS message,
+        created_at AS time,
+        CASE WHEN status = 'pending' THEN 'warning' ELSE 'success' END AS type
+      FROM reports
+      WHERE country = ?
+      ORDER BY created_at DESC
+      LIMIT 8
+    `).all(c);
+    alertActivities = db.prepare(`
+      SELECT
+        'alert-' || id AS id,
+        message,
+        created_at AS time,
+        CASE
+          WHEN level = 'CRITICAL' THEN 'warning'
+          WHEN level = 'HIGH' THEN 'warning'
+          ELSE 'info'
+        END AS type
+      FROM alerts
+      WHERE country = ?
+      ORDER BY created_at DESC
+      LIMIT 8
+    `).all(c);
+  } else {
+    reportActivities = db.prepare(`
+      SELECT
+        'report-' || id AS id,
+        ('New ' || COALESCE(report_type, 'unknown') || ' report submitted') AS message,
+        created_at AS time,
+        CASE WHEN status = 'pending' THEN 'warning' ELSE 'success' END AS type
+      FROM reports
+      ORDER BY created_at DESC
+      LIMIT 8
+    `).all();
+    alertActivities = db.prepare(`
+      SELECT
+        'alert-' || id AS id,
+        message,
+        created_at AS time,
+        CASE
+          WHEN level = 'CRITICAL' THEN 'warning'
+          WHEN level = 'HIGH' THEN 'warning'
+          ELSE 'info'
+        END AS type
+      FROM alerts
+      ORDER BY created_at DESC
+      LIMIT 8
+    `).all();
+  }
+
+  const feed = [...reportActivities, ...alertActivities]
+    .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
+    .slice(0, 12);
+
+  res.json(feed);
+}));
 
 // POST /api/reports — submit a report (from web)
-router.post('/reports', validate(reportSchema), (req, res) => {
+router.post('/reports', validate(reportSchema), safeRoute((req, res) => {
   const db = req.app.locals.db;
   const broadcast = req.app.locals.broadcast;
   const { latitude, longitude, report_type, description } = req.body;
@@ -91,10 +171,10 @@ router.post('/reports', validate(reportSchema), (req, res) => {
   broadcast({ type: 'NEW_REPORT', data: report });
 
   res.json({ success: true, report });
-});
+}));
 
 // GET /api/alerts — alert history (optional ?country=JO filter)
-router.get('/alerts', (req, res) => {
+router.get('/alerts', safeRoute((req, res) => {
   const db = req.app.locals.db;
   const { country } = req.query;
 
@@ -112,10 +192,10 @@ router.get('/alerts', (req, res) => {
     `).all();
   }
   res.json(alerts);
-});
+}));
 
 // PATCH /api/alerts/:id/resolve — resolve an alert
-router.patch('/alerts/:id/resolve', validateId, (req, res) => {
+router.patch('/alerts/:id/resolve', validateId, safeRoute((req, res) => {
   const db = req.app.locals.db;
   const broadcast = req.app.locals.broadcast;
   const { id } = req.params;
@@ -133,10 +213,10 @@ router.patch('/alerts/:id/resolve', validateId, (req, res) => {
 
   broadcast({ type: 'ALERT_RESOLVED', data: updated });
   res.json({ success: true, alert: updated });
-});
+}));
 
 // GET /api/stats — dashboard statistics (optional ?country=JO filter)
-router.get('/stats', (req, res) => {
+router.get('/stats', safeRoute((req, res) => {
   const db = req.app.locals.db;
   const { country } = req.query;
 
@@ -167,10 +247,10 @@ router.get('/stats', (req, res) => {
     forests_monitored: forestCount,
     forests: forestList,
   });
-});
+}));
 
 // GET /api/stats/history — historical data for charts (optional ?country=JO filter)
-router.get('/stats/history', (req, res) => {
+router.get('/stats/history', safeRoute((req, res) => {
   const db = req.app.locals.db;
   const days = parseInt(req.query.days) || 7;
   const { country } = req.query;
@@ -265,25 +345,25 @@ router.get('/stats/history', (req, res) => {
     reportsByType,
     riskTrend,
   });
-});
+}));
 
 // GET /api/forests — all monitored forests (optional ?country=JO filter)
-router.get('/forests', (req, res) => {
+router.get('/forests', safeRoute((req, res) => {
   const { country } = req.query;
   if (country) {
     res.json(getForestsByCountry(country.toUpperCase()));
   } else {
     res.json(FORESTS);
   }
-});
+}));
 
 // GET /api/countries — all monitored countries with forest counts
-router.get('/countries', (req, res) => {
+router.get('/countries', safeRoute((req, res) => {
   res.json(getAllCountries());
-});
+}));
 
 // GET /api/leaderboard — top community reporters by points
-router.get('/leaderboard', (req, res) => {
+router.get('/leaderboard', safeRoute((req, res) => {
   const db = req.app.locals.db;
   const leaderboard = db.prepare(`
     SELECT
@@ -297,6 +377,6 @@ router.get('/leaderboard', (req, res) => {
     LIMIT 10
   `).all();
   res.json(leaderboard);
-});
+}));
 
 export default router;

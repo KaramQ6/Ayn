@@ -11,6 +11,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 import apiRoutes from './routes/api.js';
+import authRoutes from './routes/auth.js';
 import { fetchFIRMSData } from './services/firms.js';
 import { updateFireRisk } from './services/weather.js';
 import { initDatabase } from './models/database.js';
@@ -19,6 +20,7 @@ import { startDemo, stopDemo, isDemoActive, getScenarios, getActiveScenario } fr
 import { seedDatabase } from './data/seedData.js';
 
 dotenv.config({ path: '../.env' });
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Data loading status tracker
 const dataStatus = {
@@ -76,7 +78,16 @@ app.use(cors({
   credentials: true,
 }));
 
-// Rate limiting (disabled in development for easier local testing)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: isDev ? 120 : 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many authentication attempts, please try again later.' },
+});
+app.use('/api/auth', authLimiter);
+
+// Rate limiting (write/global limits disabled in development for easier local testing)
 if (!isDev) {
   const globalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
@@ -98,6 +109,7 @@ if (!isDev) {
 
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
+app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
 // Initialize database
 const db = initDatabase();
@@ -144,6 +156,7 @@ app.locals.db = db;
 app.locals.broadcast = broadcast;
 
 // API Routes
+app.use('/api/auth', authRoutes);
 app.use('/api', apiRoutes);
 
   // Health check
@@ -203,13 +216,19 @@ if (process.env.DEMO_MODE === 'true') {
 
 // Serve static client build in production (MUST be after API/health routes)
 if (!isDev) {
-  const __dirname = path.dirname(fileURLToPath(import.meta.url));
   const publicPath = path.join(__dirname, '..', 'public');
   app.use(express.static(publicPath));
   app.get('*', (req, res) => {
     res.sendFile(path.join(publicPath, 'index.html'));
   });
 }
+
+app.use((err, _req, res, _next) => {
+  console.error('Unhandled server error:', err?.message || err);
+  if (res.headersSent) return;
+  const statusCode = err?.statusCode || 500;
+  res.status(statusCode).json({ error: err?.message || 'Internal server error' });
+});
 
 // Cron Jobs
 // Fetch NASA FIRMS data every 3 hours
