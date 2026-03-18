@@ -1,0 +1,50 @@
+# Netlify Configuration for ForestGuard Frontend
+
+[build]
+# Build command to run when deploying
+command = "cd client && npm install && npm run build"
+# Directory to deploy from
+publish = "client/dist"
+
+# Environment variables
+[build.environment]
+NODE_VERSION = "18"
+NPM_VERSION = "9"
+
+# Redirects for SPA routing
+[[redirects]]
+from = "/*"
+to = "/index.html"
+status = 200
+
+# Headers for security and caching
+[[headers]]
+for = "/*"
+[headers.values]
+X-Frame-Options = "DENY"
+X-Content-Type-Options = "nosniff"
+X-XSS-Protection = "1; mode=block"
+Referrer-Policy = "strict-origin-when-cross-origin"
+
+# Cache headers for assets
+[[headers]]
+for = "/assets/*"
+[headers.values]
+Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+for = "/*.html"
+[headers.values]
+Cache-Control = "max-age=0, no-cache, no-store, must-revalidate"
+
+# API redirects (if needed for backend)
+[[redirects]]
+from = "/api/*"
+to = "https://your-backend-api.com/api/:splat"
+status = 200
+force = true
+
+# Environment variables (add these in Netlify UI or .env)
+# VITE_SUPABASE_URL=your_supabase_url
+# VITE_SUPABASE_ANON_KEY=your_supabase_key
+# VITE_API_URL=your_backend_url
