@@ -60,11 +60,11 @@ function VoteButtons({ targetType, targetId, upvotes = 0, downvotes = 0, vertica
 
   return (
     <div className={`flex items-center gap-1 ${vertical ? 'flex-col' : ''}`}>
-      <button onClick={() => handleVote('up')} className={`p-2 rounded-lg transition-colors ${userVote === 'up' ? 'bg-emerald-500/20 text-emerald-400' : 'text-white/30 hover:text-emerald-400 hover:bg-emerald-500/10'}`}>
+      <button onClick={() => handleVote('up')} aria-label="Upvote" className={`p-2 rounded-lg transition-all focus-ring click-scale ${userVote === 'up' ? 'bg-emerald-500/20 text-emerald-400' : 'text-white/30 hover:text-emerald-400 hover:bg-emerald-500/10'}`}>
         <ThumbsUp className="w-4 h-4" />
       </button>
       <span className={`text-sm font-data font-bold ${score > 0 ? 'text-emerald-400' : score < 0 ? 'text-red-400' : 'text-white/30'}`}>{score}</span>
-      <button onClick={() => handleVote('down')} className={`p-2 rounded-lg transition-colors ${userVote === 'down' ? 'bg-red-500/20 text-red-400' : 'text-white/30 hover:text-red-400 hover:bg-red-500/10'}`}>
+      <button onClick={() => handleVote('down')} aria-label="Downvote" className={`p-2 rounded-lg transition-all focus-ring click-scale ${userVote === 'down' ? 'bg-red-500/20 text-red-400' : 'text-white/30 hover:text-red-400 hover:bg-red-500/10'}`}>
         <ThumbsDown className="w-4 h-4" />
       </button>
     </div>
@@ -117,7 +117,7 @@ function Comment({ comment, postId, allComments, onReply, onCommentAdded, depth 
         <div className="flex items-center gap-3 mt-3">
           <VoteButtons targetType="comment" targetId={comment.id} upvotes={comment.upvotes || 0} downvotes={0} />
           {depth < 3 && (
-            <button onClick={() => setReplying(!replying)} className="text-[10px] font-data text-white/40 hover:text-white/70 transition-colors uppercase tracking-widest">
+            <button onClick={() => setReplying(!replying)} className="text-[10px] font-data text-white/40 hover:text-white/70 transition-colors uppercase tracking-widest focus-ring px-1 rounded-sm">
               Reply
             </button>
           )}
@@ -143,7 +143,7 @@ function Comment({ comment, postId, allComments, onReply, onCommentAdded, depth 
               placeholder="Write a reply..."
               className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white placeholder-white/20 focus:outline-none focus:border-emerald-500/30"
             />
-            <button onClick={handleReply} disabled={submitting || !replyContent.trim()} className="px-3 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-400 text-xs hover:bg-emerald-500/30 disabled:opacity-30 transition-colors">
+            <button onClick={handleReply} disabled={submitting || !replyContent.trim()} aria-label="Send reply" className="px-3 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-400 text-xs hover:bg-emerald-500/30 disabled:opacity-30 transition-all focus-ring click-scale">
               <Send className="w-3 h-3" />
             </button>
           </div>
@@ -241,7 +241,7 @@ export default function PostDetail() {
       {/* Header */}
       <header className="sticky top-0 z-50 bg-[#0A140E]/80 backdrop-blur-xl border-b border-white/5 py-3 px-4 md:px-6">
         <div className="max-w-4xl mx-auto flex items-center gap-3">
-          <button onClick={() => navigate('/community')} className="flex items-center justify-center w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 text-white/50 hover:text-white transition-colors">
+          <button onClick={() => navigate('/community')} aria-label={t('common.back', 'Back')} className="flex items-center justify-center w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 text-white/50 hover:text-white transition-colors focus-ring">
             <ArrowLeft className="w-4 h-4" />
           </button>
           <div className="flex items-center gap-2">
@@ -333,7 +333,7 @@ export default function PostDetail() {
           <button
             onClick={handleSubmitComment}
             disabled={submitting || !newComment.trim()}
-            className="mt-3 flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500/20 text-emerald-400 text-sm font-bold hover:bg-emerald-500/30 disabled:opacity-30 transition-colors"
+            className="mt-3 flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500/20 text-emerald-400 text-sm font-bold hover:bg-emerald-500/30 disabled:opacity-30 transition-all focus-ring click-scale"
           >
             <Send className="w-3.5 h-3.5" />
             {submitting ? 'Posting...' : 'Post Comment'}

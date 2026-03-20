@@ -82,7 +82,7 @@ function ReportForm({ isOpen, onClose, clickedCoords, onSubmitted }) {
             <AlertTriangle className="w-5 h-5 text-orange-400" />
             <h2 className="text-base font-bold text-white/90">{t('reportForm.title')}</h2>
           </div>
-          <button onClick={onClose} aria-label="Close report form" className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 text-white/50 hover:text-white transition-colors">
+          <button onClick={onClose} aria-label={t('common.close', 'Close')} className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 text-white/50 hover:text-white transition-colors focus-ring">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -101,7 +101,8 @@ function ReportForm({ isOpen, onClose, clickedCoords, onSubmitted }) {
               <div className="grid grid-cols-4 gap-2">
                 {REPORT_TYPE_KEYS.map(typeKey => (
                   <button key={typeKey} type="button"
-                    className={`p-2.5 rounded-xl border text-center transition-all text-xs ${reportType === typeKey ? 'border-green-500/50 bg-green-500/10 text-green-400' : 'border-white/5 bg-white/5 text-white/50 hover:border-white/10'}`}
+                    aria-label={`Report type: ${t(`reportForm.types.${typeKey}`)}`}
+                    className={`p-2.5 rounded-xl border text-center transition-all text-xs hover-lift click-scale focus-ring ${reportType === typeKey ? 'border-green-500/50 bg-green-500/10 text-green-400' : 'border-white/5 bg-white/5 text-white/50 hover:border-white/10'}`}
                     onClick={() => setReportType(typeKey)}>
                     <span className="text-lg block mb-1">{typeIcons[typeKey]}</span>
                     <span className="text-[9px] font-data">{t(`reportForm.types.${typeKey}`)}</span>
@@ -139,7 +140,7 @@ function ReportForm({ isOpen, onClose, clickedCoords, onSubmitted }) {
 
             {/* Submit */}
             <button type="submit" disabled={submitting}
-              className="w-full py-3 rounded-xl bg-green-600 hover:bg-green-500 text-white font-bold text-sm flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+              className="w-full py-3 rounded-xl bg-green-600 hover:bg-green-500 text-white font-bold text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed focus-ring click-scale">
               {submitting ? (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
               ) : (

@@ -122,6 +122,7 @@ const wss = new WebSocketServer({ server, path: '/ws' });
 const wsClients = new Set();
 wss.on('connection', (ws) => {
   wsClients.add(ws);
+  ws.send(JSON.stringify({ type: 'connected', clientCount: wsClients.size }));
   ws.on('close', () => wsClients.delete(ws));
 });
 

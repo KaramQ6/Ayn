@@ -8,6 +8,7 @@ export const reportSchema = z.object({
   longitude: z.number().min(-18).max(60).describe('Must be within a monitored region'),
   report_type: z.enum(['fire', 'smoke', 'logging', 'desertification', 'pollution', 'wildlife', 'other', 'unknown']).default('unknown'),
   description: z.string().max(1000).optional().default(''),
+  user_id: z.number().int().positive().optional().nullable(),
 }).refine(
   (data) => isWithinAnyCountry(data.latitude, data.longitude).valid,
   { message: 'Coordinates must be within a monitored country', path: ['latitude'] }

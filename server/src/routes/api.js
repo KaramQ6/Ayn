@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { FORESTS, getForestsByCountry, getAllCountries, findNearestForest } from '../data/forests.js';
 import { validate, reportSchema, validateId } from '../middleware/validation.js';
+import { awardPoints } from '../services/gamification.js';
 
 const router = Router();
 
@@ -152,20 +153,28 @@ router.get('/activities', safeRoute((req, res) => {
   res.json(feed);
 }));
 
-// POST /api/reports — submit a report (from web)
+// POST /api/reports — submit a report (from web/mobile)
 router.post('/reports', validate(reportSchema), safeRoute((req, res) => {
   const db = req.app.locals.db;
   const broadcast = req.app.locals.broadcast;
-  const { latitude, longitude, report_type, description } = req.body;
+  const { latitude, longitude, report_type, description, user_id } = req.body;
 
   // Auto-detect country from coordinates
   const nearestResult = findNearestForest(latitude, longitude);
   const country = nearestResult?.forest?.country || null;
 
+  // Award points based on whether there's an image (for now assume basic text report is 10)
+  // The gamification logic awards 10 for submit_report
+  let pointsAwarded = 10;
+  if (user_id) {
+    const awardResult = awardPoints(db, user_id, 'submit_report', broadcast);
+    if (awardResult) pointsAwarded = awardResult.points_awarded;
+  }
+
   const result = db.prepare(`
-    INSERT INTO reports (latitude, longitude, country, report_type, description, status)
-    VALUES (?, ?, ?, ?, ?, 'pending')
-  `).run(latitude, longitude, country, report_type || 'unknown', description || '');
+    INSERT INTO reports (latitude, longitude, country, report_type, description, status, user_id, points_awarded)
+    VALUES (?, ?, ?, ?, ?, 'pending', ?, ?)
+  `).run(latitude, longitude, country, report_type || 'unknown', description || '', user_id || null, pointsAwarded);
 
   const report = db.prepare('SELECT * FROM reports WHERE id = ?').get(result.lastInsertRowid);
   broadcast({ type: 'NEW_REPORT', data: report });

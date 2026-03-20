@@ -3,7 +3,14 @@ import { useTranslation } from 'react-i18next';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import { TrendingUp, PieChart as PieIcon, BarChart3, X } from 'lucide-react';
 
-const API_URL = '/api';
+const getBackendURL = () => {
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl && envUrl.trim()) {
+    return envUrl.includes('://') ? envUrl.trim() : `https://${envUrl.trim()}`;
+  }
+  return 'http://localhost:5000';
+};
+const API_URL = `${getBackendURL()}/api`;
 
 const COLORS = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6'];
 
@@ -96,7 +103,7 @@ function AnalyticsPanel({ isOpen, onClose }) {
             <h2 className="text-lg font-bold text-white/90">{t('analyticsPanel.title')}</h2>
             <span className="text-[10px] font-data bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full uppercase">{t('analyticsPanel.period')}</span>
           </div>
-          <button onClick={onClose} aria-label={t('analyticsPanel.title')} className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 text-white/50 hover:text-white transition-colors">
+          <button onClick={onClose} aria-label={t('common.close', 'Close')} className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 text-white/50 hover:text-white transition-colors focus-ring">
             <X className="w-4 h-4" />
           </button>
         </div>

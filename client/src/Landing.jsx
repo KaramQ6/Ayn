@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Target, Satellite, ShieldCheck, Activity, Globe, Zap, Cpu, MapPin, Podcast } from 'lucide-react';
+import { Target, Satellite, ShieldCheck, Activity, Globe, Zap, Cpu, MapPin, Podcast, ArrowRight, Plus } from 'lucide-react';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -132,11 +132,11 @@ export default function Landing() {
             <span className="font-bold text-xl tracking-tighter">{t('app.name')}</span>
           </div>
           <div className="hidden md:flex gap-8 text-sm font-medium text-[var(--ui-ghost)]/70">
-            <a href="#mission" aria-label={t('nav.mission')} className="flex items-center justify-center min-h-[44px] min-w-[44px] hover:text-white transition-colors duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-[var(--alert-signal)] focus:ring-offset-2 focus:ring-offset-[var(--deep-forest)] rounded-md px-2 pointer-events-auto cursor-pointer">{t('nav.mission')}</a>
-            <a href="#tech" aria-label={t('nav.tech')} className="flex items-center justify-center min-h-[44px] min-w-[44px] hover:text-white transition-colors duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-[var(--alert-signal)] focus:ring-offset-2 focus:ring-offset-[var(--deep-forest)] rounded-md px-2 pointer-events-auto cursor-pointer">{t('nav.tech')}</a>
-            <a href="#impact" aria-label={t('nav.impact')} className="flex items-center justify-center min-h-[44px] min-w-[44px] hover:text-white transition-colors duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-[var(--alert-signal)] focus:ring-offset-2 focus:ring-offset-[var(--deep-forest)] rounded-md px-2 pointer-events-auto cursor-pointer">{t('nav.impact')}</a>
+            <a href="#mission" aria-label={t('nav.mission')} className="flex items-center justify-center min-h-[44px] min-w-[44px] hover:text-white transition-colors duration-300 ease-in-out focus-ring rounded-md px-2 pointer-events-auto cursor-pointer">{t('nav.mission')}</a>
+            <a href="#tech" aria-label={t('nav.tech')} className="flex items-center justify-center min-h-[44px] min-w-[44px] hover:text-white transition-colors duration-300 ease-in-out focus-ring rounded-md px-2 pointer-events-auto cursor-pointer">{t('nav.tech')}</a>
+            <a href="#impact" aria-label={t('nav.impact')} className="flex items-center justify-center min-h-[44px] min-w-[44px] hover:text-white transition-colors duration-300 ease-in-out focus-ring rounded-md px-2 pointer-events-auto cursor-pointer">{t('nav.impact')}</a>
           </div>
-          <Link to="/dashboard" aria-label={t('nav.accessDashboard')} className="flex items-center justify-center min-h-[44px] px-5 bg-[var(--alert-signal)] hover:bg-red-600 text-white rounded-full font-bold text-sm btn-magnetic focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[var(--deep-forest)] cursor-pointer">
+          <Link to="/dashboard" aria-label={t('nav.accessDashboard')} className="flex items-center justify-center min-h-[44px] px-5 bg-[var(--alert-signal)] hover:bg-red-600 text-white rounded-full font-bold text-sm btn-magnetic focus-ring click-scale cursor-pointer">
             {t('nav.accessDashboard')}
           </Link>
         </div>
@@ -181,7 +181,7 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
           
           {/* Card 1: Cross-Validation Engine */}
-          <div aria-label={t('pillars.crossValidation.title')} className="pillar-card bg-[var(--canopy-green)] p-6 md:p-8 rounded-[24px] md:rounded-[32px] border border-white/5 relative overflow-hidden group btn-magnetic flex flex-col h-80 hover:border-white/10 cursor-pointer focus-within:ring-2 focus-within:ring-[var(--alert-signal)] focus-within:ring-offset-2 focus-within:ring-offset-[var(--deep-forest)]">
+          <div aria-label={t('pillars.crossValidation.title')} className="pillar-card bg-[var(--canopy-green)] p-6 md:p-8 rounded-[24px] md:rounded-[32px] border border-white/5 relative overflow-hidden group btn-magnetic flex flex-col h-80 hover:border-white/10 cursor-pointer focus-ring hover-lift click-scale" tabIndex="0">
             <div className="flex justify-end mb-auto">
               <Cpu className="text-white/80 w-7 h-7" strokeWidth={1.5} />
             </div>
@@ -202,7 +202,7 @@ export default function Landing() {
           </div>
 
           {/* Card 2: Community Ground-Truth */}
-          <div aria-label={t('pillars.community.title')} className="pillar-card bg-[var(--canopy-green)] p-6 md:p-8 rounded-[24px] md:rounded-[32px] border border-white/5 relative overflow-hidden group btn-magnetic flex flex-col h-80 hover:border-white/10 cursor-pointer focus-within:ring-2 focus-within:ring-[var(--alert-signal)] focus-within:ring-offset-2 focus-within:ring-offset-[var(--deep-forest)]">
+          <div aria-label={t('pillars.community.title')} className="pillar-card bg-[var(--canopy-green)] p-6 md:p-8 rounded-[24px] md:rounded-[32px] border border-white/5 relative overflow-hidden group btn-magnetic flex flex-col h-80 hover:border-white/10 cursor-pointer focus-ring hover-lift click-scale" tabIndex="0">
             <div className="flex justify-end mb-auto">
               <Podcast className="text-white/80 w-7 h-7" strokeWidth={1.5} />
             </div>
@@ -222,7 +222,7 @@ export default function Landing() {
           </div>
 
           {/* Card 3: Satellite Telemetry */}
-          <div aria-label={t('pillars.satellite.title')} className="pillar-card bg-[var(--canopy-green)] p-6 md:p-8 rounded-[24px] md:rounded-[32px] border border-white/5 relative overflow-hidden group btn-magnetic flex flex-col h-80 hover:border-white/10 cursor-pointer focus-within:ring-2 focus-within:ring-[var(--alert-signal)] focus-within:ring-offset-2 focus-within:ring-offset-[var(--deep-forest)]">
+          <div aria-label={t('pillars.satellite.title')} className="pillar-card bg-[var(--canopy-green)] p-6 md:p-8 rounded-[24px] md:rounded-[32px] border border-white/5 relative overflow-hidden group btn-magnetic flex flex-col h-80 hover:border-white/10 cursor-pointer focus-ring hover-lift click-scale" tabIndex="0">
             <div className="flex justify-end mb-auto">
               <Satellite className="text-white/80 w-7 h-7" strokeWidth={1.5} />
             </div>
@@ -261,66 +261,86 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* E. PROTOCOL — "Sticky Stacking Archive" */}
-      <section className="protocol-container relative pb-32 pt-20">
-        <div className="max-w-5xl mx-auto px-6 md:px-16 relative">
-          
-          <div className="protocol-card min-h-[70vh] w-full bg-[#111] border border-white/10 rounded-[2.5rem] p-10 md:p-16 mb-8 flex flex-col justify-center relative overflow-hidden shadow-2xl">
-            <div className="absolute top-0 start-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-50"></div>
-            <div className="text-blue-500 mb-6"><Globe size={48} strokeWidth={1}/></div>
-            <h2 className="text-5xl font-bold tracking-tight mb-6">{t('protocol.step1.title')}</h2>
-            <p className="text-xl text-white/60 max-w-2xl font-light">{t('protocol.step1.description')}</p>
+      {/* E. PROTOCOL — "Tactical Response" */}
+      <section className="protocol-container relative pb-32 pt-20 border-t border-white/5 bg-[#050505]">
+        <div className="max-w-7xl mx-auto px-6 md:px-16">
+          <div className="text-center mb-24">
+            <h2 className="text-2xl md:text-3xl font-bold tracking-[0.2em] text-white/90 uppercase mb-4">TACTICAL RESPONSE PROTOCOL</h2>
+            <div className="h-0.5 w-16 bg-[var(--alert-signal)] mx-auto"></div>
           </div>
           
-          <div className="protocol-card min-h-[70vh] w-full bg-[#151515] border border-white/10 rounded-[2.5rem] p-10 md:p-16 mb-8 flex flex-col justify-center relative overflow-hidden shadow-2xl">
-            <div className="absolute top-0 start-0 w-full h-1 bg-gradient-to-r from-transparent via-green-500 to-transparent opacity-50"></div>
-            <div className="text-green-500 mb-6"><MapPin size={48} strokeWidth={1}/></div>
-            <h2 className="text-5xl font-bold tracking-tight mb-6">{t('protocol.step2.title')}</h2>
-            <p className="text-xl text-white/60 max-w-2xl font-light">{t('protocol.step2.description')}</p>
-          </div>
-          
-          <div className="protocol-card min-h-[70vh] w-full bg-[#1a1a1a] border border-white/10 rounded-[2.5rem] p-10 md:p-16 mb-8 flex flex-col justify-center relative overflow-hidden shadow-2xl">
-            <div className="absolute top-0 start-0 w-full h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent opacity-50"></div>
-            <div className="text-[var(--alert-signal)] mb-6"><Activity size={48} strokeWidth={1}/></div>
-            <h2 className="text-5xl font-bold tracking-tight mb-6">{t('protocol.step3.title')}</h2>
-            <p className="text-xl text-white/60 max-w-2xl font-light">{t('protocol.step3.description')}</p>
-            <Link to="/dashboard" aria-label={t('protocol.launchCenter')} className="mt-12 px-8 py-4 min-h-[56px] min-w-[56px] bg-[var(--alert-signal)] hover:bg-red-600 text-white rounded-full font-bold btn-magnetic self-start flex items-center justify-center gap-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[#1a1a1a]">
-           {t('protocol.launchCenter')} <Zap size={20} className="w-5 h-5 flex-shrink-0" />
-            </Link>
-          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* STEP 1: DETECT */}
+            <div className="group bg-[#0A0A0A] border border-white/5 rounded-sm p-12 relative overflow-hidden transition-all duration-500 hover:border-white/10">
+              <div className="absolute top-8 right-8 text-6xl font-black text-white/[0.03] select-none tracking-tighter">01</div>
+              <div className="text-[var(--alert-signal)] mb-12">
+                <Globe size={32} strokeWidth={1} />
+              </div>
+              <h3 className="text-lg font-bold tracking-widest mb-6 text-white uppercase">STEP 1: DETECT</h3>
+              <p className="text-[10px] text-white/30 leading-relaxed font-data uppercase tracking-[0.2em]">
+                Ingesting NASA FIRMS VIIRS/MODIS thermal scans, OpenWeatherMap conditions & real-time weather data streams directly from orbit.
+              </p>
+            </div>
 
+            {/* STEP 2: VERIFY */}
+            <div className="group bg-[#0A0A0A] border border-white/5 rounded-sm p-12 relative overflow-hidden transition-all duration-500 hover:border-white/10">
+              <div className="absolute top-8 right-8 text-6xl font-black text-white/[0.03] select-none tracking-tighter">02</div>
+              <div className="text-[var(--alert-signal)] mb-12">
+                <MapPin size={32} strokeWidth={1} />
+              </div>
+              <h3 className="text-lg font-bold tracking-widest mb-6 text-white uppercase">STEP 2: VERIFY</h3>
+              <p className="text-[10px] text-white/30 leading-relaxed font-data uppercase tracking-[0.2em]">
+                The localized Telegram Bot aggregates and structures civilian reports instantly, layering human ground-truth over satellite anomalies.
+              </p>
+            </div>
+
+            {/* STEP 3: ACT */}
+            <div className="group bg-[#0A0A0A] border border-white/5 rounded-sm p-12 relative overflow-hidden transition-all duration-500 hover:border-white/10">
+              <div className="absolute top-8 right-8 text-6xl font-black text-white/[0.03] select-none tracking-tighter">03</div>
+              <div className="text-[var(--alert-signal)] mb-12">
+                <Activity size={32} strokeWidth={1} />
+              </div>
+              <h3 className="text-lg font-bold tracking-widest mb-6 text-white uppercase">STEP 3: ACT</h3>
+              <p className="text-[10px] text-white/30 leading-relaxed font-data uppercase tracking-[0.2em] mb-12">
+                The Node.js & React command center dispatches verified, high-confidence alerts to authorities minutes before standard APIs register the threat.
+              </p>
+              <Link to="/dashboard" className="inline-flex items-center gap-2 text-[var(--alert-signal)] text-[10px] font-bold tracking-[0.3em] uppercase hover:gap-4 transition-all group/btn">
+                LAUNCH COMMAND CENTER <Plus size={14} className="group-hover/btn:rotate-90 transition-transform" />
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* F. COMMUNITY & EXPLORE SECTION */}
-      <section className="py-32 px-6 md:px-16 border-t border-white/5 bg-gradient-to-b from-transparent to-[var(--deep-forest)]/50">
+      <section className="py-40 px-6 md:px-16 border-t border-white/5 bg-[#050505]">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-drama mb-4">{t('community.sectionTitle', 'Join the Community')}</h2>
-            <p className="text-sm md:text-base text-white/40 max-w-2xl mx-auto font-data">{t('community.sectionDesc', 'Share experiences, ask questions about hiking trails, and discover the most famous forests in our region.')}</p>
+          <div className="text-center mb-24">
+            <h2 className="text-5xl md:text-7xl font-bold tracking-tighter mb-6 uppercase">JOIN THE COMMUNITY</h2>
+            <p className="text-sm md:text-base text-white/30 max-w-2xl mx-auto font-data uppercase tracking-[0.2em]">{t('community.sectionDesc', 'Share experiences, ask questions about hiking trails, and discover the most famous forests in our region.')}</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-24">
             {[
               { icon: '❓', title: t('community.feature1Title', 'Ask Questions'), desc: t('community.feature1Desc', 'Get advice on hiking spots, camping areas, and trail conditions from the community.') },
               { icon: '⭐', title: t('community.feature2Title', 'Share Recommendations'), desc: t('community.feature2Desc', 'Post your favorite forest trails, campgrounds, and mountain experiences.') },
               { icon: '📷', title: t('community.feature3Title', 'Trip Reports'), desc: t('community.feature3Desc', 'Document your adventures with photos and detailed trip reports.') },
             ].map((feature, i) => (
-              <div key={i} className="impact-item bg-[var(--canopy-green)] p-8 rounded-[24px] border border-white/5 hover:border-white/10 transition-colors">
-                <div className="text-3xl mb-4">{feature.icon}</div>
-                <h3 className="text-lg font-bold mb-2 text-white/90">{feature.title}</h3>
-                <p className="text-sm text-white/50">{feature.desc}</p>
+              <div key={i} className="group bg-[#0A0A0A] p-12 rounded-3xl border border-white/5 hover:border-white/10 transition-all duration-500 text-center flex flex-col items-center">
+                <h3 className="text-xs font-bold tracking-[0.3em] text-white/30 uppercase mb-10 group-hover:text-white/50 transition-colors">{feature.title}</h3>
+                <div className="text-7xl mb-10 transform group-hover:scale-110 transition-transform duration-500 filter grayscale group-hover:grayscale-0">{feature.icon}</div>
+                <p className="text-sm text-white/40 leading-relaxed max-w-[240px]">{feature.desc}</p>
               </div>
             ))}
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/community" className="px-8 py-4 bg-purple-600 hover:bg-purple-500 text-white rounded-full font-bold btn-magnetic flex items-center justify-center gap-2 no-underline">
-              {t('community.joinCTA', 'Join Community')} →
+          <div className="flex flex-col sm:flex-row gap-8 justify-center items-center">
+            <Link to="/community" className="px-12 py-5 bg-[#9333EA] hover:bg-[#A855F7] text-white rounded-full font-bold tracking-[0.2em] text-[10px] uppercase shadow-[0_0_40px_rgba(147,51,234,0.3)] hover:shadow-[0_0_60px_rgba(147,51,234,0.5)] transition-all hover-lift click-scale focus-ring border-0">
+              {t('community.joinCTA', 'Join Community')}
             </Link>
-            <Link to="/dashboard" className="px-8 py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-full font-bold btn-magnetic flex items-center justify-center gap-2 no-underline">
-              {t('community.exploreCTA', 'Explore Forests')} 🌲
-            </Link>
+            <button onClick={() => setShowForestExplorer(true)} className="px-12 py-5 bg-[#10B981] hover:bg-[#34D399] text-[#050505] rounded-full font-bold tracking-[0.2em] text-[10px] uppercase shadow-[0_0_40px_rgba(16,185,129,0.3)] hover:shadow-[0_0_60px_rgba(16,185,129,0.5)] transition-all hover-lift click-scale focus-ring border-0">
+              EXPLORE FORESTS
+            </button>
           </div>
         </div>
       </section>

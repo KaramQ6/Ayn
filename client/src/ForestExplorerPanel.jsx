@@ -69,7 +69,7 @@ export default function ForestExplorerPanel({ forests = [], onClose, onSelectFor
               <Star className="w-5 h-5 text-amber-400" />
               <h2 className="text-lg font-bold text-white/90 tracking-tight">{t('explorer.title', 'Forest Explorer')}</h2>
             </div>
-            <button onClick={onClose} className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/50 hover:text-white transition-colors">
+            <button onClick={onClose} aria-label={t('common.close', 'Close')} className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/50 hover:text-white transition-colors focus-ring">
               <X className="w-4 h-4" />
             </button>
           </div>
@@ -82,7 +82,7 @@ export default function ForestExplorerPanel({ forests = [], onClose, onSelectFor
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t('explorer.searchPlaceholder', 'Search forests, countries, types...')}
-              className="w-full bg-white/5 border border-white/10 rounded-xl ps-9 pe-3 py-2.5 text-sm text-white placeholder-white/30 focus:outline-none focus:border-emerald-500/40 transition-colors"
+              className="w-full bg-white/5 border border-white/10 rounded-xl ps-9 pe-3 py-2.5 text-sm text-white placeholder-white/30 focus:outline-none focus:border-emerald-500/40 transition-colors focus-ring"
             />
           </div>
 
@@ -90,7 +90,8 @@ export default function ForestExplorerPanel({ forests = [], onClose, onSelectFor
           <div className="flex items-center justify-between">
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-1.5 text-[10px] font-data uppercase tracking-widest text-white/50 hover:text-white/80 transition-colors"
+              aria-expanded={showFilters}
+              className="flex items-center gap-1.5 text-[10px] font-data uppercase tracking-widest text-white/50 hover:text-white/80 transition-colors focus-ring px-1 rounded-sm"
             >
               <Filter className="w-3 h-3" />
               {t('explorer.filters', 'Filters')}
@@ -151,7 +152,8 @@ export default function ForestExplorerPanel({ forests = [], onClose, onSelectFor
             <button
               key={f.id || i}
               onClick={() => onSelectForest(f)}
-              className="w-full text-start p-4 rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] hover:border-emerald-500/20 transition-all group cursor-pointer"
+              aria-label={`Select forest: ${i18n.language === 'ar' && f.nameAr ? f.nameAr : f.name}`}
+              className="w-full text-start p-4 rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] hover:border-emerald-500/20 transition-all group cursor-pointer hover-lift click-scale focus-ring"
             >
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-lg flex-shrink-0 group-hover:scale-110 transition-transform">

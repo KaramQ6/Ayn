@@ -46,6 +46,7 @@ function createTestDb() {
       confidence REAL DEFAULT 0,
       resolved INTEGER DEFAULT 0,
       resolved_at TEXT,
+      country TEXT,
       created_at TEXT DEFAULT (datetime('now'))
     );
     CREATE TABLE fire_risk (

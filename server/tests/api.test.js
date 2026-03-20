@@ -19,6 +19,7 @@ function createTestDb() {
     CREATE TABLE reports (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       telegram_user_id TEXT, username TEXT,
+      user_id INTEGER,
       latitude REAL, longitude REAL, photo_url TEXT,
       report_type TEXT DEFAULT 'unknown', description TEXT,
       status TEXT DEFAULT 'pending',

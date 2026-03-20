@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback, lazy, Suspense, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Circle, useMapEvents, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Circle, CircleMarker, useMapEvents, useMap } from 'react-leaflet';
+import MarkerClusterGroup from 'react-leaflet-cluster';
 import L from 'leaflet';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Target, Flame, FileText, AlertTriangle, Thermometer, TreePine, Map, Bell, ArrowLeft, Radio, CheckCircle, TrendingUp, Plus, Wifi, WifiOff, Brain, Shield, Play, Square, Trophy, Globe, ChevronDown, Layers, Users, Star, Search, Compass } from 'lucide-react';
+import { Target, Flame, FileText, AlertTriangle, Thermometer, TreePine, Map, Bell, ArrowLeft, Radio, CheckCircle, TrendingUp, Plus, Wifi, WifiOff, Brain, Shield, Play, Square, Trophy, Globe, ChevronDown, Layers, Users, User, Star, Search, Compass } from 'lucide-react';
 const AnalyticsPanel = lazy(() => import('./AnalyticsPanel'));
 const ReportForm = lazy(() => import('./ReportForm'));
 import ForestExplorerPanel from './ForestExplorerPanel';
@@ -38,6 +39,13 @@ const fireIcon = L.divIcon({ html: '<div class="w-4 h-4 rounded-full bg-red-500 
 const reportIcon = L.divIcon({ html: '<div class="w-3 h-3 rounded-full bg-blue-400 shadow-[0_0_10px_rgba(96,165,250,0.8)] border border-white/50"></div>', className: '', iconSize: [12, 12], iconAnchor: [6, 6] });
 const clickIcon = L.divIcon({ html: '<div class="w-5 h-5 rounded-full bg-green-500 animate-bounce shadow-[0_0_20px_rgba(34,197,94,0.8)] border-2 border-white"></div>', className: '', iconSize: [20, 20], iconAnchor: [10, 10] });
 const famousForestIcon = L.divIcon({ html: '<div class="relative flex items-center justify-center"><div class="w-6 h-6 rounded-full bg-gradient-to-br from-yellow-400 to-amber-600 shadow-[0_0_16px_rgba(245,158,11,0.6)] border-2 border-yellow-300/80 flex items-center justify-center"><span style="font-size:12px;line-height:1">⭐</span></div></div>', className: '', iconSize: [24, 24], iconAnchor: [12, 12] });
+
+function getMarkerStyle(frp) {
+  if (frp > 100) return { color: '#ef4444', radius: 18 }; // critical
+  if (frp > 50)  return { color: '#f97316', radius: 14 }; // high
+  if (frp > 20)  return { color: '#eab308', radius: 10 }; // medium
+  return { color: '#22c55e', radius: 7 };                  // low
+}
 
 // Map click handler component
 function MapClickHandler({ onMapClick }) {
@@ -318,7 +326,7 @@ function Dashboard() {
         {/* Top Row on Mobile, Left Side on Desktop */}
         <div className="flex items-center justify-between md:justify-start w-full md:w-auto gap-3 md:gap-6">
           <div className="flex items-center gap-3 md:gap-6">
-            <Link to="/" aria-label="Back to Protocol" className="flex items-center justify-center min-w-[36px] min-h-[36px] md:min-w-[44px] md:min-h-[44px] hover:text-white text-white/50 transition-colors focus:ring-2 focus:ring-[var(--alert-signal)] rounded-md outline-none">
+            <Link to="/" aria-label={t('dashboard.backToProtocol', 'Back to Protocol')} className="flex items-center justify-center min-w-[36px] min-h-[36px] md:min-w-[44px] md:min-h-[44px] hover:text-white text-white/50 transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--accent-emerald)]/50 rounded-md">
               <ArrowLeft className="w-5 h-5" />
             </Link>
             <div className="flex items-center gap-2">
@@ -333,17 +341,38 @@ function Dashboard() {
         {/* Controls: Scrollable row on mobile, Right aligned on desktop */}
         <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0 hide-scrollbar md:flex-wrap md:justify-end w-full md:w-auto snap-x">
           {/* Language Switcher */}
-          <div className="flex items-center rounded-full border border-white/10 bg-white/5 overflow-hidden">
+          <div className="flex items-center rounded-sm bg-[#161B18] p-1 border border-white/5">
             {['en', 'ar', 'fr'].map(lng => (
               <button key={lng} onClick={() => changeLang(lng)}
-                className={`px-2.5 py-1.5 text-[10px] font-data uppercase tracking-widest transition-colors ${i18n.language === lng ? 'bg-white/15 text-white' : 'text-white/40 hover:text-white/70'}`}>
+                aria-label={t(`app.lang.${lng}`, lng.toUpperCase())}
+                className={`px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest transition-all focus-ring rounded-sm ${i18n.language === lng ? 'bg-[#FF7162] text-black' : 'text-white/40 hover:text-white/70'}`}>
                 {lng.toUpperCase()}
               </button>
             ))}
           </div>
 
+          {/* Mode Switcher */}
+          <div className="flex items-center rounded-sm bg-[#161B18] p-1 border border-white/5 mx-2">
+            <button
+              onClick={() => setDataMode('demo')}
+              className={`px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest transition-all focus-ring flex items-center gap-2 rounded-sm ${dataMode === 'demo' ? 'bg-[#333] text-white/40' : 'text-white/20'}`}
+            >
+              <div className={`w-1.5 h-1.5 rounded-full bg-white/20`}></div>
+              DEMO
+            </button>
+            <button
+              onClick={() => setDataMode('live')}
+              className={`px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest transition-all focus-ring flex items-center gap-2 rounded-sm ${dataMode === 'live' ? 'bg-[#00A3FF] text-black' : 'text-white/20'}`}
+            >
+              <div className={`w-1.5 h-1.5 rounded-full ${dataMode === 'live' ? 'bg-black' : 'bg-white/20'}`}></div>
+              LIVE
+            </button>
+          </div>
+
+          <div className="h-4 w-px bg-white/10 mx-2"></div>
+
           {/* Country Filter */}
-          <div className="relative">
+          <div className="relative group">
             <select
               value={selectedCountry}
               onChange={e => {
@@ -353,53 +382,55 @@ function Dashboard() {
                   setMapZoom(MENA_ZOOM);
                 }
               }}
-              className="appearance-none bg-black/40 border border-white/20 rounded-full px-3 py-1.5 pe-7 text-[10px] md:text-[11px] font-data uppercase tracking-widest text-white hover:text-white hover:border-white/40 transition-colors cursor-pointer focus:outline-none focus:border-green-400/80 min-w-[140px] md:min-w-[200px]"
+              className="appearance-none bg-[#161B18] border border-white/10 rounded-sm px-4 py-2 pe-10 text-[10px] font-bold uppercase tracking-[0.2em] text-white/90 hover:border-white/20 transition-all cursor-pointer focus-ring min-w-[180px]"
               aria-label={t('dashboard.filterCountry')}
             >
-              <option value="">{t('dashboard.allCountries')}</option>
+              <option value="">ALL COUNTRIES</option>
               {safeCountries.map(c => (
-                <option key={c.code} value={c.code}>{i18n.language === 'ar' ? c.nameAr : c.name} ({c.forestCount})</option>
+                <option key={c.code} value={c.code}>{i18n.language === 'ar' ? c.nameAr : c.name.toUpperCase()}</option>
               ))}
             </select>
-            <ChevronDown className="w-3 h-3 absolute end-2 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none" />
+            <ChevronDown className="w-4 h-4 absolute end-3 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none transition-transform group-hover:text-white" />
           </div>
 
-          {/* Data Mode Badge */}
-          {dataMode && (
-            <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[10px] font-data uppercase tracking-widest ${dataMode === 'live' ? 'border-emerald-500/20 text-emerald-400 bg-emerald-500/10' : 'border-yellow-500/20 text-yellow-400 bg-yellow-500/10'}`}>
-              <div className={`w-1.5 h-1.5 rounded-full ${dataMode === 'live' ? 'bg-emerald-400 animate-pulse' : 'bg-yellow-400'}`}></div>
-              {dataMode === 'live' ? t('dashboard.liveData', 'LIVE DATA') : t('dashboard.demoData', 'DEMO')}
-            </div>
-          )}
+          <div className="h-4 w-px bg-white/10 mx-2"></div>
 
           {/* WebSocket Status */}
-          <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[10px] font-data uppercase tracking-widest ${connected ? 'border-green-500/20 text-green-500 bg-green-500/10' : 'border-red-500/20 text-red-500 bg-red-500/10 animate-pulse'}`}>
+          <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-sm border text-[10px] font-bold uppercase tracking-widest ${connected ? 'border-green-500/20 text-green-500 bg-green-500/10' : 'border-red-500/20 text-red-500 bg-red-500/10 animate-pulse'}`}>
             {connected ? <Wifi className="w-3 h-3" /> : <WifiOff className="w-3 h-3" />}
             {connected ? t('dashboard.live') : t('dashboard.reconnecting')}
           </div>
 
-          {/* Analytics Button */}
-          <button onClick={() => setShowAnalytics(true)} aria-label="Open analytics dashboard"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/10 text-[10px] font-data uppercase tracking-widest text-white/60 hover:text-white hover:border-white/20 bg-white/5 transition-colors">
-            <TrendingUp className="w-3 h-3" /> {t('dashboard.analytics')}
-          </button>
+          <div className="h-4 w-px bg-white/10 mx-2"></div>
 
-          {/* Forest Explorer Button */}
-          <button onClick={() => setShowForestExplorer(true)} aria-label="Explore forests"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-emerald-500/30 text-[10px] font-data uppercase tracking-widest text-emerald-400 hover:text-emerald-300 hover:border-emerald-500/50 bg-emerald-500/10 transition-colors">
-            <Compass className="w-3 h-3" /> {t('dashboard.explore', 'Explore')}
+          {/* Analytics Button */}
+          <button onClick={() => setShowAnalytics(true)} aria-label={t('dashboard.openAnalytics', 'Open analytics dashboard')}
+            className="flex items-center justify-center w-10 h-10 rounded-sm border border-white/5 bg-[#161B18] text-white/40 hover:text-[#00A3FF] hover:border-[#00A3FF]/30 transition-all focus-ring click-scale cursor-pointer">
+            <TrendingUp className="w-5 h-5" />
           </button>
 
           {/* Community Button */}
-          <Link to="/community" aria-label="Open community"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-purple-500/30 text-[10px] font-data uppercase tracking-widest text-purple-400 hover:text-purple-300 hover:border-purple-500/50 bg-purple-500/10 transition-colors no-underline">
-            <Users className="w-3 h-3" /> {t('dashboard.community', 'Community')}
+          <Link to="/community" aria-label={t('dashboard.openCommunity', 'Open community')}
+            className="flex items-center justify-center w-10 h-10 rounded-sm border border-white/5 bg-[#161B18] text-white/40 hover:text-purple-400 hover:border-purple-400/30 transition-all focus-ring click-scale cursor-pointer">
+            <Users className="w-5 h-5" />
+          </Link>
+
+          {/* Forest Explorer Button */}
+          <button onClick={() => setShowForestExplorer(true)} aria-label={t('dashboard.openExplorer', 'Explore forests')}
+            className="flex items-center justify-center w-10 h-10 rounded-sm border border-white/5 bg-[#161B18] text-white/40 hover:text-emerald-400 hover:border-emerald-400/30 transition-all focus-ring click-scale cursor-pointer">
+            <Compass className="w-5 h-5" />
+          </button>
+
+          {/* Profile Button */}
+          <Link to="/profile" aria-label="Profile"
+            className="flex items-center justify-center w-10 h-10 rounded-full border border-emerald-500/20 bg-gradient-to-br from-emerald-600/80 to-teal-600/80 text-white text-xs font-bold hover:border-emerald-400/50 transition-all focus-ring click-scale cursor-pointer shadow-sm shadow-emerald-500/10">
+            <User className="w-4 h-4" />
           </Link>
 
           {/* Report Button */}
-          <button onClick={() => setShowReportForm(true)} aria-label="Submit a new report"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-green-500/30 text-[10px] font-data uppercase tracking-widest text-green-400 hover:text-green-300 hover:border-green-500/50 bg-green-500/10 transition-colors">
-            <Plus className="w-3 h-3" /> {t('dashboard.report')}
+          <button onClick={() => setShowReportForm(true)} aria-label={t('dashboard.submitReport', 'Submit a new report')}
+            className="flex items-center gap-2 px-6 py-2 rounded-sm border border-white/40 bg-transparent text-[#FF7162] text-[11px] font-bold uppercase tracking-[0.2em] hover:bg-white/5 transition-all focus-ring click-scale cursor-pointer ml-2">
+            <Plus className="w-4 h-4" /> {t('dashboard.report')}
           </button>
 
           {/* Demo Scenario Selector + Toggle */}
@@ -407,7 +438,7 @@ function Dashboard() {
             {!demoActive && scenarios.length > 0 && (
               <div className="relative">
                 <select value={selectedScenario} onChange={e => setSelectedScenario(e.target.value)}
-                  className="appearance-none bg-yellow-500/5 border border-yellow-500/20 rounded-s-full px-3 py-1.5 pe-7 text-[10px] font-data uppercase tracking-widest text-yellow-400/70 hover:text-yellow-300 transition-colors cursor-pointer focus:outline-none focus:border-yellow-500/50"
+                  className="appearance-none bg-yellow-500/5 border border-yellow-500/20 rounded-s-full px-3 py-1.5 pe-7 text-[10px] font-data uppercase tracking-widest text-yellow-400/70 hover:text-yellow-300 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-yellow-500/50"
                   aria-label={t('dashboard.selectScenario')}>
                   {scenarios.map(s => (
                     <option key={s.id} value={s.id}>{s.name}</option>
@@ -416,8 +447,8 @@ function Dashboard() {
                 <ChevronDown className="w-3 h-3 absolute end-2 top-1/2 -translate-y-1/2 text-yellow-400/40 pointer-events-none" />
               </div>
             )}
-            <button onClick={handleDemoToggle} aria-label={demoActive ? 'Stop demo scenario' : 'Start demo scenario'}
-              className={`flex items-center gap-1.5 px-3 py-1.5 border text-[10px] font-data uppercase tracking-widest transition-colors ${!demoActive && scenarios.length > 0 ? 'rounded-e-full' : 'rounded-full'} ${demoActive ? 'border-red-500/30 text-red-400 hover:text-red-300 hover:border-red-500/50 bg-red-500/10' : 'border-yellow-500/30 text-yellow-400 hover:text-yellow-300 hover:border-yellow-500/50 bg-yellow-500/10'}`}>
+            <button onClick={handleDemoToggle} aria-label={demoActive ? t('dashboard.stopDemo', 'Stop demo scenario') : t('dashboard.startDemo', 'Start demo scenario')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 border text-[10px] font-data uppercase tracking-widest transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-500/50 cursor-pointer ${!demoActive && scenarios.length > 0 ? 'rounded-e-full' : 'rounded-full'} ${demoActive ? 'border-red-500/30 text-red-400 hover:text-red-300 hover:border-red-500/50 bg-red-500/10' : 'border-yellow-500/30 text-yellow-400 hover:text-yellow-300 hover:border-yellow-500/50 bg-yellow-500/10'}`}>
               {demoActive ? <Square className="w-3 h-3" /> : <Play className="w-3 h-3" />}
               {demoActive ? t('dashboard.stopDemo') : t('dashboard.demo')}
             </button>
@@ -468,7 +499,7 @@ function Dashboard() {
                 sub: avgRainProb ? t('dashboard.rain.avgShort', { value: avgRainProb }) : null,
               },
             ].map((stat, i) => (
-              <div key={i} className="min-w-[140px] lg:min-w-0 flex-shrink-0 snap-center bg-[#0A140E]/80 border border-white/10 backdrop-blur-md rounded-[16px] p-4 flex flex-col gap-2 relative group cursor-pointer hover:border-emerald-500/30 transition-all duration-300">
+              <div key={i} className="min-w-[140px] lg:min-w-0 flex-shrink-0 snap-center bg-[#0A140E]/80 border border-white/10 backdrop-blur-md rounded-[16px] p-4 flex flex-col gap-2 relative group cursor-pointer hover:border-emerald-500/30 hover-lift click-scale focus-ring" tabIndex="0" role="button" aria-label={`${stat.label}: ${stat.value}`}>
                 <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#10B981]/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 <div className={`w-8 h-8 rounded-lg ${stat.bg} ${stat.color} flex items-center justify-center relative z-10`}>
                   <stat.icon className="w-4 h-4" />
@@ -511,7 +542,7 @@ function Dashboard() {
                   <span className="text-xs font-data uppercase tracking-widest">{alertFilter === 'resolved' ? t('dashboard.alerts.noResolved') : t('dashboard.alerts.noActive')}</span>
                 </div>
               ) : filteredAlerts.slice(0, 8).map((a, i) => (
-                <div key={a.id || i} className={`p-3 rounded-xl border flex gap-3 items-start transition-all ${a.resolved ? 'border-white/5 bg-white/[0.02] opacity-60' : a.level === 'CRITICAL' ? 'border-red-500/30 bg-red-500/5' : 'border-orange-500/20 bg-orange-500/5'}`}>
+                <div key={a.id || i} className={`p-3 rounded-xl border flex gap-3 items-start transition-all ${a.resolved ? 'border-white/5 bg-white/[0.02] opacity-60' : a.level === 'CRITICAL' ? 'border-red-500/30 bg-red-500/5' : 'border-orange-500/20 bg-orange-500/5'} hover-lift click-scale focus-ring`} tabIndex="0" role="listitem" aria-label={`Alert: ${a.message || t(`dashboard.alerts.level.${a.level}`)} in ${a.country || 'unknown country'}`}>
                   <div className={`mt-0.5 flex-shrink-0 ${a.resolved ? 'text-green-500' : a.level === 'CRITICAL' ? 'text-red-500 animate-pulse' : 'text-orange-500'}`}>
                     {a.resolved ? <CheckCircle className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
                   </div>
@@ -567,7 +598,7 @@ function Dashboard() {
                   <span className="text-[10px] font-data uppercase tracking-widest">{t('dashboard.risk.awaiting')}</span>
                 </div>
               ) : risks.slice(0, 8).map((r, i) => (
-                <div key={i} className="flex items-center gap-3">
+                <div key={i} className="flex items-center gap-3 p-2 rounded-xl hover-lift click-scale focus-ring" tabIndex="0" role="listitem" aria-label={`Risk in ${r.region}: ${r.risk_score}%`}>
                   <div className="flex flex-col w-28">
                     <span className="text-[10px] font-data text-white/60 truncate">
                       {r.region?.split(' - ')[1] || r.region}
@@ -603,7 +634,7 @@ function Dashboard() {
                   <span className="text-[10px] font-data uppercase tracking-widest">{t('dashboard.leaderboard.noReports')}</span>
                 </div>
               ) : leaderboard.map((entry, i) => (
-                <div key={i} className="flex items-center gap-3 p-2 rounded-xl hover:bg-white/[0.03] transition-colors relative group">
+                <div key={i} className="flex items-center gap-3 p-2 rounded-xl hover:bg-white/[0.03] relative group cursor-pointer hover-lift click-scale focus-ring" tabIndex="0" role="listitem" aria-label={`Leaderboard rank ${i + 1}: ${entry.username} with ${entry.total_points} points`}>
                   <div className="absolute inset-0 bg-gradient-to-r from-[var(--accent-emerald)]/0 to-[var(--accent-emerald)]/5 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl"></div>
                   <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold z-10 ${i === 0 ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' : i === 1 ? 'bg-gray-400/20 text-gray-300 border border-gray-400/30' : i === 2 ? 'bg-orange-600/20 text-orange-400 border border-orange-600/30' : 'bg-white/5 text-white/30'}`}>
                     {i + 1}
@@ -789,16 +820,33 @@ function Dashboard() {
               </React.Fragment>
             ))}
 
-            {(Array.isArray(fires) ? fires : []).map((f, i) => (
-              <Marker key={`fire-${i}`} position={[f.latitude, f.longitude]} icon={fireIcon}>
-                <Popup className="tactical-popup">
-                  <div className="text-xs font-data">
-                    <b className="text-red-500">{t('dashboard.map.thermalAnomaly')}</b><br />
-                    {t('dashboard.map.confidence')}: {f.confidence}% | {t('dashboard.map.source')}: {f.satellite}
-                  </div>
-                </Popup>
-              </Marker>
-            ))}
+            <MarkerClusterGroup chunkedLoading maxClusterRadius={40}>
+              {(Array.isArray(fires) ? fires : []).map((f, i) => {
+                const style = getMarkerStyle(f.frp || f.brightness || 0);
+                return (
+                  <CircleMarker
+                    key={`fire-${i}`}
+                    center={[f.latitude, f.longitude]}
+                    radius={style.radius}
+                    pathOptions={{
+                      fillColor: style.color,
+                      color: '#ffffff',
+                      weight: 1.5,
+                      opacity: 1,
+                      fillOpacity: 0.85
+                    }}
+                  >
+                    <Popup className="tactical-popup">
+                      <div className="text-xs font-data">
+                        <b className="text-red-500">{t('dashboard.map.thermalAnomaly')}</b><br />
+                        FRP: <b>{f.frp || f.brightness || 0} MW</b><br />
+                        {t('dashboard.map.confidence')}: {f.confidence}% | {t('dashboard.map.source')}: {f.satellite}
+                      </div>
+                    </Popup>
+                  </CircleMarker>
+                );
+              })}
+            </MarkerClusterGroup>
 
             {safeReports.filter(r => r.latitude).map((r, i) => (
               <Marker key={`rep-${i}`} position={[r.latitude, r.longitude]} icon={reportIcon}>

@@ -38,10 +38,11 @@ class ErrorBoundary extends React.Component {
             )}
             <button
               onClick={this.handleRetry}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-green-500/10 border border-green-500/30 text-green-400 text-sm font-medium hover:bg-green-500/20 transition-colors"
+              aria-label="Retry system recovery"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-green-500/10 border border-green-500/30 text-green-400 text-sm font-medium hover:bg-green-500/20 transition-all focus-ring hover-lift click-scale"
             >
               <RefreshCw className="w-4 h-4" />
-              Retry
+              Retry Recovery
             </button>
           </div>
         </div>

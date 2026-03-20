@@ -120,7 +120,10 @@ function PostCard({ post, onClick }) {
   return (
     <div
       onClick={() => onClick(post)}
-      className="p-5 rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] hover:border-emerald-500/15 transition-all cursor-pointer group"
+      className="p-5 rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] hover:border-emerald-500/15 cursor-pointer group hover-lift click-scale focus-ring"
+      tabIndex="0"
+      role="article"
+      aria-label={`Post by ${post.author_name || 'Anonymous'}: ${post.title}`}
     >
       {/* Header */}
       <div className="flex items-center gap-2 mb-3">
@@ -244,7 +247,7 @@ function CreatePostModal({ onClose, onCreated, forests = [] }) {
         {/* Header */}
         <div className="p-5 border-b border-white/5 flex items-center justify-between bg-black/20">
           <h2 className="text-lg font-bold text-white/90">{t('community.createPost', 'Create Post')}</h2>
-          <button onClick={onClose} className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/50 hover:text-white transition-colors">
+          <button onClick={onClose} aria-label={t('common.close', 'Close')} className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/50 hover:text-white transition-colors focus-ring">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -258,10 +261,11 @@ function CreatePostModal({ onClose, onCreated, forests = [] }) {
                 key={type.id}
                 type="button"
                 onClick={() => setPostType(type.id)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-data uppercase tracking-widest border transition-colors ${
+                aria-label={`Post type: ${type.label}`}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-data uppercase tracking-widest border transition-colors focus-ring ${
                   postType === type.id
                     ? 'border-emerald-500/40 text-emerald-400 bg-emerald-500/10'
-                    : 'border-white/10 text-white/40 hover:text-white/60 bg-white/5'
+                    : 'border-white/10 text-white/40 hover:text-white/60 bg-white/5 cursor-pointer'
                 }`}
               >
                 <type.icon className="w-3 h-3" />
@@ -364,7 +368,7 @@ function CreatePostModal({ onClose, onCreated, forests = [] }) {
           <button
             onClick={handleSubmit}
             disabled={!title.trim() || !content.trim() || submitting}
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-bold text-sm hover:from-emerald-500 hover:to-emerald-400 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-bold text-sm hover:from-emerald-500 hover:to-emerald-400 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2 focus-ring click-scale"
           >
             <Send className="w-4 h-4" />
             {submitting ? t('community.submitting', 'Posting...') : t('community.submit', 'Publish Post')}
@@ -449,7 +453,7 @@ export default function Community() {
       <header className="sticky top-0 z-50 bg-[#0A140E]/80 backdrop-blur-xl border-b border-white/5 py-3 px-4 md:px-6">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <Link to="/dashboard" className="flex items-center justify-center w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 text-white/50 hover:text-white transition-colors">
+            <Link to="/dashboard" aria-label={t('community.backToDashboard', 'Back to Dashboard')} className="flex items-center justify-center w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 text-white/50 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500/50">
               <ArrowLeft className="w-4 h-4" />
             </Link>
             <div className="flex items-center gap-2">
@@ -460,7 +464,8 @@ export default function Community() {
 
           <button
             onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-emerald-600 to-emerald-500 text-white text-xs font-bold hover:from-emerald-500 hover:to-emerald-400 transition-all"
+            aria-label={t('community.createNewPost', 'Create new post')}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-emerald-600 to-emerald-500 text-white text-xs font-bold hover:from-emerald-500 hover:to-emerald-400 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
           >
             <Plus className="w-3.5 h-3.5" />
             {t('community.newPost', 'New Post')}
@@ -506,10 +511,10 @@ export default function Community() {
               <button
                 key={type.id}
                 onClick={() => { setActiveType(type.id); setPage(1); }}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-data uppercase tracking-widest whitespace-nowrap transition-colors ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-data uppercase tracking-widest whitespace-nowrap transition-colors focus:outline-none focus:ring-2 focus:ring-white/20 ${
                   activeType === type.id
                     ? 'bg-white/10 text-white border border-white/15'
-                    : 'text-white/40 hover:text-white/60 border border-transparent'
+                    : 'text-white/40 hover:text-white/60 border border-transparent cursor-pointer'
                 }`}
               >
                 <type.icon className="w-3 h-3" />
@@ -528,8 +533,8 @@ export default function Community() {
                 <button
                   key={opt.id}
                   onClick={() => { setSortBy(opt.id); setPage(1); }}
-                  className={`px-2.5 py-1 rounded-lg text-[9px] font-data uppercase tracking-widest transition-colors ${
-                    sortBy === opt.id ? 'bg-white/10 text-white/80' : 'text-white/30 hover:text-white/50'
+                  className={`px-2.5 py-1 rounded-lg text-[9px] font-data uppercase tracking-widest transition-colors focus:outline-none focus:ring-2 focus:ring-white/20 ${
+                    sortBy === opt.id ? 'bg-white/10 text-white/80' : 'text-white/30 hover:text-white/50 cursor-pointer'
                   }`}
                 >
                   {opt.label}
@@ -598,7 +603,8 @@ export default function Community() {
                 <button
                   key={post.id}
                   onClick={() => handlePostClick(post)}
-                  className="w-full text-start p-2.5 rounded-xl hover:bg-white/[0.03] transition-colors flex items-start gap-2.5"
+                  aria-label={`View trending post: ${post.title}`}
+                  className="w-full text-start p-2.5 rounded-xl hover:bg-white/[0.03] transition-colors flex items-start gap-2.5 cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/10"
                 >
                   <span className="text-[10px] font-data font-bold text-amber-400/60 mt-0.5">{i + 1}</span>
                   <div className="flex-1 min-w-0">
@@ -623,10 +629,11 @@ export default function Community() {
                 <button
                   key={tag.id || tag.name}
                   onClick={() => { setSelectedTag(selectedTag === tag.name ? '' : tag.name); setPage(1); }}
-                  className={`text-[10px] font-data px-2.5 py-1 rounded-full border transition-colors ${
+                  aria-label={`Filter by tag: ${tag.name}`}
+                  className={`text-[10px] font-data px-2.5 py-1 rounded-full border transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500/30 ${
                     selectedTag === tag.name
                       ? 'border-emerald-500/40 text-emerald-400 bg-emerald-500/10'
-                      : 'border-white/10 text-white/40 hover:text-white/60 bg-white/5'
+                      : 'border-white/10 text-white/40 hover:text-white/60 bg-white/5 cursor-pointer'
                   }`}
                 >
                   #{tag.name}
