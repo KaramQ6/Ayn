@@ -7,7 +7,7 @@ const getApiBase = () => {
   if (envUrl && envUrl.trim()) {
     return envUrl.includes('://') ? envUrl.trim() : 'https://' + envUrl.trim();
   }
-  return 'http://localhost:5000';
+  return 'https://forestguard-production.up.railway.app';
 };
 
 const API_BASE = getApiBase();

@@ -12,18 +12,11 @@ import 'leaflet/dist/leaflet.css';
 import './index.css';
 
 const getBackendURL = () => {
-  // أولاً: تحقق من environment variable
   const apiUrl = import.meta.env.VITE_API_URL;
   if (apiUrl && apiUrl.trim()) {
-    // إذا كان يحتوي على protocol
-    if (apiUrl.includes('://')) {
-      return apiUrl.trim();
-    }
-    // إذا لم يحتوي على protocol، أضف https
-    return 'https://' + apiUrl.trim();
+    return apiUrl.includes('://') ? apiUrl.trim() : 'https://' + apiUrl.trim();
   }
-  // الافتراضي: http://localhost:5000
-  return 'http://localhost:5000';
+  return 'https://forestguard-production.up.railway.app';
 };
 
 const API_BASE = getBackendURL();
