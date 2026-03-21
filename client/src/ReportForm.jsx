@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { X, Send, MapPin, AlertTriangle } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 const API_URL = '/api';
 
@@ -74,18 +76,14 @@ function ReportForm({ isOpen, onClose, clickedCoords, onSubmitted }) {
   }
 
   return (
-    <div className="fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label={t('reportForm.title')} onClick={onClose}>
-      <div className="bg-[#0a140e] border border-white/10 rounded-[24px] w-full max-w-md overflow-hidden" onClick={e => e.stopPropagation()}>
-        {/* Header */}
-        <div className="border-b border-white/5 p-5 flex justify-between items-center bg-black/20">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-md bg-[#0a140e] border-white/10 rounded-[24px] p-0 overflow-hidden outline-none">
+        <DialogHeader className="border-b border-white/5 p-5 flex-row justify-between items-center bg-black/20 space-y-0">
           <div className="flex items-center gap-3">
             <AlertTriangle className="w-5 h-5 text-orange-400" />
-            <h2 className="text-base font-bold text-white/90">{t('reportForm.title')}</h2>
+            <DialogTitle className="text-base font-bold text-white/90">{t('reportForm.title')}</DialogTitle>
           </div>
-          <button onClick={onClose} aria-label={t('common.close', 'Close')} className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 text-white/50 hover:text-white transition-colors focus-ring">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+        </DialogHeader>
 
         {success ? (
           <div className="p-10 flex flex-col items-center gap-3 text-green-400">
@@ -95,6 +93,9 @@ function ReportForm({ isOpen, onClose, clickedCoords, onSubmitted }) {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="p-5 space-y-5">
+            <DialogDescription className="sr-only">
+              {t('reportForm.descPlaceholder')}
+            </DialogDescription>
             {/* Report Type */}
             <div>
               <label className="text-[10px] font-data uppercase tracking-widest text-white/40 mb-2 block">{t('reportForm.threatType')}</label>
@@ -139,8 +140,7 @@ function ReportForm({ isOpen, onClose, clickedCoords, onSubmitted }) {
             )}
 
             {/* Submit */}
-            <button type="submit" disabled={submitting}
-              className="w-full py-3 rounded-xl bg-green-600 hover:bg-green-500 text-white font-bold text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed focus-ring click-scale">
+            <Button type="submit" disabled={submitting} className="w-full h-12 rounded-xl bg-green-600 hover:bg-green-500 text-white font-bold text-sm flex items-center justify-center gap-2 transition-all">
               {submitting ? (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
               ) : (
@@ -149,11 +149,11 @@ function ReportForm({ isOpen, onClose, clickedCoords, onSubmitted }) {
                   {t('reportForm.submit')}
                 </>
               )}
-            </button>
+            </Button>
           </form>
         )}
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 

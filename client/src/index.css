@@ -14,6 +14,28 @@
   --accent-amber: #F59E0B;
   --glass-bg: rgba(10, 20, 14, 0.6);
   --glass-border: rgba(255, 255, 255, 0.08);
+
+  /* shadcn variables */
+  --background: 144 25% 3%;
+  --foreground: 252 20% 95%;
+  --card: 144 25% 4%;
+  --card-foreground: 252 20% 95%;
+  --popover: 144 25% 3%;
+  --popover-foreground: 252 20% 95%;
+  --primary: 159 84% 39%;
+  --primary-foreground: 144 25% 3%;
+  --secondary: 144 25% 8%;
+  --secondary-foreground: 252 20% 95%;
+  --muted: 144 25% 8%;
+  --muted-foreground: 252 20% 70%;
+  --accent: 159 84% 39%;
+  --accent-foreground: 252 20% 95%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 252 20% 95%;
+  --border: 0 0% 100% / 0.1;
+  --input: 0 0% 100% / 0.1;
+  --ring: 159 84% 39%;
+  --radius: 0.75rem;
 }
 
 * {

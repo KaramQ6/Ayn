@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, lazy, Suspense, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Circle, CircleMarker, useMapEvents, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Circle, CircleMarker, useMapEvents, useMap, Tooltip as LeafletTooltip } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import L from 'leaflet';
 import { Link } from 'react-router-dom';
@@ -10,6 +10,13 @@ const ReportForm = lazy(() => import('./ReportForm'));
 import ForestExplorerPanel from './ForestExplorerPanel';
 import 'leaflet/dist/leaflet.css';
 import './index.css';
+
+// shadcn UI Components
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const getBackendURL = () => {
   const apiUrl = import.meta.env.VITE_API_URL;
@@ -113,15 +120,17 @@ function Dashboard() {
 
   const fetchData = useCallback(() => {
     const cp = selectedCountry ? `?country=${selectedCountry}` : '';
+    const defaultStats = { fires_24h: 0, reports_24h: 0, active_alerts: 0, avg_fire_risk: 0, forests_monitored: 0, forests: [] };
+    
     return Promise.all([
-      fetch(`${API_URL}/stats${cp}`).then(r => r.json()).catch(() => stats),
-      fetch(`${API_URL}/fires${cp}`).then(r => r.json()).catch(() => []),
-      fetch(`${API_URL}/reports${cp}`).then(r => r.json()).catch(() => []),
-      fetch(`${API_URL}/alerts${cp}`).then(r => r.json()).catch(() => []),
-      fetch(`${API_URL}/risk${cp}`).then(r => r.json()).catch(() => []),
-      fetch(`${API_URL}/leaderboard${cp}`).then(r => r.json()).catch(() => []),
+      fetch(`${API_URL}/stats${cp}`).then(r => r.ok ? r.json() : defaultStats).catch(() => defaultStats),
+      fetch(`${API_URL}/fires${cp}`).then(r => r.ok ? r.json() : []).catch(() => []),
+      fetch(`${API_URL}/reports${cp}`).then(r => r.ok ? r.json() : []).catch(() => []),
+      fetch(`${API_URL}/alerts${cp}`).then(r => r.ok ? r.json() : []).catch(() => []),
+      fetch(`${API_URL}/risk${cp}`).then(r => r.ok ? r.json() : []).catch(() => []),
+      fetch(`${API_URL}/leaderboard${cp}`).then(r => r.ok ? r.json() : []).catch(() => []),
     ]).then(([statsData, firesData, reportsData, alertsData, risksData, leaderboardData]) => {
-      setStats(statsData);
+      setStats(statsData?.forests ? statsData : defaultStats);
       setFires(Array.isArray(firesData) ? firesData : []);
       setReports(Array.isArray(reportsData) ? reportsData : []);
       setAlerts(Array.isArray(alertsData) ? alertsData : []);
@@ -129,6 +138,7 @@ function Dashboard() {
       setLeaderboard(Array.isArray(leaderboardData) ? leaderboardData : []);
     });
   }, [selectedCountry]);
+
 
   useEffect(() => {
     setLoading(true);
@@ -300,7 +310,8 @@ function Dashboard() {
   const safeCountries = Array.isArray(countries) ? countries : [];
 
   return (
-    <div className="bg-[#050A07] min-h-screen lg:h-screen text-[var(--ui-ghost)] font-sans flex flex-col selection:bg-[var(--alert-signal)] selection:text-white relative lg:overflow-hidden">
+    <TooltipProvider>
+      <div className="bg-[#050A07] min-h-screen lg:h-screen text-[var(--ui-ghost)] font-sans flex flex-col selection:bg-[var(--alert-signal)] selection:text-white relative lg:overflow-hidden">
       
       {/* SCANLINE EFFECT */}
       <div className="scanline"></div>
@@ -333,33 +344,38 @@ function Dashboard() {
         </div>
         {/* Controls: Scrollable row on mobile, Right aligned on desktop */}
         <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0 hide-scrollbar md:flex-wrap md:justify-end w-full md:w-auto snap-x">
-          {/* Language Switcher */}
-          <div className="flex items-center rounded-sm bg-[#161B18] p-1 border border-white/5">
+          {/* Language Switcher: Using shadcn Button Group */}
+          <div className="flex items-center rounded-lg bg-[#161B18]/60 p-1 border border-white/5 backdrop-blur-sm">
             {['en', 'ar', 'fr'].map(lng => (
-              <button key={lng} onClick={() => changeLang(lng)}
-                aria-label={t(`app.lang.${lng}`, lng.toUpperCase())}
-                className={`px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest transition-all focus-ring rounded-sm ${i18n.language === lng ? 'bg-[#FF7162] text-black' : 'text-white/40 hover:text-white/70'}`}>
+              <Button
+                key={lng}
+                onClick={() => changeLang(lng)}
+                variant={i18n.language === lng ? "default" : "ghost"}
+                className={`h-7 px-3 text-[10px] font-bold uppercase tracking-widest transition-all rounded-md ${i18n.language === lng ? 'bg-[#FF7162] text-black hover:bg-[#FF7162]/90' : 'text-white/40 hover:text-white/70 hover:bg-white/5'}`}
+              >
                 {lng.toUpperCase()}
-              </button>
+              </Button>
             ))}
           </div>
 
-          {/* Mode Switcher */}
-          <div className="flex items-center rounded-sm bg-[#161B18] p-1 border border-white/5 mx-2">
-            <button
+          {/* Mode Switcher: Enhanced with shadcn Button */}
+          <div className="flex items-center rounded-lg bg-[#161B18]/60 p-1 border border-white/5 mx-2 backdrop-blur-sm">
+            <Button
               onClick={() => setDataMode('demo')}
-              className={`px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest transition-all focus-ring flex items-center gap-2 rounded-sm ${dataMode === 'demo' ? 'bg-[#333] text-white/40' : 'text-white/20'}`}
+              variant="ghost"
+              className={`h-7 px-3 text-[10px] font-bold uppercase tracking-widest transition-all rounded-md gap-2 ${dataMode === 'demo' ? 'bg-[#333] text-white' : 'text-white/20 hover:text-white/40 hover:bg-white/5'}`}
             >
-              <div className={`w-1.5 h-1.5 rounded-full bg-white/20`}></div>
+              <div className={`w-1.5 h-1.5 rounded-full ${dataMode === 'demo' ? 'bg-yellow-500' : 'bg-white/20'}`}></div>
               DEMO
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={() => setDataMode('live')}
-              className={`px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest transition-all focus-ring flex items-center gap-2 rounded-sm ${dataMode === 'live' ? 'bg-[#00A3FF] text-black' : 'text-white/20'}`}
+              variant="ghost"
+              className={`h-7 px-3 text-[10px] font-bold uppercase tracking-widest transition-all rounded-md gap-2 ${dataMode === 'live' ? 'bg-[#00A3FF]/20 text-[#00A3FF] border border-[#00A3FF]/30' : 'text-white/20 hover:text-white/40 hover:bg-white/5'}`}
             >
-              <div className={`w-1.5 h-1.5 rounded-full ${dataMode === 'live' ? 'bg-black' : 'bg-white/20'}`}></div>
+              <div className={`w-1.5 h-1.5 rounded-full ${dataMode === 'live' ? 'bg-[#00A3FF]' : 'bg-white/20'}`}></div>
               LIVE
-            </button>
+            </Button>
           </div>
 
           <div className="h-4 w-px bg-white/10 mx-2"></div>
@@ -396,35 +412,52 @@ function Dashboard() {
 
           <div className="h-4 w-px bg-white/10 mx-2"></div>
 
-          {/* Analytics Button */}
-          <button onClick={() => setShowAnalytics(true)} aria-label={t('dashboard.openAnalytics', 'Open analytics dashboard')}
-            className="flex items-center justify-center w-10 h-10 rounded-sm border border-white/5 bg-[#161B18] text-white/40 hover:text-[#00A3FF] hover:border-[#00A3FF]/30 transition-all focus-ring click-scale cursor-pointer">
-            <TrendingUp className="w-5 h-5" />
-          </button>
+          {/* Feature Actions with Tooltips */}
+          <div className="flex items-center gap-2 ml-2">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button onClick={() => setShowAnalytics(true)} variant="outline" size="icon" className="w-10 h-10 bg-[#161B18] border-white/5 hover:border-[#00A3FF]/50 text-white/40 hover:text-[#00A3FF] transition-all">
+                  <TrendingUp className="w-5 h-5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent className="bg-[#161B18] border-white/10 text-white/90 text-[10px] font-data uppercase tracking-widest">{t('dashboard.openAnalytics')}</TooltipContent>
+            </Tooltip>
 
-          {/* Community Button */}
-          <Link to="/community" aria-label={t('dashboard.openCommunity', 'Open community')}
-            className="flex items-center justify-center w-10 h-10 rounded-sm border border-white/5 bg-[#161B18] text-white/40 hover:text-purple-400 hover:border-purple-400/30 transition-all focus-ring click-scale cursor-pointer">
-            <Users className="w-5 h-5" />
-          </Link>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button asChild variant="outline" size="icon" className="w-10 h-10 bg-[#161B18] border-white/5 hover:border-purple-400/50 text-white/40 hover:text-purple-400 transition-all">
+                  <Link to="/community"><Users className="w-5 h-5" /></Link>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent className="bg-[#161B18] border-white/10 text-white/90 text-[10px] font-data uppercase tracking-widest">{t('dashboard.openCommunity')}</TooltipContent>
+            </Tooltip>
 
-          {/* Forest Explorer Button */}
-          <button onClick={() => setShowForestExplorer(true)} aria-label={t('dashboard.openExplorer', 'Explore forests')}
-            className="flex items-center justify-center w-10 h-10 rounded-sm border border-white/5 bg-[#161B18] text-white/40 hover:text-emerald-400 hover:border-emerald-400/30 transition-all focus-ring click-scale cursor-pointer">
-            <Compass className="w-5 h-5" />
-          </button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button onClick={() => setShowForestExplorer(true)} variant="outline" size="icon" className="w-10 h-10 bg-[#161B18] border-white/5 hover:border-emerald-400/50 text-white/40 hover:text-emerald-400 transition-all">
+                  <Compass className="w-5 h-5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent className="bg-[#161B18] border-white/10 text-white/90 text-[10px] font-data uppercase tracking-widest">{t('dashboard.openExplorer')}</TooltipContent>
+            </Tooltip>
 
-          {/* Profile Button */}
-          <Link to="/profile" aria-label="Profile"
-            className="flex items-center justify-center w-10 h-10 rounded-full border border-emerald-500/20 bg-gradient-to-br from-emerald-600/80 to-teal-600/80 text-white text-xs font-bold hover:border-emerald-400/50 transition-all focus-ring click-scale cursor-pointer shadow-sm shadow-emerald-500/10">
-            <User className="w-4 h-4" />
-          </Link>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button asChild variant="outline" size="icon" className="w-10 h-10 rounded-full border-emerald-500/20 bg-gradient-to-br from-emerald-600/80 to-teal-600/80 text-white hover:border-emerald-400/50 transition-all shadow-sm shadow-emerald-500/10">
+                  <Link to="/profile"><User className="w-4 h-4" /></Link>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent className="bg-[#161B18] border-white/10 text-white/90 text-[10px] font-data uppercase tracking-widest">Profile</TooltipContent>
+            </Tooltip>
 
-          {/* Report Button */}
-          <button onClick={() => setShowReportForm(true)} aria-label={t('dashboard.submitReport', 'Submit a new report')}
-            className="flex items-center gap-2 px-6 py-2 rounded-sm border border-white/40 bg-transparent text-[#FF7162] text-[11px] font-bold uppercase tracking-[0.2em] hover:bg-white/5 transition-all focus-ring click-scale cursor-pointer ml-2">
-            <Plus className="w-4 h-4" /> {t('dashboard.report')}
-          </button>
+            <Button 
+              onClick={() => setShowReportForm(true)} 
+              variant="outline"
+              className="bg-transparent border-[#FF7162]/40 text-[#FF7162] hover:bg-[#FF7162]/10 hover:border-[#FF7162]/60 font-bold uppercase tracking-[0.2em] px-6 ml-2 text-[11px] h-10 transition-all"
+            >
+              <Plus className="w-4 h-4 mr-2" /> {t('dashboard.report')}
+            </Button>
+          </div>
 
           {/* Demo Scenario Selector + Toggle */}
           <div className="flex items-center gap-1">
@@ -475,7 +508,7 @@ function Dashboard() {
         {/* LEFT SIDEBAR: Stats & Feeds */}
         <div className="w-full lg:w-[360px] xl:w-[400px] flex-shrink-0 flex flex-col gap-4 overflow-y-auto hide-scrollbar lg:pe-2">
 
-          {/* STATS: Horizontally scrollable on mobile to save space, grid on desktop */}
+          {/* STATS: Enhanced with shadcn Card */}
           <div className="flex-shrink-0 flex overflow-x-auto lg:grid lg:grid-cols-2 gap-3 pb-2 lg:pb-0 snap-x hide-scrollbar">
             {[
               { label: t('dashboard.stats.fires24h'), value: stats.fires_24h, icon: Flame, color: 'text-red-500', bg: 'bg-red-500/10' },
@@ -483,204 +516,193 @@ function Dashboard() {
               { label: t('dashboard.stats.activeAlerts'), value: stats.active_alerts, icon: AlertTriangle, color: 'text-orange-500', bg: 'bg-orange-500/10' },
               { label: t('dashboard.stats.avgFWI'), value: `${stats.avg_fire_risk}%`, icon: Thermometer, color: 'text-yellow-500', bg: 'bg-yellow-500/10' },
               { label: t('dashboard.stats.monitoredZones'), value: stats.forests_monitored, icon: TreePine, color: 'text-green-500', bg: 'bg-green-500/10' },
-              {
-                label: t('dashboard.stats.rainyZones'),
-                value: `${rainyZones}/${stats.forests_monitored || (risks.length || 0)}`,
-                icon: Globe,
-                color: 'text-sky-400',
-                bg: 'bg-sky-500/10',
-                sub: avgRainProb ? t('dashboard.rain.avgShort', { value: avgRainProb }) : null,
-              },
+              { label: t('dashboard.stats.rainyZones'), value: `${rainyZones}/${stats.forests_monitored || (risks.length || 0)}`, icon: Globe, color: 'text-sky-400', bg: 'bg-sky-500/10', sub: avgRainProb ? t('dashboard.rain.avgShort', { value: avgRainProb }) : null },
             ].map((stat, i) => (
-              <div key={i} className="min-w-[140px] lg:min-w-0 flex-shrink-0 snap-center bg-[#0A140E]/80 border border-white/10 backdrop-blur-md rounded-[16px] p-4 flex flex-col gap-2 relative group cursor-pointer hover:border-emerald-500/30 hover-lift click-scale focus-ring" tabIndex="0" role="button" aria-label={`${stat.label}: ${stat.value}`}>
-                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#10B981]/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <div className={`w-8 h-8 rounded-lg ${stat.bg} ${stat.color} flex items-center justify-center relative z-10`}>
-                  <stat.icon className="w-4 h-4" />
-                </div>
-                <div className="relative z-10">
-                  <div className="text-xl font-bold tracking-tight text-white">{stat.value}</div>
-                  <div className="text-[9px] font-data text-white/50 uppercase tracking-widest mt-1">{stat.label}</div>
-                  {stat.sub && <div className="text-[9px] font-data text-sky-300/80 mt-0.5 truncate">{stat.sub}</div>}
-                </div>
-              </div>
+              <Card key={i} className="min-w-[140px] lg:min-w-0 flex-shrink-0 snap-center bg-[#0A140E]/80 border-white/10 backdrop-blur-md rounded-[16px] hover:border-[#10B981]/30 transition-all cursor-pointer group">
+                <CardContent className="p-4 flex flex-col gap-2">
+                  <div className={`w-8 h-8 rounded-lg ${stat.bg} ${stat.color} flex items-center justify-center relative z-10`}>
+                    <stat.icon className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-xl font-bold tracking-tight text-white">{stat.value}</div>
+                    <div className="text-[9px] font-data text-white/50 uppercase tracking-widest mt-1">{stat.label}</div>
+                    {stat.sub && <div className="text-[9px] font-data text-sky-300/80 mt-0.5 truncate">{stat.sub}</div>}
+                  </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
 
           {/* SIDEBAR FEEDS FOLLOW */}
 
-          {/* ACTIVE ALERTS */}
-          <div className="glass-card rounded-[24px] flex flex-col">
-            <div className="p-5 border-b border-white/5 bg-black/20">
-              <div className="flex justify-between items-center mb-3">
-                <div className="flex items-center gap-2">
-                  <Bell className="w-4 h-4 text-orange-400" />
-                  <h3 className="text-sm font-bold uppercase tracking-widest text-white/80">{t('dashboard.alerts.title')}</h3>
-                </div>
-                <span className="text-[10px] font-data bg-orange-500/20 text-orange-400 px-2 py-0.5 rounded-full">{alerts.filter(a => !a.resolved).length}</span>
-              </div>
-              {/* Filter Tabs */}
-              <div className="flex gap-1">
-                {['active', 'all', 'resolved'].map(f => (
-                  <button key={f} onClick={() => setAlertFilter(f)} aria-label={`Filter ${f} alerts`}
-                    className={`px-2.5 py-1 rounded-lg text-[9px] font-data uppercase tracking-widest transition-colors ${alertFilter === f ? 'bg-white/10 text-white/80' : 'text-white/30 hover:text-white/50'}`}>
-                    {alertFilterLabels[f]}
-                  </button>
-                ))}
-              </div>
+          {/* SIDEBAR FEEDS: Tabbed Interface */}
+          <Tabs defaultValue="alerts" className="flex-1 flex flex-col min-h-0">
+            <div className="px-1 mb-2">
+              <TabsList className="w-full bg-[#0A140E]/60 border border-white/5 p-1 rounded-xl h-11">
+                <TabsTrigger value="alerts" className="flex-1 gap-2 data-[state=active]:bg-[#10B981]/10 data-[state=active]:text-[#10B981]">
+                  <Bell className="w-4 h-4" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider">{t('dashboard.alerts.title')}</span>
+                </TabsTrigger>
+                <TabsTrigger value="risk" className="flex-1 gap-2 data-[state=active]:bg-yellow-500/10 data-[state=active]:text-yellow-500">
+                  <Thermometer className="w-4 h-4" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider">{t('dashboard.risk.title')}</span>
+                </TabsTrigger>
+                <TabsTrigger value="leaderboard" className="flex-1 gap-2 data-[state=active]:bg-purple-500/10 data-[state=active]:text-purple-400">
+                  <Trophy className="w-4 h-4" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider">{t('dashboard.leaderboard.title')}</span>
+                </TabsTrigger>
+                <TabsTrigger value="terminal" className="flex-1 gap-2 data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-500">
+                  <Radio className="w-4 h-4" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider">{t('dashboard.terminal.title')}</span>
+                </TabsTrigger>
+              </TabsList>
             </div>
-            <div className="p-4 flex-1 space-y-2">
-              {filteredAlerts.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center text-white/20">
-                  <CheckCircle className="w-8 h-8 mb-2" />
-                  <span className="text-xs font-data uppercase tracking-widest">{alertFilter === 'resolved' ? t('dashboard.alerts.noResolved') : t('dashboard.alerts.noActive')}</span>
-                </div>
-              ) : filteredAlerts.slice(0, 8).map((a, i) => (
-                <div key={a.id || i} className={`p-3 rounded-xl border flex gap-3 items-start transition-all ${a.resolved ? 'border-white/5 bg-white/[0.02] opacity-60' : a.level === 'CRITICAL' ? 'border-red-500/30 bg-red-500/5' : 'border-orange-500/20 bg-orange-500/5'} hover-lift click-scale focus-ring`} tabIndex="0" role="listitem" aria-label={`Alert: ${a.message || t(`dashboard.alerts.level.${a.level}`)} in ${a.country || 'unknown country'}`}>
-                  <div className={`mt-0.5 flex-shrink-0 ${a.resolved ? 'text-green-500' : a.level === 'CRITICAL' ? 'text-red-500 animate-pulse' : 'text-orange-500'}`}>
-                    {a.resolved ? <CheckCircle className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-white/90 leading-snug truncate">
-                      {t(`dashboard.alerts.level.${a.level}`, a.level)} {a.country && `· ${a.country}`}
-                    </p>
-                    <p className="text-[10px] text-white/50 leading-snug truncate">
-                      {t('dashboard.alerts.meta', {
-                        confidence: a.confidence ?? 0,
-                        sources: (a.sources || '').split(',').filter(Boolean).length || 1,
-                      })}
-                    </p>
-                    {a.message && (
-                      <p className="text-[10px] text-white/30 mt-0.5 truncate" title={a.message}>
-                        {a.message}
-                      </p>
-                    )}
-                    <div className="flex items-center gap-2 mt-1.5">
-                      <span className="text-[9px] font-data text-white/40">{timeAgo(a.created_at)}</span>
-                      {a.confidence > 0 && (
-                        <span className="text-[9px] font-data bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
-                          <Brain className="w-2.5 h-2.5" /> {a.confidence}%
-                        </span>
-                      )}
-                      {a.sources?.includes('AI_VISION') && (
-                        <span className="text-[9px] font-data bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded-full">AI</span>
-                      )}
-                    </div>
-                  </div>
-                  {!a.resolved && a.id && (
-                    <button onClick={() => handleResolveAlert(a.id)} aria-label={`Resolve alert ${a.id}`}
-                      className="flex-shrink-0 px-2 py-1 rounded-lg bg-green-500/10 border border-green-500/20 text-green-500 text-[9px] font-data uppercase hover:bg-green-500/20 transition-colors">
-                      {t('dashboard.alerts.resolve')}
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
 
-          {/* RISK INDEX */}
-          <div className="glass-card rounded-[24px] flex flex-col">
-            <div className="p-5 border-b border-white/5 flex items-center gap-2 bg-black/20">
-              <Thermometer className="w-4 h-4 text-yellow-400" />
-              <h3 className="text-sm font-bold uppercase tracking-widest text-white/80">{t('dashboard.risk.title')}</h3>
-              <Shield className="w-3 h-3 text-green-500/50 ms-auto" />
-            </div>
-            <div className="p-4 flex-1 space-y-4">
-              {risks.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center text-white/20">
-                  <Thermometer className="w-6 h-6 mb-2" />
-                  <span className="text-[10px] font-data uppercase tracking-widest">{t('dashboard.risk.awaiting')}</span>
-                </div>
-              ) : risks.slice(0, 8).map((r, i) => (
-                <div key={i} className="flex items-center gap-3 p-2 rounded-xl hover-lift click-scale focus-ring" tabIndex="0" role="listitem" aria-label={`Risk in ${r.region}: ${r.risk_score}%`}>
-                  <div className="flex flex-col w-28">
-                    <span className="text-[10px] font-data text-white/60 truncate">
-                      {r.region?.split(' - ')[1] || r.region}
-                    </span>
-                    {typeof r.rain_probability === 'number' && (
-                      <span className="text-[9px] font-data text-sky-300/80 flex items-center gap-1 truncate">
-                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-sky-400/80" />
-                        {t('dashboard.rain.probShort', { value: r.rain_probability })}{' '}
-                        {r.rain_label && t(`dashboard.rain.label.${r.rain_label.toLowerCase()}`, r.rain_label)}
+            <div className="flex-1 min-h-0 overflow-y-auto hide-scrollbar">
+              {/* ACTIVE ALERTS CONTENT */}
+              <TabsContent value="alerts" className="mt-0 outline-none p-1">
+                <Card className="bg-[#0A140E]/60 border-white/5 backdrop-blur-md rounded-[24px]">
+                  <CardHeader className="pb-2">
+                    <div className="flex justify-between items-center">
+                      <CardTitle className="text-xs font-bold uppercase tracking-widest text-white/60">
+                        {t('dashboard.alerts.title')}
+                      </CardTitle>
+                      <span className="text-[10px] font-data bg-orange-500/20 text-orange-400 px-2 py-0.5 rounded-full">
+                        {alerts.filter(a => !a.resolved).length}
                       </span>
-                    )}
-                  </div>
-                  <div className="flex-1 h-1.5 bg-black/50 rounded-full overflow-hidden">
-                    <div className={`h-full rounded-full transition-all duration-1000 ${getRiskBg(r.risk_score)}`} style={{ width: `${r.risk_score}%` }}></div>
-                  </div>
-                  <span className={`text-[10px] font-data font-bold w-6 text-right ${getRiskColorClass(r.risk_score).split(' ')[0]}`}>{r.risk_score}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* COMMUNITY LEADERBOARD */}
-          <div className="glass-card rounded-[24px] flex flex-col">
-            <div className="p-5 border-b border-white/5 flex items-center gap-2 bg-black/20">
-              <Trophy className="w-4 h-4 text-yellow-400" />
-              <h3 className="text-sm font-bold uppercase tracking-widest text-white/80">{t('dashboard.leaderboard.title')}</h3>
-              <span className="text-[10px] font-data bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded-full ms-auto">{leaderboard.length} {t('dashboard.leaderboard.rangers')}</span>
-            </div>
-            <div className="p-4 space-y-2">
-              {leaderboard.length === 0 ? (
-                <div className="py-6 flex flex-col items-center justify-center text-white/20">
-                  <Trophy className="w-6 h-6 mb-2" />
-                  <span className="text-[10px] font-data uppercase tracking-widest">{t('dashboard.leaderboard.noReports')}</span>
-                </div>
-              ) : leaderboard.map((entry, i) => (
-                <div key={i} className="flex items-center gap-3 p-2 rounded-xl hover:bg-white/[0.03] relative group cursor-pointer hover-lift click-scale focus-ring" tabIndex="0" role="listitem" aria-label={`Leaderboard rank ${i + 1}: ${entry.username} with ${entry.total_points} points`}>
-                  <div className="absolute inset-0 bg-gradient-to-r from-[var(--accent-emerald)]/0 to-[var(--accent-emerald)]/5 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl"></div>
-                  <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold z-10 ${i === 0 ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' : i === 1 ? 'bg-gray-400/20 text-gray-300 border border-gray-400/30' : i === 2 ? 'bg-orange-600/20 text-orange-400 border border-orange-600/30' : 'bg-white/5 text-white/30'}`}>
-                    {i + 1}
-                  </span>
-                  <span className="text-xs text-white/80 flex-1 truncate z-10 font-medium">{entry.username}</span>
-                  <span className="text-[9px] font-data text-white/40 z-10">{entry.report_count} {t('dashboard.leaderboard.reports')}</span>
-                  <span className="text-[10px] font-data font-bold text-yellow-400 z-10">{entry.total_points} {t('dashboard.leaderboard.pts')}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* GROUND TRUTH TERMINAL */}
-          <div className="terminal-output rounded-[24px] flex flex-col shadow-[inset_0_4px_24px_rgba(0,0,0,0.5)] border-emerald-500/10">
-            <div className="p-4 border-b border-white/5 flex justify-between items-center bg-black/40">
-              <div className="flex items-center gap-2">
-                <Radio className="w-4 h-4 text-emerald-500 animate-pulse" />
-                <h3 className="text-xs font-data uppercase tracking-[0.2em] text-emerald-500">{t('dashboard.terminal.title')}</h3>
-              </div>
-              <div className="flex gap-1.5">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/20"></div>
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/20"></div>
-              </div>
-            </div>
-            <div className="p-4 flex-1 font-data text-[10px] space-y-3">
-              {safeReports.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center text-green-500/20">
-                  <Radio className="w-6 h-6 mb-2" />
-                  <span className="text-[10px] uppercase tracking-widest">{t('dashboard.terminal.listening')}</span>
-                </div>
-              ) : safeReports.slice(0, 6).map((r, i) => (
-                <div key={i} className="flex gap-2 text-emerald-400/80 group">
-                  <span className="text-emerald-600 shrink-0">&gt;</span>
-                  <div className="flex flex-col flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-white/40">{timeAgo(r.created_at)}</span>
-                      <span className="text-emerald-300 font-bold">[{r.username || 'WEB'}]</span>
-                      <span>{r.report_type?.toUpperCase()} {t('dashboard.terminal.detected')}</span>
-                      {r.ai_classification && r.ai_classification !== 'none' && (
-                        <span className="text-purple-400">AI:{r.ai_classification}({r.ai_confidence}%)</span>
-                      )}
                     </div>
-                    {r.description && (
-                      <span className="text-white/40 mt-0.5 truncate">— {r.description}</span>
-                    )}
+                    {/* Filter local to alerts tab */}
+                    <div className="flex gap-1 mt-2">
+                      {['active', 'all', 'resolved'].map(f => (
+                        <button key={f} onClick={() => setAlertFilter(f)}
+                          className={`px-2.5 py-1 rounded-lg text-[9px] font-data uppercase tracking-widest transition-colors ${alertFilter === f ? 'bg-white/10 text-white/80' : 'text-white/30 hover:text-white/50'}`}>
+                          {alertFilterLabels[f]}
+                        </button>
+                      ))}
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pt-2 space-y-2">
+                    {filteredAlerts.length === 0 ? (
+                      <div className="py-12 flex flex-col items-center justify-center text-white/20">
+                        <CheckCircle className="w-8 h-8 mb-2" />
+                        <span className="text-xs font-data uppercase tracking-widest">{alertFilter === 'resolved' ? t('dashboard.alerts.noResolved') : t('dashboard.alerts.noActive')}</span>
+                      </div>
+                    ) : filteredAlerts.slice(0, 10).map((a, i) => (
+                      <div key={a.id || i} className={`p-3 rounded-xl border flex gap-3 items-start transition-all ${a.resolved ? 'border-white/5 bg-white/[0.02] opacity-60' : a.level === 'CRITICAL' ? 'border-red-500/30 bg-red-500/5' : 'border-orange-500/20 bg-orange-500/5'} hover:border-white/20`}>
+                        <div className={`mt-0.5 flex-shrink-0 ${a.resolved ? 'text-green-500' : a.level === 'CRITICAL' ? 'text-red-500 animate-pulse' : 'text-orange-500'}`}>
+                          {a.resolved ? <CheckCircle className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-white/90 leading-snug truncate">
+                            {t(`dashboard.alerts.level.${a.level}`, a.level)} {a.country && `· ${a.country}`}
+                          </p>
+                          <p className="text-[10px] text-white/50 leading-snug truncate">
+                            {t('dashboard.alerts.meta', { confidence: a.confidence ?? 0, sources: (a.sources || '').split(',').filter(Boolean).length || 1 })}
+                          </p>
+                        </div>
+                        {!a.resolved && a.id && (
+                          <Button onClick={() => handleResolveAlert(a.id)} variant="ghost" className="h-7 px-2 text-[9px] text-green-500 hover:text-green-400 hover:bg-green-500/10">
+                            {t('dashboard.alerts.resolve')}
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* RISK CONTENT */}
+              <TabsContent value="risk" className="mt-0 outline-none p-1">
+                <Card className="bg-[#0A140E]/60 border-white/5 backdrop-blur-md rounded-[24px]">
+                  <CardHeader>
+                    <CardTitle className="text-xs font-bold uppercase tracking-widest text-white/60">
+                      {t('dashboard.risk.title')}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {risks.length === 0 ? (
+                      <div className="py-12 flex flex-col items-center justify-center text-white/20">
+                        <Thermometer className="w-6 h-6 mb-2" />
+                        <span className="text-[10px] font-data uppercase tracking-widest">{t('dashboard.risk.awaiting')}</span>
+                      </div>
+                    ) : risks.slice(0, 10).map((r, i) => (
+                      <div key={i} className="flex items-center gap-3 p-1">
+                        <div className="flex flex-col w-28">
+                          <span className="text-[10px] font-data text-white/60 truncate">{r.region?.split(' - ')[1] || r.region}</span>
+                        </div>
+                        <div className="flex-1 h-1.5 bg-black/50 rounded-full overflow-hidden">
+                          <div className={`h-full rounded-full transition-all duration-1000 ${getRiskBg(r.risk_score)}`} style={{ width: `${r.risk_score}%` }}></div>
+                        </div>
+                        <span className={`text-[10px] font-data font-bold w-6 text-right ${getRiskColorClass(r.risk_score).split(' ')[0]}`}>{r.risk_score}</span>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* LEADERBOARD CONTENT */}
+              <TabsContent value="leaderboard" className="mt-0 outline-none p-1">
+                <Card className="bg-[#0A140E]/60 border-white/5 backdrop-blur-md rounded-[24px]">
+                  <CardHeader>
+                    <div className="flex justify-between items-center">
+                      <CardTitle className="text-xs font-bold uppercase tracking-widest text-white/60">
+                        {t('dashboard.leaderboard.title')}
+                      </CardTitle>
+                      <span className="text-[10px] font-data bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded-full">
+                        {leaderboard.length} {t('dashboard.leaderboard.rangers')}
+                      </span>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {leaderboard.length === 0 ? (
+                      <div className="py-12 flex flex-col items-center justify-center text-white/20">
+                        <Trophy className="w-6 h-6 mb-2" />
+                        <span className="text-[10px] font-data uppercase tracking-widest">{t('dashboard.leaderboard.noReports')}</span>
+                      </div>
+                    ) : leaderboard.map((entry, i) => (
+                      <div key={i} className="flex items-center gap-3 p-2 rounded-xl hover:bg-white/[0.03] group transition-colors">
+                        <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${i === 0 ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' : 'bg-white/5 text-white/30'}`}>
+                          {i + 1}
+                        </span>
+                        <span className="text-xs text-white/80 flex-1 truncate font-medium">{entry.username}</span>
+                        <span className="text-[10px] font-data font-bold text-yellow-400">{entry.total_points} {t('dashboard.leaderboard.pts')}</span>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* TERMINAL CONTENT */}
+              <TabsContent value="terminal" className="mt-0 outline-none">
+                <div className="terminal-output rounded-[24px] shadow-[inset_0_4px_24px_rgba(0,0,0,0.5)] border-emerald-500/10 min-h-[300px] flex flex-col border border-white/5">
+                  <div className="p-4 border-b border-white/5 flex justify-between items-center bg-black/40">
+                    <div className="flex items-center gap-2">
+                      <Radio className="w-4 h-4 text-emerald-500 animate-pulse" />
+                      <h3 className="text-xs font-data uppercase tracking-[0.2em] text-emerald-500">{t('dashboard.terminal.title')}</h3>
+                    </div>
+                  </div>
+                  <div className="p-4 flex-1 font-data text-[10px] space-y-3 overflow-y-auto max-h-[400px]">
+                    {safeReports.slice(0, 10).map((r, i) => (
+                      <div key={i} className="flex gap-2 text-emerald-400/80 group">
+                        <span className="text-emerald-600 shrink-0">&gt;</span>
+                        <div className="flex flex-col flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-white/40">{timeAgo(r.created_at)}</span>
+                            <span className="text-emerald-300 font-bold">[{r.username || 'WEB'}]</span>
+                            <span>{r.report_type?.toUpperCase()} detected</span>
+                          </div>
+                          {r.description && <span className="text-white/40 mt-0.5 truncate">— {r.description}</span>}
+                        </div>
+                      </div>
+                    ))}
+                    <div className="flex gap-2 text-emerald-400 animate-pulse">
+                      <span className="text-emerald-600 font-bold">&gt;</span> <div className="w-2 h-3 bg-emerald-500/50 mt-1"></div>
+                    </div>
                   </div>
                 </div>
-              ))}
-              <div className="flex gap-2 text-emerald-400 animate-pulse">
-                <span className="text-emerald-600 font-bold">&gt;</span> <div className="w-2 h-3 bg-emerald-500/50 mt-1"></div>
-              </div>
+              </TabsContent>
             </div>
-          </div>
+          </Tabs>
 
         </div>
 
@@ -695,21 +717,19 @@ function Dashboard() {
             <span className="text-[10px] font-data text-[var(--accent-emerald)]/80">{t('dashboard.map.clickToReport')}</span>
           </div>
 
-          {/* Tree Cover Layer Toggle */}
+          {/* Tree Cover Layer Toggle: Using shadcn Switch */}
           <div className="absolute top-6 end-6 z-[500] flex flex-col gap-2">
-            <button
-              onClick={() => setShowTreeCover(prev => !prev)}
-              className={`bg-[#0A140E]/60 backdrop-blur-xl border px-3 py-2.5 rounded-2xl flex items-center gap-2 shadow-lg transition-all ${
-                showTreeCover ? 'border-emerald-500/40 text-emerald-400' : 'border-white/10 text-white/60 hover:text-white'
-              }`}
-              aria-label="Toggle tree cover layer"
-            >
-              <Layers className="w-4 h-4" />
-              <span className="text-[10px] font-data uppercase tracking-widest">{t('dashboard.map.treeCover', 'Tree Cover')}</span>
-            </button>
+            <div className={`bg-[#0A140E]/60 backdrop-blur-xl border px-3 py-2.5 rounded-2xl flex items-center gap-3 shadow-lg transition-all ${showTreeCover ? 'border-emerald-500/40' : 'border-white/10'}`}>
+              <Layers className={`w-4 h-4 ${showTreeCover ? 'text-emerald-400' : 'text-white/40'}`} />
+              <span className="text-[10px] font-data uppercase tracking-widest text-white/60">{t('dashboard.map.treeCover', 'Tree Cover')}</span>
+              <Switch checked={showTreeCover} onCheckedChange={setShowTreeCover} />
+            </div>
             {showTreeCover && (
-              <div className="bg-[#0A140E]/60 backdrop-blur-xl border border-white/10 px-3 py-2 rounded-xl flex items-center gap-2">
-                <span className="text-[9px] font-data text-white/40">0%</span>
+              <div className="bg-[#0A140E]/60 backdrop-blur-xl border border-white/10 px-3 py-2 rounded-xl flex flex-col gap-2">
+                <div className="flex justify-between items-center px-1">
+                  <span className="text-[9px] font-data text-white/40 uppercase tracking-wider">Opacity</span>
+                  <span className="text-[9px] font-data text-emerald-400 font-bold">{Math.round(treeCoverOpacity * 100)}%</span>
+                </div>
                 <input
                   type="range"
                   min="0.1"
@@ -717,25 +737,24 @@ function Dashboard() {
                   step="0.05"
                   value={treeCoverOpacity}
                   onChange={(e) => setTreeCoverOpacity(parseFloat(e.target.value))}
-                  className="flex-1 h-1 accent-emerald-500 cursor-pointer"
+                  className="w-full h-1 accent-emerald-500 cursor-pointer"
                 />
-                <span className="text-[9px] font-data text-white/40">100%</span>
               </div>
             )}
           </div>
 
-          {/* Floating Risk Index Overlay (Bottom Right) */}
-          <div className="absolute bottom-6 end-6 z-[500] w-[320px] pointer-events-auto hidden md:flex flex-col">
-            <div className="bg-[#0A140E]/80 backdrop-blur-2xl border border-white/10 rounded-[24px] shadow-[0_8px_32px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden max-h-[300px]">
-              <div className="p-4 border-b border-white/5 flex items-center gap-2 bg-[#1A211D]/50 w-full">
-                <Thermometer className="w-4 h-4 text-[var(--accent-emerald)]" />
-                <h3 className="text-xs font-bold uppercase tracking-widest text-white/90">{t('dashboard.risk.title')}</h3>
-                <Shield className="w-3 h-3 text-[var(--accent-emerald)]/50 ms-auto" />
-              </div>
-              <div className="p-4 overflow-y-auto flex-1 space-y-4 custom-scrollbar">
+          {/* Floating Risk Index Overlay: Using shadcn Card */}
+          <div className="absolute bottom-6 end-6 z-[500] w-[320px] pointer-events-auto hidden md:flex flex-col animate-in fade-in slide-in-from-bottom-5 duration-500">
+            <Card className="bg-[#0A140E]/80 backdrop-blur-2xl border-white/10 rounded-[24px] shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-hidden">
+              <CardHeader className="p-4 border-b border-white/5 bg-[#1A211D]/50 flex-row items-center gap-2 space-y-0">
+                <Thermometer className="w-4 h-4 text-[#10B981]" />
+                <CardTitle className="text-xs font-bold uppercase tracking-widest text-white/90">{t('dashboard.risk.title')}</CardTitle>
+                <Shield className="w-3 h-3 text-[#10B981]/50 ms-auto" />
+              </CardHeader>
+              <CardContent className="p-4 max-h-[220px] overflow-y-auto space-y-4 custom-scrollbar">
                 {risks.length === 0 ? (
-                  <div className="h-full flex flex-col items-center justify-center text-white/20 py-4">
-                    <span className="text-[10px] font-data uppercase tracking-widest">{t('dashboard.risk.awaiting')}</span>
+                  <div className="h-full flex flex-col items-center justify-center text-white/20 py-4 font-data text-[10px] uppercase tracking-widest">
+                    {t('dashboard.risk.awaiting')}
                   </div>
                 ) : risks.slice(0, 5).map((r, i) => (
                   <div key={i} className="flex items-center gap-3">
@@ -744,14 +763,14 @@ function Dashboard() {
                         {r.region?.split(' - ')[1] || r.region}
                       </span>
                     </div>
-                    <div className="flex-1 h-1.5 bg-black/50 rounded-full overflow-hidden">
+                    <div className="flex-1 h-1 bg-black/50 rounded-full overflow-hidden">
                       <div className={`h-full rounded-full transition-all duration-1000 ${getRiskBg(r.risk_score)}`} style={{ width: `${r.risk_score}%` }}></div>
                     </div>
                     <span className={`text-[10px] font-data font-bold w-6 text-right ${getRiskColorClass(r.risk_score).split(' ')[0]}`}>{r.risk_score}</span>
                   </div>
                 ))}
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Subtle Map Vignette Overlay */}
@@ -764,13 +783,13 @@ function Dashboard() {
               className="opacity-80 contrast-125 grayscale-[0.5] sepia-[0.2] hue-rotate-180"
             />
 
-            {/* Global Tree Cover Layer (Hansen / UMD / GFW) */}
+            {/* Global Tree Cover Layer (Hansen Global Forest Change) - 100% Authentic Scientific Database */}
             {showTreeCover && (
               <TileLayer
-                url="https://tiles.globalforestwatch.org/umd_tree_cover_density_2000/v1.11/tcd_30/{z}/{x}/{y}.png"
-                attribution='&copy; Global Forest Watch'
+                url="https://storage.googleapis.com/earthenginepartners-hansen/tiles/gfc_v1.4/tree_alpha/{z}/{x}/{y}.png"
+                attribution='&copy; UMD Hansen / Google Earth Engine'
                 opacity={treeCoverOpacity}
-                maxZoom={12}
+                className="contrast-150 saturate-200 brightness-125"
               />
             )}
 
@@ -802,6 +821,12 @@ function Dashboard() {
                   </Popup>
                 </Circle>
                 <Marker position={[f.lat, f.lng]} icon={famousForestIcon}>
+                  <LeafletTooltip direction="top" offset={[0, -10]} opacity={0.9}>
+                    <div className="bg-[#0A140E]/90 border border-amber-500/50 p-2 rounded-lg backdrop-blur-md shadow-xl">
+                      <div className="text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-1">⭐ {f.nameAr || f.name}</div>
+                      <div className="text-[9px] text-emerald-400 font-data uppercase tracking-wider">{f.forestType || 'Protected Zone'}</div>
+                    </div>
+                  </LeafletTooltip>
                   <Popup className="tactical-popup">
                     <div className="text-xs font-data space-y-1">
                       <b className="text-amber-400">⭐ {f.nameAr ? `${f.nameAr} / ${f.name}` : f.name}</b><br/>
@@ -829,6 +854,12 @@ function Dashboard() {
                       fillOpacity: 0.85
                     }}
                   >
+                    <LeafletTooltip direction="top" offset={[0, -5]} opacity={0.9}>
+                      <div className="bg-[#0A140E]/90 border border-red-500/50 p-2 rounded-lg backdrop-blur-md shadow-xl">
+                        <div className="text-[10px] font-bold text-red-500 uppercase tracking-widest mb-1">{t('dashboard.map.thermalAnomaly')}</div>
+                        <div className="text-[9px] text-white/70 font-data">FRP: <span className="text-red-400">{f.frp || f.brightness || 0} MW</span></div>
+                      </div>
+                    </LeafletTooltip>
                     <Popup className="tactical-popup">
                       <div className="text-xs font-data">
                         <b className="text-red-500">{t('dashboard.map.thermalAnomaly')}</b><br />
@@ -843,6 +874,12 @@ function Dashboard() {
 
             {safeReports.filter(r => r.latitude).map((r, i) => (
               <Marker key={`rep-${i}`} position={[r.latitude, r.longitude]} icon={reportIcon}>
+                <LeafletTooltip direction="top" offset={[0, -15]} opacity={0.9}>
+                  <div className="bg-[#0A140E]/90 border border-[#10B981]/50 p-2 rounded-lg backdrop-blur-md shadow-xl">
+                    <div className="text-[10px] font-bold text-[#10B981] uppercase tracking-widest mb-1">{t('dashboard.map.groundReport')}</div>
+                    <div className="text-[9px] text-white/70 font-data">BY: <span className="text-emerald-400">{r.username || 'Web'}</span></div>
+                  </div>
+                </LeafletTooltip>
                 <Popup className="tactical-popup">
                   <div className="text-xs font-data">
                     <b className="text-[#10B981]">{t('dashboard.map.groundReport')}</b><br />
@@ -880,6 +917,7 @@ function Dashboard() {
         />}
       </Suspense>
     </div>
+    </TooltipProvider>
   );
 }
 

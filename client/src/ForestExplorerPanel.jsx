@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { X, Search, TreePine, Mountain, Droplets, Star, MapPin, Filter, ChevronDown } from 'lucide-react';
+import { X, Search, TreePine, Mountain, Star, MapPin, Filter, ChevronDown } from 'lucide-react';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 
 const FOREST_TYPES = ['Mediterranean', 'Cedar montane', 'Cedar-oak mixed', 'Mountain oak', 'Wetland', 'Mangrove', 'Juniper woodland', 'Cork oak', 'Desert oasis', 'Savanna woodland', 'Other'];
 
@@ -47,35 +48,26 @@ export default function ForestExplorerPanel({ forests = [], onClose, onSelectFor
     return '🌲';
   };
 
-  const getThreatColor = (threats) => {
-    if (!threats?.length) return 'text-white/30';
-    if (threats.includes('fire')) return 'text-red-400';
-    if (threats.includes('desertification')) return 'text-yellow-400';
-    if (threats.includes('logging')) return 'text-orange-400';
-    return 'text-white/50';
-  };
-
   return (
-    <div className="fixed inset-0 z-[1000] flex items-start justify-end">
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose}></div>
-
-      {/* Panel */}
-      <div className="relative w-full max-w-md h-full bg-[#0A140E]/95 backdrop-blur-2xl border-s border-white/10 flex flex-col animate-slide-in-right overflow-hidden">
+    <Sheet open={!!forests.length} onOpenChange={(open) => !open && onClose()}>
+      <SheetContent side="right" className="w-full max-w-md bg-[#0A140E]/95 backdrop-blur-2xl border-s border-white/10 p-0 flex flex-col overflow-hidden outline-none shadow-2xl">
+        
         {/* Header */}
         <div className="flex-shrink-0 p-5 border-b border-white/5 bg-black/30">
-          <div className="flex items-center justify-between mb-4">
+          <SheetHeader className="mb-4 space-y-0 flex-row items-center justify-between">
             <div className="flex items-center gap-2">
               <Star className="w-5 h-5 text-amber-400" />
-              <h2 className="text-lg font-bold text-white/90 tracking-tight">{t('explorer.title', 'Forest Explorer')}</h2>
+              <SheetTitle className="text-lg font-bold text-white/90 tracking-tight">{t('explorer.title', 'Forest Explorer')}</SheetTitle>
             </div>
-            <button onClick={onClose} aria-label={t('common.close', 'Close')} className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/50 hover:text-white transition-colors focus-ring">
-              <X className="w-4 h-4" />
-            </button>
-          </div>
+            {/* Native close button is provided by SheetContent, but we keep the custom look if needed or just use default */}
+          </SheetHeader>
+          
+          <SheetDescription className="sr-only">
+            Explore diverse forests across the MENA region, filter by type, country, and UNESCO status.
+          </SheetDescription>
 
           {/* Search */}
-          <div className="relative mb-3">
+          <div className="relative mb-3 mt-4">
             <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
             <input
               type="text"
@@ -174,20 +166,6 @@ export default function ForestExplorerPanel({ forests = [], onClose, onSelectFor
                     <span>{f.forestType || 'Forest'}</span>
                     {f.area > 0 && <><span>•</span><span>{f.area} km²</span></>}
                   </div>
-                  {f.primaryThreats?.length > 0 && (
-                    <div className="flex gap-1 mt-1.5">
-                      {f.primaryThreats.slice(0, 3).map(threat => (
-                        <span key={threat} className={`text-[9px] font-data px-1.5 py-0.5 rounded-full border ${
-                          threat === 'fire' ? 'border-red-500/20 text-red-400 bg-red-500/10' :
-                          threat === 'desertification' ? 'border-yellow-500/20 text-yellow-400 bg-yellow-500/10' :
-                          threat === 'logging' ? 'border-orange-500/20 text-orange-400 bg-orange-500/10' :
-                          'border-white/10 text-white/40 bg-white/5'
-                        }`}>
-                          {threat}
-                        </span>
-                      ))}
-                    </div>
-                  )}
                 </div>
                 <div className="flex flex-col items-end gap-1 flex-shrink-0">
                   {f.elevation > 0 && (
@@ -210,17 +188,7 @@ export default function ForestExplorerPanel({ forests = [], onClose, onSelectFor
             ⭐ {t('explorer.famousNote', 'Most Famous Forests in the MENA Region')}
           </p>
         </div>
-      </div>
-
-      <style>{`
-        @keyframes slide-in-right {
-          from { transform: translateX(100%); opacity: 0; }
-          to { transform: translateX(0); opacity: 1; }
-        }
-        .animate-slide-in-right {
-          animation: slide-in-right 0.3s ease-out;
-        }
-      `}</style>
-    </div>
+      </SheetContent>
+    </Sheet>
   );
 }
