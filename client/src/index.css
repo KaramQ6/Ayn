@@ -1,0 +1,383 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-bg: transparent;
+  --color-surface: rgba(13, 17, 30, 0.45);
+  --color-panel: rgba(18, 23, 40, 0.55);
+  --color-text: #f3f4f6;
+  --color-muted: #94a3b8;
+  --color-line: rgba(255, 255, 255, 0.08);
+  --color-accent: #00f2fe;
+  --color-danger: #ff4d4d;
+  --color-warning: #f59e0b;
+  --color-success: #10b981;
+  --color-water: #00f0ff;
+  --font-body: 'Outfit', 'Cairo', "Segoe UI", Tahoma, Arial, sans-serif;
+  --space-page: 1.5rem;
+  --radius-card: 2rem;
+  --shadow-soft: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
+}
+
+/* Fayy (Fire & Forest) Theme */
+.app-theme-fayy {
+  --color-accent: #ff5e3a;
+}
+
+/* Najji (Flood) Theme */
+.app-theme-najji {
+  --color-accent: #00d2ff;
+}
+
+/* Shu'aa (Solar Irradiance) Theme */
+.app-theme-shuaa {
+  --color-accent: #f59e0b;
+}
+
+/* Niza' (Conflict Zones) Theme */
+.app-theme-niza {
+  --color-accent: #ef4444;
+}
+
+/* Najm (Stargazing) Theme */
+.app-theme-najm {
+  --color-accent: #818cf8;
+}
+
+/* Jamal Jamal (Endangered Wildlife) Theme */
+.app-theme-jamal {
+  --color-accent: #84cc16;
+}
+
+/* Jowfi (Water Leaks) Theme */
+.app-theme-jowfi {
+  --color-accent: #3b82f6;
+}
+
+/* Baydar (Agriculture) Theme */
+.app-theme-baydar {
+  --color-accent: #10b981;
+}
+
+/* Riyah (Dust Storm) Theme */
+.app-theme-riyah {
+  --color-accent: #f59e0b;
+}
+
+html {
+  background-color: #020617;
+  min-height: 100vh;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: transparent;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--font-body);
+  letter-spacing: 0;
+  color: var(--color-text);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid rgba(23, 107, 76, 0.28);
+  outline-offset: 2px;
+}
+
+.leaflet-container {
+  font-family: var(--font-body);
+}
+
+@layer components {
+  .brand-mark {
+    @apply inline-flex h-11 w-11 items-center justify-center rounded-token bg-accent text-lg font-bold text-white shadow-token;
+  }
+
+  .btn-primary {
+    @apply inline-flex min-h-11 items-center justify-center rounded-token bg-accent px-4 py-2 text-sm font-bold text-white transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .btn-secondary {
+    @apply inline-flex min-h-11 items-center justify-center rounded-token border border-line bg-panel px-4 py-2 text-sm font-bold text-text transition hover:bg-surface disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .segmented {
+    @apply inline-flex flex-wrap items-center gap-1 rounded-token border border-line bg-panel p-1;
+  }
+
+  .segmented button {
+    @apply min-h-10 rounded-[6px] px-3 py-2 text-sm font-bold text-muted transition hover:bg-surface hover:text-text;
+  }
+
+  .segmented button.active {
+    @apply bg-accent text-white;
+  }
+
+  .section-title {
+    @apply text-2xl font-bold leading-tight text-text sm:text-3xl;
+  }
+
+  .section-subtitle {
+    @apply mt-2 max-w-3xl text-base leading-7 text-muted;
+  }
+
+  .panel {
+    @apply rounded-token border border-line bg-surface shadow-token;
+  }
+
+  .panel-title {
+    @apply text-start text-lg font-bold leading-tight text-text;
+  }
+
+  .metric-card {
+    @apply rounded-token border border-line bg-surface p-4 text-start shadow-token;
+  }
+
+  .metric-card span {
+    @apply block text-sm font-semibold text-muted;
+  }
+
+  .metric-card strong {
+    @apply mt-2 block text-2xl font-bold text-text;
+  }
+
+  .field,
+  .field-compact {
+    @apply grid gap-2 text-start text-sm font-semibold text-muted;
+  }
+
+  .field input,
+  .field select,
+  .field textarea,
+  .field-compact select {
+    @apply min-h-11 rounded-token border border-line bg-panel px-3 py-2 text-base font-medium text-text;
+  }
+
+  .field textarea {
+    @apply resize-y leading-7;
+  }
+
+  .field-compact {
+    @apply min-w-48;
+  }
+
+  .layer-toggle {
+    @apply inline-flex min-h-10 items-center gap-2 rounded-token border border-line bg-panel px-3 py-2 text-sm font-semibold text-muted;
+  }
+
+  .layer-toggle input {
+    @apply h-4 w-4 accent-[var(--color-accent)];
+  }
+
+  .map-frame {
+    @apply bg-panel;
+  }
+
+  .map-frame .leaflet-container {
+    border-end-start-radius: var(--radius-card);
+    border-end-end-radius: var(--radius-card);
+  }
+
+  .status-pill {
+    @apply rounded-token border px-2.5 py-1 text-xs font-bold;
+  }
+
+  .status-pill.connected {
+    @apply border-success text-success;
+  }
+
+  .status-pill.connecting {
+    @apply border-warning text-warning;
+  }
+
+  .status-pill.closed {
+    @apply border-danger text-danger;
+  }
+
+  .feed-item,
+  .leader-row,
+  .list-row {
+    @apply rounded-token border border-line bg-panel p-3;
+  }
+
+  .feed-item {
+    @apply flex items-center justify-between gap-3 text-sm;
+  }
+
+  .feed-item span,
+  .leader-row span,
+  .list-row span {
+    @apply text-muted;
+  }
+
+  .feed-item time {
+    @apply shrink-0 text-xs font-semibold text-muted;
+  }
+
+  .leader-row {
+    @apply flex items-center justify-between gap-3 text-sm;
+  }
+
+  .leader-row strong {
+    @apply text-accent;
+  }
+
+  .list-row {
+    @apply grid gap-1 text-sm;
+  }
+
+  .list-row strong {
+    @apply text-danger;
+  }
+
+  .bar-row {
+    @apply grid items-center gap-3 text-start text-sm sm:grid-cols-[minmax(140px,220px)_1fr_auto];
+  }
+
+  .bar-row span {
+    @apply truncate font-semibold text-muted;
+  }
+
+  .bar-row div {
+    @apply h-3 overflow-hidden rounded-token bg-panel;
+  }
+
+  .bar-row i {
+    @apply block h-full rounded-token bg-accent;
+  }
+}
+
+/* Custom Space Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(3, 7, 18, 0.5);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent);
+}
+
+/* Glassmorphism Enhancements */
+.panel {
+  box-shadow: var(--shadow-soft);
+  transition: border-color 0.2s ease;
+}
+.panel:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.metric-card {
+  box-shadow: 0 4px 15px 0 rgba(0, 0, 0, 0.2);
+  transition: border-color 0.2s ease;
+}
+.metric-card:hover {
+  border-color: var(--color-accent);
+}
+
+/* Leaflet Space-Map Styling */
+.leaflet-container {
+  background: #030712 !important;
+}
+.leaflet-bar a,
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out {
+  background-color: rgba(13, 17, 30, 0.8) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(8px) !important;
+  transition: all 0.2s ease;
+}
+.leaflet-bar a:hover {
+  background-color: var(--color-accent) !important;
+  color: #030712 !important;
+}
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background-color: rgba(13, 17, 30, 0.9) !important;
+  color: #f3f4f6 !important;
+  backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 12px !important;
+  box-shadow: var(--shadow-soft) !important;
+}
+.leaflet-popup-content {
+  font-family: var(--font-body) !important;
+}
+
+/* Header Glassmorphism */
+header {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background-color: rgba(13, 17, 30, 0.6) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Module Panel Tints */
+.bg-fayy-panel,
+.bg-najji-panel,
+.bg-shuaa-panel,
+.bg-baydar-panel,
+.bg-riyah-panel,
+.bg-niza-panel,
+.bg-najm-panel,
+.bg-jamal-panel {
+  background-image: none !important;
+}
+
+.bg-fayy-panel {
+  background-color: rgba(46, 18, 15, 0.48) !important;
+}
+
+.bg-najji-panel {
+  background-color: rgba(8, 31, 45, 0.48) !important;
+}
+
+.bg-shuaa-panel {
+  background-color: rgba(48, 31, 8, 0.48) !important;
+}
+
+.bg-baydar-panel {
+  background-color: rgba(9, 40, 27, 0.48) !important;
+}
+
+.bg-riyah-panel {
+  background-color: rgba(50, 32, 11, 0.48) !important;
+}
+
+.bg-niza-panel {
+  background-color: rgba(47, 16, 20, 0.48) !important;
+}
+
+.bg-najm-panel {
+  background-color: rgba(18, 16, 48, 0.52) !important;
+}
+
+.bg-jamal-panel {
+  background-color: rgba(15, 38, 10, 0.48) !important;
+}
