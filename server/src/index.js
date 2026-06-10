@@ -239,8 +239,10 @@ if (!isDev) {
   const assetsPath = path.join(publicPath, 'assets');
 
   app.use('/assets', express.static(assetsPath, {
-    immutable: true,
-    maxAge: '1y',
+    maxAge: 0,
+    setHeaders: (res) => {
+      res.setHeader('Cache-Control', 'no-cache');
+    },
   }));
 
   app.get('/assets/*', (_req, res) => {

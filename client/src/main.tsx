@@ -5,6 +5,8 @@ import './i18n';
 import './index.css';
 import App from './App.tsx';
 
+document.documentElement.dataset.build = 'asset-refresh-2026-06-10';
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />
