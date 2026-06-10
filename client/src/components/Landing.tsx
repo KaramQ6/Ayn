@@ -161,11 +161,6 @@ export function Landing({ onStart, onUnitModeChange }: LandingProps) {
 
         {/* HERO */}
         <div className="max-w-4xl mx-auto text-center space-y-4 mb-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/20 bg-slate-950/55 text-xs font-bold text-white shadow-sm">
-            <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
-            <span>{isAr ? 'لعبة تعليمية تفاعلية — Astro Code 2026 🇯🇴' : 'Interactive Educational Game — Astro Code 2026 🇯🇴'}</span>
-          </div>
-
           <h1 className="text-5xl sm:text-7xl font-black tracking-tight text-white uppercase leading-none">
             {isAr ? 'مـركـز مـهـمّـة الأردن' : 'Mission Control Jordan'}
           </h1>
@@ -192,34 +187,34 @@ export function Landing({ onStart, onUnitModeChange }: LandingProps) {
           </div>
         </div>
 
-        {/* HOW TO PLAY */}
+        {/* HOW IT WORKS */}
         <div className="max-w-3xl mx-auto w-full mb-10">
           <div className="rounded-2xl border border-white/10 bg-slate-950/55 p-5">
             <p className="text-xs font-black uppercase tracking-widest text-slate-500 mb-3">
-              {isAr ? 'كيف تلعب؟' : 'HOW TO PLAY'}
+              {isAr ? 'كيف تعمل المنصة؟' : 'HOW IT WORKS'}
             </p>
             <div className="grid grid-cols-3 gap-4 text-center">
               {[
                 {
                   step: '01',
-                  ar: 'اختر مهمتك',
-                  en: 'Pick a Mission',
+                  ar: 'اختر الوحدة',
+                  en: 'Select a Module',
                   subAr: 'من الوحدات أدناه',
                   subEn: 'from modules below',
                 },
                 {
                   step: '02',
-                  ar: 'افهم التقنية',
-                  en: 'Learn the Tech',
-                  subAr: 'اقرأ بيانات القمر الصناعي',
-                  subEn: 'read the satellite data',
+                  ar: 'راجع البيانات',
+                  en: 'Review the Data',
+                  subAr: 'من الأقمار الصناعية والطقس',
+                  subEn: 'from satellite and weather feeds',
                 },
                 {
                   step: '03',
                   ar: 'أرسل بلاغاً',
                   en: 'Submit a Report',
-                  subAr: 'واكسب نقاطاً',
-                  subEn: 'and earn points',
+                  subAr: 'لدعم الإنذار المبكر',
+                  subEn: 'to support early warning',
                 },
               ].map(s => (
                 <div key={s.step} className="flex flex-col items-center gap-1">
