@@ -15,7 +15,6 @@ server/gcp-service-account.json
 
 dist/
 client/dist/
-server/public/
 coverage/
 .cache/
 output/

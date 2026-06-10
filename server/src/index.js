@@ -232,12 +232,13 @@ if (process.env.DEMO_MODE === 'true') {
   });
 }
 
-// Serve static client build in production (MUST be after API/health routes)
-if (!isDev) {
-  const publicPath = path.join(__dirname, '..', 'public');
-  const indexPath = path.join(publicPath, 'index.html');
-  const assetsPath = path.join(publicPath, 'assets');
+// Serve the client build when present. This also covers hosts that run the
+// server package directly without setting NODE_ENV=production.
+const publicPath = path.join(__dirname, '..', 'public');
+const indexPath = path.join(publicPath, 'index.html');
+const assetsPath = path.join(publicPath, 'assets');
 
+if (!isDev || existsSync(indexPath)) {
   app.use('/assets', express.static(assetsPath, {
     maxAge: 0,
     setHeaders: (res) => {
