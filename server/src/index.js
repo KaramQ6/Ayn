@@ -9,6 +9,7 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { existsSync } from 'fs';
 
 import apiRoutes from './routes/api.js';
 import authRoutes from './routes/auth.js';
@@ -234,9 +235,28 @@ if (process.env.DEMO_MODE === 'true') {
 // Serve static client build in production (MUST be after API/health routes)
 if (!isDev) {
   const publicPath = path.join(__dirname, '..', 'public');
-  app.use(express.static(publicPath));
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(publicPath, 'index.html'));
+  const indexPath = path.join(publicPath, 'index.html');
+  const assetsPath = path.join(publicPath, 'assets');
+
+  app.use('/assets', express.static(assetsPath, {
+    immutable: true,
+    maxAge: '1y',
+  }));
+
+  app.get('/assets/*', (_req, res) => {
+    res.status(404).type('text/plain').send('Asset not found');
+  });
+
+  app.use(express.static(publicPath, { index: false }));
+  app.get('*', (_req, res, next) => {
+    if (!existsSync(indexPath)) {
+      return res.status(503).json({ error: 'Client build not found' });
+    }
+
+    res.setHeader('Cache-Control', 'no-cache');
+    return res.sendFile(indexPath, (err) => {
+      if (err) next(err);
+    });
   });
 }
 
