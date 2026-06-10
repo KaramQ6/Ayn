@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('OK - scenarios:', len\\(d.get\\('scenarios',[]\\)\\), '| active:', d.get\\('active'\\), '| running:', d.get\\('isRunning'\\)\\)\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('OK -', len\\(d\\), 'history records'\\)\")",
+      "Bash(curl -s http://localhost:5000/api/demo/scenarios)",
+      "Bash(python3 -c \"import sys; d=sys.stdin.read\\(\\); print\\(d[:300]\\)\")",
+      "PowerShell(Set-Location client; npx tsc -b --noEmit 2>&1 | Select-Object -First 60; Write-Output \"EXIT: $LASTEXITCODE\")",
+      "PowerShell($s = \"C:\\\\Users\\\\ASUS\\\\OneDrive\\\\المستندات\\\\GitHub\\\\astro\\\\server\"; node --check \"$s\\\\src\\\\services\\\\starAnalysis.js\"; if \\($?\\) { \"starAnalysis.js OK\" }; node --check \"$s\\\\src\\\\middleware\\\\upload.js\"; if \\($?\\) { \"upload.js OK\" }; node --check \"$s\\\\src\\\\routes\\\\api.js\"; if \\($?\\) { \"api.js OK\" })",
+      "PowerShell($s = \"C:\\\\Users\\\\ASUS\\\\OneDrive\\\\المستندات\\\\GitHub\\\\astro\\\\server\"; if \\(Test-Path \"$s\\\\node_modules\\\\multer\"\\) { \"multer installed\" } else { \"MULTER MISSING\" }; if \\(Test-Path \"$s\\\\node_modules\\\\@google\\\\generative-ai\"\\) { \"gemini sdk installed\" } else { \"GEMINI SDK MISSING\" })",
+      "PowerShell($env:PORT=\"5050\"; node \"C:\\\\Users\\\\ASUS\\\\OneDrive\\\\المستندات\\\\GitHub\\\\astro\\\\server\\\\src\\\\index.js\")",
+      "PowerShell($c = \"C:\\\\Users\\\\ASUS\\\\OneDrive\\\\المستندات\\\\GitHub\\\\astro\\\\client\"; & npm.cmd --prefix $c run build 2>&1 | Select-Object -Last 20; \"EXIT: $LASTEXITCODE\")"
+    ]
+  }
+}
