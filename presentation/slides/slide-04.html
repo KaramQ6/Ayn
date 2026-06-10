@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>عين — كيف تعمل</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@200;300;400;500;600;700&family=Noto+Kufi+Arabic:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../deck.css">
+<style>
+  .flow {
+    display: grid;
+    grid-template-columns: 470px 100px 410px 100px 470px;
+    align-items: center;
+    margin-top: 70px;
+  }
+  .col { display: flex; flex-direction: column; gap: 18px; }
+  .node {
+    border: 1px solid var(--line-strong);
+    border-radius: 12px;
+    background: rgba(13,19,34,.6);
+    padding: 24px 30px;
+  }
+  .node h4 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 26px;
+    margin-bottom: 8px;
+  }
+  .node h4 span { color: var(--faint); font-family: var(--font-body); font-weight: 300; font-size: 19px; margin-inline-start: 10px; }
+  .node p { font-weight: 300; font-size: 20px; line-height: 1.65; color: var(--muted); }
+  .engine {
+    border: 1px solid rgba(255,92,51,.6);
+    border-radius: 14px;
+    background: rgba(255,92,51,.06);
+    box-shadow: 0 0 70px rgba(255,92,51,.12);
+    padding: 46px 36px;
+    text-align: center;
+  }
+  .engine h3 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 36px;
+    line-height: 1.5;
+    color: var(--text);
+  }
+  .engine p { margin-top: 14px; font-weight: 300; font-size: 21px; line-height: 1.7; color: var(--muted); }
+  .engine .law {
+    margin-top: 22px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255,92,51,.25);
+    font-size: 20px;
+    color: var(--amber);
+    font-weight: 400;
+    line-height: 1.7;
+  }
+  .link {
+    height: 1px;
+    background: linear-gradient(to left, var(--line-strong), rgba(255,92,51,.7));
+    position: relative;
+    margin: 0 14px;
+  }
+  .link::after {
+    content: '';
+    position: absolute;
+    left: -1px; top: -4.5px;
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    border-right: 9px solid rgba(255,92,51,.85);
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+<section class="slide">
+  <div class="body">
+    <div class="kicker">
+      <span class="no">03</span><span class="rule"></span><span class="label">البنية</span>
+    </div>
+
+    <h1 class="title">أربعة مصادر، محرك واحد، <span class="accent">قرار واحد</span></h1>
+
+    <div class="flow">
+      <div class="col">
+        <div class="node">
+          <h4>NASA FIRMS <span>VIIRS / MODIS</span></h4>
+          <p>بؤر حرارية فضائية ضمن نطاق 5 كم — عبر 6 مناطق استعلام تغطي المنطقة العربية كاملة.</p>
+        </div>
+        <div class="node">
+          <h4>الطقس <span>OpenWeatherMap</span></h4>
+          <p>مؤشر خطر الحريق الكندي FWI محسوباً كل ساعة لكل غابة مراقبة.</p>
+        </div>
+        <div class="node">
+          <h4>المجتمع <span>بوت تيليغرام</span></h4>
+          <p>بلاغات ميدانية مصوّرة وموقّعة جغرافياً من المواطنين والحرّاس.</p>
+        </div>
+        <div class="node">
+          <h4>الذكاء الاصطناعي <span>Vision + Gemini</span></h4>
+          <p>تحليل صور البلاغات وتصنيف سبب الحريق المرجّح من سياق القمر الصناعي.</p>
+        </div>
+      </div>
+
+      <div class="link"></div>
+
+      <div class="engine">
+        <h3>محرك التحقق المتقاطع</h3>
+        <p>تصويت مرجّح بين المصادر، مع مضاعِف ثقة يرتفع كلما اتفقت مصادر أكثر.</p>
+        <div class="law">مصدران فأكثر = إنذار مُتحقق منه</div>
+      </div>
+
+      <div class="link"></div>
+
+      <div class="col">
+        <div class="node">
+          <h4>لوحة عمليات حية</h4>
+          <p>خريطة تكتيكية وتنبيهات لحظية عبر WebSocket — بالعربية والإنجليزية والفرنسية.</p>
+        </div>
+        <div class="node">
+          <h4>إشعارات الحرّاس</h4>
+          <p>دفع فوري عبر تيليغرام لكل حارس مسجّل عند أي إنذار عالٍ أو حرج، مع الإحداثيات.</p>
+        </div>
+        <div class="node">
+          <h4>صورة تأكيد فضائية</h4>
+          <p>قَطْع Sentinel-2 بدقة 10 أمتار (SWIR) يؤكد امتداد الحريق بصرياً.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="brand">عَيْن <b>·</b> Ayn — Astro Code 2026</div>
+    <div class="page">04 / 15</div>
+  </div>
+</section>
+</div>
+<script src="../deck-scale.js"></script>
+</body>
+</html>

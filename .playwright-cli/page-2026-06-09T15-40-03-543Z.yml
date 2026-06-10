@@ -1,0 +1,143 @@
+- generic [ref=e3]:
+  - generic:
+    - img
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6] [cursor=pointer]:
+        - generic [ref=e7]:
+          - generic [ref=e8]: A
+          - generic [ref=e9]:
+            - paragraph [ref=e10]: عين
+            - paragraph [ref=e11]: مراقبة حرائق الغابات والسيول في الأردن
+        - generic [ref=e14]: فيّ للحرائق
+      - generic [ref=e15]:
+        - navigation [ref=e16]:
+          - button "العمليات" [ref=e17] [cursor=pointer]
+          - button "بلاغ" [ref=e18] [cursor=pointer]
+          - button "التحليلات" [ref=e19] [cursor=pointer]
+        - generic [ref=e20]:
+          - generic "اللغة" [ref=e21]:
+            - button "العربية" [pressed] [ref=e22] [cursor=pointer]
+            - button "English" [ref=e23] [cursor=pointer]
+          - button "إرسال بلاغ" [ref=e24] [cursor=pointer]:
+            - generic [ref=e25]: إرسال بلاغ
+  - main [ref=e26]:
+    - generic [ref=e27]:
+      - generic [ref=e28]:
+        - generic [ref=e30]:
+          - heading "لوحة العمليات" [level=2] [ref=e31]
+          - paragraph [ref=e32]: خريطة الأردن، طبقات الخطر، البلاغات، والتنبيهات اللحظية.
+        - generic [ref=e33]:
+          - generic [ref=e36]: "الدولة: الأردن 🇯🇴"
+          - button "إعادة المحاولة" [ref=e37] [cursor=pointer]
+      - generic [ref=e38]:
+        - generic [ref=e39]:
+          - generic [ref=e40]: 🔥
+          - generic [ref=e41]:
+            - heading "لوحة التحكم والمحاكاة الفضائية" [level=4] [ref=e42]:
+              - generic [ref=e43]: لوحة التحكم والمحاكاة الفضائية
+            - paragraph [ref=e45]: "🔥 وحدة فيّ للحرائق: ترصد النقاط الساخنة للحرائق في غابات الأردن عبر بيانات الأقمار الصناعية اللحظية. يمكنك تفعيل طبقة الخطر والحرائق النشطة."
+        - button "Dismiss guide" [ref=e46] [cursor=pointer]: ✕
+      - generic [ref=e47]:
+        - generic [ref=e48]:
+          - generic [ref=e49]: حرائق 24 ساعة
+          - strong [ref=e50]: "5"
+        - generic [ref=e51]:
+          - generic [ref=e52]: بلاغات 24 ساعة
+          - strong [ref=e53]: "3"
+        - generic [ref=e54]:
+          - generic [ref=e55]: تنبيهات نشطة
+          - strong [ref=e56]: "5"
+        - generic [ref=e57]:
+          - generic [ref=e58]: متوسط الخطر
+          - strong [ref=e59]: 14/100
+        - generic [ref=e60]:
+          - generic [ref=e61]: غابات مراقبة
+          - strong [ref=e62]: "8"
+      - generic [ref=e63]:
+        - generic [ref=e64]:
+          - heading "وحدات الرصد الفضائي" [level=3] [ref=e66]
+          - generic [ref=e67]:
+            - button "🔥 فيّ للحرائق" [ref=e68] [cursor=pointer]:
+              - generic [ref=e69]:
+                - generic [ref=e70]: 🔥
+                - generic [ref=e71]: فيّ للحرائق
+            - button "🌧️ نجّي للسيول" [ref=e73] [cursor=pointer]:
+              - generic [ref=e74]:
+                - generic [ref=e75]: 🌧️
+                - generic [ref=e76]: نجّي للسيول
+            - button "☀️ شعاع للطاقة الشمسية" [ref=e78] [cursor=pointer]:
+              - generic [ref=e79]:
+                - generic [ref=e80]: ☀️
+                - generic [ref=e81]: شعاع للطاقة الشمسية
+            - button "🌾 بيدر للزراعة" [ref=e83] [cursor=pointer]:
+              - generic [ref=e84]:
+                - generic [ref=e85]: 🌾
+                - generic [ref=e86]: بيدر للزراعة
+            - button "🌪️ رياح للغبار" [ref=e88] [cursor=pointer]:
+              - generic [ref=e89]:
+                - generic [ref=e90]: 🌪️
+                - generic [ref=e91]: رياح للغبار
+            - button "⚠️ نزاع للنزاعات" [ref=e93] [cursor=pointer]:
+              - generic [ref=e94]:
+                - generic [ref=e95]: ⚠️
+                - generic [ref=e96]: نزاع للنزاعات
+        - generic [ref=e98]:
+          - generic [ref=e99]:
+            - generic [ref=e100]:
+              - heading "الخريطة التشغيلية" [level=3] [ref=e101]
+              - paragraph [ref=e102]: الطبقات
+            - group "الطبقات" [ref=e103]:
+              - generic [ref=e104]:
+                - checkbox "الغابات" [checked] [ref=e105]
+                - generic [ref=e106]: الغابات
+              - generic [ref=e107]:
+                - checkbox "الخطر" [checked] [ref=e108]
+                - generic [ref=e109]: الخطر
+              - generic [ref=e110]:
+                - checkbox "الحرائق" [checked] [ref=e111]
+                - generic [ref=e112]: الحرائق
+              - generic [ref=e113]:
+                - checkbox "البلاغات" [checked] [ref=e114]
+                - generic [ref=e115]: البلاغات
+              - generic [ref=e116]:
+                - checkbox "التنبيهات" [checked] [ref=e117]
+                - generic [ref=e118]: التنبيهات
+          - generic "Jordan operational map" [ref=e119]:
+            - generic [ref=e120]:
+              - generic:
+                - generic:
+                  - img
+              - generic:
+                - generic [ref=e168]:
+                  - button "Zoom in" [ref=e169] [cursor=pointer]: +
+                  - button "Zoom out" [ref=e170] [cursor=pointer]: −
+                - generic [ref=e171]:
+                  - link "Leaflet" [ref=e172] [cursor=pointer]:
+                    - /url: https://leafletjs.com
+                    - img [ref=e173]
+                    - text: Leaflet
+                  - text: "| ©"
+                  - link "OpenStreetMap" [ref=e177] [cursor=pointer]:
+                    - /url: https://www.openstreetmap.org/copyright
+                  - text: ©
+                  - link "CARTO" [ref=e178] [cursor=pointer]:
+                    - /url: https://carto.com/attributions
+        - complementary [ref=e179]:
+          - generic [ref=e180]:
+            - generic [ref=e181]:
+              - heading "البث اللحظي" [level=3] [ref=e182]
+              - generic [ref=e183]: متصل
+            - list [ref=e184]:
+              - listitem [ref=e185]:
+                - generic [ref=e186]: connected
+                - time [ref=e187]: 6:40:02 PM
+          - generic [ref=e188]:
+            - heading "تنبيهات حرائق الغابات" [level=3] [ref=e189]
+            - list [ref=e190]:
+              - listitem [ref=e191]:
+                - strong [ref=e192]: مراقبة خطر
+                - generic [ref=e193]: مراقبة مكثفة لمحمية دبين وغابات جرش
+              - listitem [ref=e194]:
+                - strong [ref=e195]: مستقر
+                - generic [ref=e196]: رطوبة الهواء والتربة في مستويات آمنة بعجلون

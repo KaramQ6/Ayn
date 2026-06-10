@@ -1,0 +1,236 @@
+/* ============================================================
+   عين — Ayn · Deck Design System
+   Canvas: fixed 1920×1080 · RTL Arabic-first
+   Display: Noto Kufi Arabic · Body: IBM Plex Sans Arabic
+   ============================================================ */
+
+:root {
+  --bg:          #06080F;
+  --bg-raised:   #0B101D;
+  --bg-card:     #0D1322;
+  --line:        rgba(242, 237, 227, 0.10);
+  --line-strong: rgba(242, 237, 227, 0.22);
+  --text:        #F2EDE3;
+  --muted:       #939CB0;
+  --faint:       #5C6478;
+  --accent:      #FF5C33;
+  --accent-deep: #C93A18;
+  --amber:       #FFB257;
+  --cyan:        #41C9D4;
+  --green:       #58CF8E;
+  --font-display: 'Noto Kufi Arabic', 'IBM Plex Sans Arabic', sans-serif;
+  --font-body:    'IBM Plex Sans Arabic', 'Noto Kufi Arabic', sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 100%; height: 100%;
+  background: #000;
+  overflow: hidden;
+}
+
+.stage {
+  position: fixed;
+  inset: 0;
+  background: #000;
+}
+
+/* ---------- Fixed canvas ---------- */
+.slide {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 1920px; height: 1080px;
+  transform: translate(-50%, -50%); /* deck-scale.js appends scale() */
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-weight: 400;
+  direction: rtl;
+}
+
+/* ---------- Starfield + atmosphere ---------- */
+.slide::before {
+  content: '';
+  position: absolute; inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(1.6px 1.6px at 122px 84px,  rgba(242,237,227,.55) 50%, transparent 51%),
+    radial-gradient(1.2px 1.2px at 311px 218px, rgba(242,237,227,.35) 50%, transparent 51%),
+    radial-gradient(1px   1px   at 451px 47px,  rgba(242,237,227,.45) 50%, transparent 51%),
+    radial-gradient(1.4px 1.4px at 67px  333px, rgba(242,237,227,.28) 50%, transparent 51%),
+    radial-gradient(1px   1px   at 254px 401px, rgba(242,237,227,.40) 50%, transparent 51%),
+    radial-gradient(1.8px 1.8px at 388px 309px, rgba(255,178,87,.40)  50%, transparent 51%),
+    radial-gradient(1px   1px   at 175px 160px, rgba(242,237,227,.30) 50%, transparent 51%);
+  background-size: 480px 460px;
+  opacity: .5;
+}
+
+.slide::after {
+  content: '';
+  position: absolute; inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(1100px 640px at 88% -12%, rgba(255,92,51,.10), transparent 65%),
+    radial-gradient(1400px 900px at 50% 118%, rgba(6,8,15,0) 40%, rgba(0,0,0,.55) 100%);
+}
+
+.slide > * { position: relative; z-index: 1; }
+
+/* ---------- Slide chrome ---------- */
+.body {
+  position: absolute;
+  inset: 96px 120px 132px 120px;
+}
+
+.kicker {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  margin-bottom: 38px;
+}
+
+.kicker .no {
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: 30px;
+  color: var(--accent);
+  letter-spacing: .12em;
+  direction: ltr;
+}
+
+.kicker .rule { width: 64px; height: 1px; background: var(--line-strong); }
+
+.kicker .label {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 26px;
+  color: var(--muted);
+}
+
+h1.title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 76px;
+  line-height: 1.32;
+  max-width: 1480px;
+}
+
+h1.title .accent { color: var(--accent); }
+
+.lede {
+  margin-top: 26px;
+  font-size: 30px;
+  font-weight: 300;
+  line-height: 1.75;
+  color: var(--muted);
+  max-width: 1280px;
+}
+
+.footer {
+  position: absolute;
+  right: 120px; left: 120px; bottom: 58px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+  font-size: 19px;
+  color: var(--faint);
+}
+
+.footer .brand { font-family: var(--font-display); font-weight: 500; }
+.footer .brand b { color: var(--accent); font-weight: 600; }
+.footer .page { direction: ltr; letter-spacing: .18em; font-weight: 300; }
+
+/* ---------- Shared atoms ---------- */
+.accent { color: var(--accent); }
+.amber  { color: var(--amber); }
+.muted  { color: var(--muted); }
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 24px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  font-size: 22px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.chip .dot {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 14px rgba(255,92,51,.8);
+}
+
+.chip.live { border-color: rgba(88,207,142,.45); color: var(--green); }
+.chip.live .dot { background: var(--green); box-shadow: 0 0 14px rgba(88,207,142,.8); }
+
+/* Browser-style frame for product screenshots */
+.frame {
+  background: var(--bg-raised);
+  border: 1px solid var(--line-strong);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 50px 110px rgba(0,0,0,.65), 0 0 0 1px rgba(0,0,0,.4);
+}
+
+.frame .bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--line);
+  background: #0A0E19;
+  direction: ltr;
+}
+
+.frame .bar i {
+  width: 11px; height: 11px;
+  border-radius: 50%;
+  background: #2A3148;
+}
+.frame .bar i:nth-child(1) { background: #43314a; }
+
+.frame .bar .url {
+  margin-left: 14px;
+  flex: 1;
+  font-size: 15px;
+  color: var(--faint);
+  background: rgba(242,237,227,.04);
+  border-radius: 6px;
+  padding: 4px 14px;
+  font-family: var(--font-body);
+  text-align: left;
+}
+
+.frame img { display: block; width: 100%; }
+
+.caption {
+  margin-top: 22px;
+  font-size: 22px;
+  color: var(--muted);
+  font-weight: 300;
+  line-height: 1.7;
+}
+.caption b { color: var(--text); font-weight: 500; }
+
+/* ---------- Eye motif (cover / closing) ---------- */
+.eye-motif { display: block; }
+
+/* ---------- Big stat ---------- */
+.stat .v {
+  font-family: var(--font-body);
+  font-weight: 200;
+  direction: ltr;
+  color: var(--text);
+}
+.stat .k {
+  font-family: var(--font-display);
+  font-weight: 500;
+  color: var(--muted);
+}

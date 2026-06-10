@@ -178,7 +178,7 @@ export type NizaEvent = {
 
 export type UnitMode = 'fayy' | 'najji' | 'shuaa' | 'baydar' | 'riyah' | 'niza' | 'najm' | 'jamal';
 
-export type StargазingSite = {
+export type StargazingSite = {
   id: string;
   name: string;
   nameAr: string;
@@ -206,6 +206,33 @@ export type WildlifeSite = {
   trend: string;
   habitat: string;
   color: string;
+};
+
+// Result of POST /api/najm/identify — realism check + star identification
+export type StarRealismVerdict = 'genuine' | 'suspect' | 'not_celestial';
+
+export type StarAnalysis = {
+  is_real_photo: boolean;
+  realism_score: number;
+  realism_verdict: StarRealismVerdict;
+  realism_reason_ar: string;
+  realism_reason_en: string;
+  object_name_ar: string;
+  object_name_en: string;
+  object_type: 'star' | 'planet' | 'constellation' | 'galaxy' | 'nebula' | 'moon' | 'other' | 'unknown';
+  constellation_ar: string;
+  constellation_en: string;
+  apparent_magnitude: number | null;
+  distance_ly: number | null;
+  spectral_type: string;
+  description_ar: string;
+  description_en: string;
+  fun_facts: string[];
+  confidence: number;
+  analyzed: boolean;
+  demo?: boolean;
+  error?: string;
+  timestamp: string;
 };
 
 // DB-backed API types for Najm and Jamal engines
@@ -242,5 +269,4 @@ export type JamalSite = {
   country: string;
   updated_at?: string;
 };
-
 

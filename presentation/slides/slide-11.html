@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>عين — التغطية</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@200;300;400;500;600;700&family=Noto+Kufi+Arabic:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../deck.css">
+<style>
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    margin-top: 100px;
+  }
+  .stat {
+    padding: 30px 50px;
+    border-right: 1px solid var(--line);
+  }
+  .stat:first-child { border-right: none; padding-right: 4px; }
+  .stat .v {
+    font-size: 170px;
+    line-height: 1;
+    text-shadow: 0 0 60px rgba(255,92,51,.18);
+  }
+  .stat .k { display: block; font-size: 30px; margin-top: 22px; }
+  .stat .d { display: block; font-size: 21px; font-weight: 300; color: var(--faint); margin-top: 10px; line-height: 1.6; }
+  .span-line {
+    margin-top: 110px;
+    padding-top: 40px;
+    border-top: 1px solid var(--line);
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 34px;
+    line-height: 1.8;
+    color: var(--muted);
+    text-align: center;
+  }
+  .span-line b { color: var(--text); font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="stage">
+<section class="slide">
+  <div class="body">
+    <div class="kicker">
+      <span class="no">09</span><span class="rule"></span><span class="label">التغطية</span>
+    </div>
+
+    <h1 class="title">تغطية بحجم <span class="accent">الوطن العربي</span></h1>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="v">21</div>
+        <span class="k">دولة عربية</span>
+        <span class="d">من المغرب إلى عُمان، ومن سوريا إلى الصومال</span>
+      </div>
+      <div class="stat">
+        <div class="v">60</div>
+        <span class="k">غابة مراقبة</span>
+        <span class="d">بإحداثيات ونطاق رصد ونوع مناخي لكل غابة</span>
+      </div>
+      <div class="stat">
+        <div class="v">6</div>
+        <span class="k">مناطق استعلام فضائي</span>
+        <span class="d">صناديق إحداثية مدمجة تغطي المنطقة بكفاءة</span>
+      </div>
+      <div class="stat">
+        <div class="v">3</div>
+        <span class="k">لغات كاملة</span>
+        <span class="d">العربية أولاً بدعم RTL كامل، ثم الإنجليزية والفرنسية</span>
+      </div>
+    </div>
+
+    <div class="span-line">من <b>أرز الشوف</b> في لبنان (يونسكو)… إلى أشجار <b>دم الأخوين</b> في سقطرى.</div>
+  </div>
+
+  <div class="footer">
+    <div class="brand">عَيْن <b>·</b> Ayn — Astro Code 2026</div>
+    <div class="page">11 / 15</div>
+  </div>
+</section>
+</div>
+<script src="../deck-scale.js"></script>
+</body>
+</html>

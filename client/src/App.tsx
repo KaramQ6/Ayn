@@ -40,7 +40,7 @@ function pathForView(view: View) {
 function App() {
   const { i18n, t } = useTranslation();
   const [view, setView] = useState<View>(getInitialView);
-  const [countryCode, setCountryCode] = useState('JO');
+  const countryCode = 'JO';
   const [unitMode, setUnitMode] = useState<UnitMode>('fayy');
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -66,7 +66,7 @@ function App() {
     const handlePopState = () => {
       setView(getInitialView());
     };
-    window.history.replaceState(null, '', pathForView(view));
+    window.history.replaceState(null, '', pathForView(getInitialView()));
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
@@ -169,7 +169,6 @@ function App() {
         {view === 'dashboard' ? (
           <Dashboard
             countryCode={countryCode}
-            onCountryChange={setCountryCode}
             unitMode={unitMode}
             onUnitModeChange={setUnitMode}
           />

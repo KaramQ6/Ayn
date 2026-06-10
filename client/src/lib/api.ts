@@ -1,4 +1,4 @@
-import type { Report } from '../types';
+import type { Report, StarAnalysis } from '../types';
 
 const fallbackApiBaseUrl = 'http://localhost:5000';
 
@@ -34,4 +34,22 @@ export async function submitReport(input: Pick<Report, 'latitude' | 'longitude' 
     throw new Error(payload?.error || `HTTP ${response.status}`);
   }
   return payload as { success: boolean; report: Report };
+}
+
+// Upload a star photo for realism verification + identification.
+// Sent as multipart/form-data — the browser sets the Content-Type boundary.
+export async function identifyStar(file: File) {
+  const formData = new FormData();
+  formData.append('image', file);
+
+  const response = await fetch(`${API_BASE_URL}/api/najm/identify`, {
+    method: 'POST',
+    body: formData,
+  });
+
+  const payload = await response.json().catch(() => null);
+  if (!response.ok) {
+    throw new Error(payload?.error || `HTTP ${response.status}`);
+  }
+  return payload as { success: boolean; analysis: StarAnalysis };
 }

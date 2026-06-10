@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>عين — المشكلة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@200;300;400;500;600;700&family=Noto+Kufi+Arabic:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../deck.css">
+<style>
+  .pains { margin-top: 64px; }
+  .pain {
+    display: grid;
+    grid-template-columns: 150px 430px 1fr;
+    align-items: baseline;
+    gap: 48px;
+    padding: 44px 0;
+    border-top: 1px solid var(--line);
+  }
+  .pain .no {
+    direction: ltr;
+    font-weight: 200;
+    font-size: 64px;
+    color: var(--accent);
+    text-align: right;
+  }
+  .pain h3 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 36px;
+    line-height: 1.5;
+  }
+  .pain p {
+    font-weight: 300;
+    font-size: 26px;
+    line-height: 1.8;
+    color: var(--muted);
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+<section class="slide">
+  <div class="body">
+    <div class="kicker">
+      <span class="no">01</span><span class="rule"></span><span class="label">المشكلة</span>
+    </div>
+
+    <h1 class="title">الكارثة تُرصَد من الفضاء…<br>وتصل <span class="accent">متأخرةً</span> إلى الأرض</h1>
+
+    <div class="pains">
+      <div class="pain">
+        <div class="no">01</div>
+        <h3>بيانات خام ومتناثرة</h3>
+        <p>رصد الأقمار الصناعية متاح، لكنه موزّع على منصات أجنبية منفصلة لا تخاطب الجهات العربية بلغتها ولا بسياقها الجغرافي.</p>
+      </div>
+      <div class="pain">
+        <div class="no">02</div>
+        <h3>غياب التحقق الأرضي</h3>
+        <p>لا توجد قناة موحّدة تربط ما يراه المواطن في الميدان بما يلتقطه القمر الصناعي من المدار — فتضيع الإشارة وسط الضجيج.</p>
+      </div>
+      <div class="pain">
+        <div class="no">03</div>
+        <h3>إنذارٌ بلا ثقة</h3>
+        <p>الاعتماد على مصدر واحد يُنتج إنذارات كاذبة تستنزف فرق الاستجابة، أو إنذارات متأخرة لا تُسعف أحداً.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="brand">عَيْن <b>·</b> Ayn — Astro Code 2026</div>
+    <div class="page">02 / 15</div>
+  </div>
+</section>
+</div>
+<script src="../deck-scale.js"></script>
+</body>
+</html>

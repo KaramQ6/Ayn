@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { useApiResource } from '../hooks/useApiResource';
-import type { NizaEvent, UnitMode } from '../types';
+import type { NizaEvent } from '../types';
 
-export const NIZA_SITES = [
+const NIZA_SITES = [
   { id: 1, name: 'Ajloun Forest Border',      nameAr: 'حدود غابات عجلون',      lat: 32.33, lng: 35.75, type: 'Encroachment',    typeAr: 'تعدي سكني',          intensity: 'High',   intensityAr: 'عالي',  status: 'Under Review',        statusAr: 'تحت المراجعة',    area: '1.2 km²' },
   { id: 2, name: 'Wadi Rum Pastoral Lands',   nameAr: 'أراضي رم الرعوية',       lat: 29.58, lng: 35.42, type: 'Land Use Dispute', typeAr: 'نزاع استخدام أراضي', intensity: 'Medium', intensityAr: 'متوسط', status: 'Active Mediation',    statusAr: 'وساطة نشطة',      area: '4.5 km²' },
   { id: 3, name: 'Badia Aquifers Zone C',     nameAr: 'آبار البادية المنطقة C',  lat: 31.83, lng: 36.82, type: 'Water Conflict',   typeAr: 'نزاع مائي',          intensity: 'High',   intensityAr: 'عالي',  status: 'Enforcement Pending', statusAr: 'بانتظار الإنفاذ', area: '0.8 km²' },
@@ -34,7 +34,7 @@ function formatEventDate(dateStr?: string) {
   }
 }
 
-export function ConflictPanel({ unitMode: _ = 'niza' }: { unitMode?: UnitMode }) {
+export function ConflictPanel() {
   const { i18n } = useTranslation();
   const isAr = i18n.language === 'ar';
 

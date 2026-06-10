@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>عين — وحدة فيّ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@200;300;400;500;600;700&family=Noto+Kufi+Arabic:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../deck.css">
+<style>
+  .split {
+    display: grid;
+    grid-template-columns: 600px 1fr;
+    gap: 80px;
+    align-items: start;
+    margin-top: 56px;
+  }
+  .feature {
+    padding: 28px 0;
+    border-top: 1px solid var(--line);
+  }
+  .feature h4 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 27px;
+    margin-bottom: 8px;
+  }
+  .feature p { font-weight: 300; font-size: 21px; line-height: 1.7; color: var(--muted); }
+  .titlebar { display: flex; align-items: center; gap: 34px; }
+</style>
+</head>
+<body>
+<div class="stage">
+<section class="slide">
+  <div class="body">
+    <div class="kicker">
+      <span class="no">05</span><span class="rule"></span><span class="label">الوحدة الأولى</span>
+    </div>
+
+    <div class="titlebar">
+      <h1 class="title">«فيّ» — عينُ <span class="accent">الغابات</span></h1>
+      <span class="chip live"><span class="dot"></span>تشغيلية · جاهزة للعرض الحي</span>
+    </div>
+
+    <div class="split">
+      <div>
+        <div class="feature" style="border-top:none; padding-top:34px">
+          <h4>مؤشر خطر علمي، كل ساعة</h4>
+          <p>تطبيق حي لمنظومة FWI الكندية (Van Wagner 1987) يعيد حساب الخطر كل ساعة لكل غابة مراقبة.</p>
+        </div>
+        <div class="feature">
+          <h4>معايرة لكل مناخ عربي</h4>
+          <p>معاملات تصحيح لـ 40 نوع غابة — من أرز الأطلس الجبلي إلى مانغروف رأس محمد الرطب.</p>
+        </div>
+        <div class="feature">
+          <h4>تأكيد فضائي بدقة 10 أمتار</h4>
+          <p>صور Sentinel-2 بطيف SWIR تكشف امتداد الحريق الفعلي تحت الدخان.</p>
+        </div>
+        <div class="feature">
+          <h4>ذكاء يفسّر، لا يكتفي بالرصد</h4>
+          <p>Gemini يصنّف سبب الحريق المرجّح — طبيعي، بشري، أو متعمد — من سياق البيانات.</p>
+        </div>
+      </div>
+
+      <div>
+        <div class="frame">
+          <div class="bar">
+            <i></i><i></i><i></i>
+            <span class="url">ayn.platform / operations — Fayy</span>
+          </div>
+          <img src="../assets/dashboard_fayy.png" alt="لوحة عمليات وحدة فيّ">
+        </div>
+        <p class="caption"><b>لوحة عمليات فيّ:</b> بؤر حرارية حية، درجات خطر لحظية، وإنذارات متحقق منها على خريطة تكتيكية واحدة.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="brand">عَيْن <b>·</b> Ayn — Astro Code 2026</div>
+    <div class="page">06 / 15</div>
+  </div>
+</section>
+</div>
+<script src="../deck-scale.js"></script>
+</body>
+</html>

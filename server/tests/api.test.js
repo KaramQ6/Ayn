@@ -1,0 +1,243 @@
+import { describe, it, beforeEach, afterEach } from 'node:test';
+import assert from 'node:assert/strict';
+import http from 'node:http';
+import Database from 'better-sqlite3';
+import express from 'express';
+import apiRoutes from '../src/routes/api.js';
+
+function createTestDb() {
+  const db = new Database(':memory:');
+  db.exec(`
+    CREATE TABLE fire_hotspots (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      latitude REAL NOT NULL, longitude REAL NOT NULL,
+      brightness REAL, confidence TEXT, acq_date TEXT, acq_time TEXT,
+      satellite TEXT, source TEXT DEFAULT 'FIRMS',
+      country TEXT,
+      created_at TEXT DEFAULT (datetime('now'))
+    );
+    CREATE TABLE reports (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      telegram_user_id TEXT, username TEXT,
+      user_id INTEGER,
+      latitude REAL, longitude REAL, photo_url TEXT,
+      report_type TEXT DEFAULT 'unknown', description TEXT,
+      status TEXT DEFAULT 'pending',
+      ai_classification TEXT, ai_confidence REAL, ai_analysis TEXT,
+      points_awarded INTEGER DEFAULT 0,
+      country TEXT,
+      created_at TEXT DEFAULT (datetime('now'))
+    );
+    CREATE TABLE alerts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      level TEXT NOT NULL, type TEXT,
+      latitude REAL, longitude REAL, message TEXT,
+      sources TEXT, confidence REAL DEFAULT 0,
+      resolved INTEGER DEFAULT 0, resolved_at TEXT,
+      country TEXT,
+      created_at TEXT DEFAULT (datetime('now'))
+    );
+    CREATE TABLE fire_risk (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      region TEXT NOT NULL, latitude REAL, longitude REAL,
+      temperature REAL, humidity REAL, wind_speed REAL, rain_1h REAL,
+      risk_score INTEGER,
+      rain_probability REAL,
+      rain_label TEXT,
+      country TEXT,
+      updated_at TEXT DEFAULT (datetime('now'))
+    );
+    CREATE TABLE rangers (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      telegram_chat_id TEXT UNIQUE, name TEXT, region TEXT,
+      active INTEGER DEFAULT 1,
+      created_at TEXT DEFAULT (datetime('now'))
+    );
+  `);
+  return db;
+}
+
+function createApp(db) {
+  const app = express();
+  app.use(express.json());
+  app.locals.db = db;
+  app.locals.broadcast = () => {};
+  app.use('/api', apiRoutes);
+  return app;
+}
+
+// Simple test request helper using Node http
+async function request(app, method, url, body) {
+  return new Promise((resolve, reject) => {
+    const server = app.listen(0, () => {
+      const port = server.address().port;
+      const options = {
+        hostname: 'localhost',
+        port,
+        path: url,
+        method: method.toUpperCase(),
+        headers: body ? { 'Content-Type': 'application/json' } : {},
+      };
+
+      const req = http.request(options, (res) => {
+        let data = '';
+        res.on('data', chunk => data += chunk);
+        res.on('end', () => {
+          server.close();
+          try {
+            resolve({ status: res.statusCode, body: JSON.parse(data) });
+          } catch {
+            resolve({ status: res.statusCode, body: data });
+          }
+        });
+      });
+      req.on('error', (err) => { server.close(); reject(err); });
+      if (body) req.write(JSON.stringify(body));
+      req.end();
+    });
+  });
+}
+
+describe('API Routes', () => {
+  let db;
+  let app;
+
+  beforeEach(() => {
+    db = createTestDb();
+    app = createApp(db);
+  });
+
+  it('GET /api/fires returns array', async () => {
+    const res = await request(app, 'GET', '/api/fires');
+    assert.strictEqual(res.status, 200);
+    assert.ok(Array.isArray(res.body));
+  });
+
+  it('GET /api/stats returns expected shape', async () => {
+    const res = await request(app, 'GET', '/api/stats');
+    assert.strictEqual(res.status, 200);
+    assert.ok('fires_24h' in res.body);
+    assert.ok('reports_24h' in res.body);
+    assert.ok('active_alerts' in res.body);
+    assert.ok('avg_fire_risk' in res.body);
+    assert.ok('forests_monitored' in res.body);
+    assert.strictEqual(res.body.forests_monitored, 8);
+  });
+
+  it('GET /api/alerts returns array', async () => {
+    const res = await request(app, 'GET', '/api/alerts');
+    assert.strictEqual(res.status, 200);
+    assert.ok(Array.isArray(res.body));
+  });
+
+  it('GET /api/risk returns array', async () => {
+    const res = await request(app, 'GET', '/api/risk');
+    assert.strictEqual(res.status, 200);
+    assert.ok(Array.isArray(res.body));
+  });
+
+  it('GET /api/forests returns active Jordan forests', async () => {
+    const res = await request(app, 'GET', '/api/forests');
+    assert.strictEqual(res.status, 200);
+    assert.ok(Array.isArray(res.body));
+    assert.strictEqual(res.body.length, 8);
+    assert.ok(res.body.every(forest => forest.country === 'JO'));
+    assert.ok(res.body[0].name);
+    assert.ok(res.body[0].lat);
+  });
+
+  it('GET /api/countries returns Jordan only by default', async () => {
+    const res = await request(app, 'GET', '/api/countries');
+    assert.strictEqual(res.status, 200);
+    assert.deepStrictEqual(res.body.map(country => country.code), ['JO']);
+    assert.strictEqual(res.body[0].forestCount, 8);
+  });
+
+  it('excludes inactive countries from scoped API results', async () => {
+    db.prepare(`
+      INSERT INTO fire_hotspots (latitude, longitude, brightness, confidence, satellite, country)
+      VALUES (33.67, 35.68, 330, 'high', 'VIIRS', 'LB')
+    `).run();
+    db.prepare(`
+      INSERT INTO fire_hotspots (latitude, longitude, brightness, confidence, satellite, country)
+      VALUES (32.34, 35.75, 335, 'high', 'VIIRS', 'JO')
+    `).run();
+
+    const allScoped = await request(app, 'GET', '/api/fires');
+    assert.strictEqual(allScoped.status, 200);
+    assert.strictEqual(allScoped.body.length, 1);
+    assert.strictEqual(allScoped.body[0].country, 'JO');
+
+    const inactive = await request(app, 'GET', '/api/fires?country=LB');
+    assert.strictEqual(inactive.status, 200);
+    assert.deepStrictEqual(inactive.body, []);
+  });
+
+  it('returns zero stats for inactive country queries', async () => {
+    db.prepare(`
+      INSERT INTO reports (latitude, longitude, country, report_type, points_awarded)
+      VALUES (33.67, 35.68, 'LB', 'fire', 10)
+    `).run();
+    db.prepare(`
+      INSERT INTO alerts (level, type, latitude, longitude, message, country, resolved)
+      VALUES ('HIGH', 'fire', 33.67, 35.68, 'Lebanon alert', 'LB', 0)
+    `).run();
+
+    const res = await request(app, 'GET', '/api/stats?country=LB');
+    assert.strictEqual(res.status, 200);
+    assert.strictEqual(res.body.fires_24h, 0);
+    assert.strictEqual(res.body.reports_24h, 0);
+    assert.strictEqual(res.body.active_alerts, 0);
+    assert.strictEqual(res.body.forests_monitored, 0);
+    assert.deepStrictEqual(res.body.forests, []);
+  });
+
+  it('POST /api/reports creates a report', async () => {
+    const res = await request(app, 'POST', '/api/reports', {
+      latitude: 32.3,
+      longitude: 35.7,
+      report_type: 'fire',
+      description: 'Test fire report',
+    });
+    assert.strictEqual(res.status, 200);
+    assert.ok(res.body.success);
+    assert.ok(res.body.report);
+    assert.strictEqual(res.body.report.report_type, 'fire');
+  });
+
+  it('POST /api/reports rejects invalid coordinates', async () => {
+    const res = await request(app, 'POST', '/api/reports', {
+      latitude: 0,
+      longitude: 0,
+      report_type: 'fire',
+    });
+    assert.strictEqual(res.status, 400);
+  });
+
+  it('PATCH /api/alerts/:id/resolve resolves an alert', async () => {
+    db.prepare(`
+      INSERT INTO alerts (level, type, latitude, longitude, message, sources, confidence)
+      VALUES ('HIGH', 'cross_validated', 32.3, 35.7, 'Test alert', 'FIRMS', 80)
+    `).run();
+
+    const res = await request(app, 'PATCH', '/api/alerts/1/resolve');
+    assert.strictEqual(res.status, 200);
+    assert.ok(res.body.success);
+    assert.strictEqual(res.body.alert.resolved, 1);
+  });
+
+  it('PATCH /api/alerts/:id/resolve returns 404 for missing alert', async () => {
+    const res = await request(app, 'PATCH', '/api/alerts/999/resolve');
+    assert.strictEqual(res.status, 404);
+  });
+
+  it('GET /api/stats/history returns chart data', async () => {
+    const res = await request(app, 'GET', '/api/stats/history?days=7');
+    assert.strictEqual(res.status, 200);
+    assert.ok('fireTrend' in res.body);
+    assert.ok('alertTrend' in res.body);
+    assert.ok('riskDistribution' in res.body);
+    assert.ok('reportsByType' in res.body);
+    assert.ok('riskTrend' in res.body);
+  });
+});

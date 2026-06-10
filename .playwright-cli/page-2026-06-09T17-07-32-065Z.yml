@@ -1,0 +1,25 @@
+- generic [ref=e3]:
+  - generic [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e9]: منصة الاستشعار الفضائية المتكاملة للأردن 🇯🇴
+      - heading "مـنـصّـة عـيـن" [level=1] [ref=e10]
+      - paragraph [ref=e11]: لوحة عمليات فضائية فورية لفرق الاستجابة للطوارئ ورصد المخاطر الطبيعية والبيئية في الأردن.
+    - generic [ref=e13]:
+      - generic [ref=e14]: 📡
+      - generic [ref=e15]:
+        - heading "الرجاء اختيار وحدة الرصد لتفعيل البيانات" [level=4] [ref=e16]
+        - paragraph [ref=e17]: انقر على إحدى الوحدات أدناه لتحميل خرائط الرادار، مستويات الرطوبة، مؤشرات الحرائق والسيول مباشرة على خريطة الأردن.
+    - generic [ref=e18]:
+      - button "فيّ" [ref=e19] [cursor=pointer]:
+        - heading "فيّ" [level=3] [ref=e20]
+      - button "نجّي" [ref=e21] [cursor=pointer]:
+        - heading "نجّي" [level=3] [ref=e22]
+      - button "بيدر" [ref=e23] [cursor=pointer]:
+        - heading "بيدر" [level=3] [ref=e24]
+      - button "شعاع" [ref=e25] [cursor=pointer]:
+        - heading "شعاع" [level=3] [ref=e26]
+      - button "رياح" [ref=e27] [cursor=pointer]:
+        - heading "رياح" [level=3] [ref=e28]
+      - button "نزاع" [ref=e29] [cursor=pointer]:
+        - heading "نزاع" [level=3] [ref=e30]
+  - main [ref=e31]

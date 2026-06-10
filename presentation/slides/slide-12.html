@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>عين — التقنيات</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@200;300;400;500;600;700&family=Noto+Kufi+Arabic:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../deck.css">
+<style>
+  .stack {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 70px;
+    margin-top: 64px;
+  }
+  .layer h3 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 27px;
+    color: var(--accent);
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--line-strong);
+    margin-bottom: 8px;
+  }
+  .tech {
+    padding: 15px 2px;
+    border-bottom: 1px solid var(--line);
+  }
+  .tech .nm { font-size: 23px; font-weight: 500; direction: ltr; text-align: right; }
+  .tech .ds { font-size: 18px; font-weight: 300; color: var(--faint); margin-top: 4px; line-height: 1.55; }
+  .proof {
+    margin-top: 56px;
+    display: flex;
+    gap: 18px;
+  }
+  .proof .chip { font-size: 21px; }
+</style>
+</head>
+<body>
+<div class="stage">
+<section class="slide">
+  <div class="body">
+    <div class="kicker">
+      <span class="no">10</span><span class="rule"></span><span class="label">التقنيات</span>
+    </div>
+
+    <h1 class="title">مبنيّة <span class="accent">للإنتاج</span>… لا للعرض فقط</h1>
+
+    <div class="stack">
+      <div class="layer">
+        <h3>الواجهة</h3>
+        <div class="tech"><div class="nm">React 19 + Vite</div><div class="ds">تحميل كسول وأداء لحظي</div></div>
+        <div class="tech"><div class="nm">Leaflet</div><div class="ds">الخريطة التكتيكية الحية</div></div>
+        <div class="tech"><div class="nm">Recharts + GSAP</div><div class="ds">تحليلات وحركة سينمائية</div></div>
+        <div class="tech"><div class="nm">react-i18next</div><div class="ds">ثلاث لغات و RTL كامل</div></div>
+      </div>
+      <div class="layer">
+        <h3>الخادم</h3>
+        <div class="tech"><div class="nm">Node.js + Express</div><div class="ds">REST API بحدود معدّل آمنة</div></div>
+        <div class="tech"><div class="nm">SQLite (WAL)</div><div class="ds">خمسة جداول، فلترة بالدولة</div></div>
+        <div class="tech"><div class="nm">WebSocket + cron</div><div class="ds">بث لحظي ومهام مجدولة</div></div>
+        <div class="tech"><div class="nm">JWT + Zod</div><div class="ds">مصادقة وتحقق صارم من المدخلات</div></div>
+      </div>
+      <div class="layer">
+        <h3>الذكاء والفضاء</h3>
+        <div class="tech"><div class="nm">NASA FIRMS</div><div class="ds">بؤر VIIRS / MODIS الحرارية</div></div>
+        <div class="tech"><div class="nm">Google Cloud Vision</div><div class="ds">تحليل صور البلاغات</div></div>
+        <div class="tech"><div class="nm">Gemini Flash</div><div class="ds">تصنيف سبب الحريق</div></div>
+        <div class="tech"><div class="nm">Sentinel-2 SWIR</div><div class="ds">تأكيد بصري بدقة 10 أمتار</div></div>
+      </div>
+      <div class="layer">
+        <h3>الجودة والنشر</h3>
+        <div class="tech"><div class="nm">Docker</div><div class="ds">نشر بأمر واحد، فحص صحة مدمج</div></div>
+        <div class="tech"><div class="nm">19 اختباراً آلياً</div><div class="ds">للمحرك والمسارات والجغرافيا</div></div>
+        <div class="tech"><div class="nm">Helmet + Rate-Limit</div><div class="ds">تحصين ضد الإساءة</div></div>
+        <div class="tech"><div class="nm">وضع العرض التجريبي</div><div class="ds">يعمل بالكامل دون أي مفاتيح API</div></div>
+      </div>
+    </div>
+
+    <div class="proof">
+      <span class="chip live"><span class="dot"></span>يعمل الآن — عرض حي خلال دقائق</span>
+      <span class="chip">5 سيناريوهات عرض: الأردن، لبنان، العراق، المغرب، اليمن</span>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="brand">عَيْن <b>·</b> Ayn — Astro Code 2026</div>
+    <div class="page">12 / 15</div>
+  </div>
+</section>
+</div>
+<script src="../deck-scale.js"></script>
+</body>
+</html>

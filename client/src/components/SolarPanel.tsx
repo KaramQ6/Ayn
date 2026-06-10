@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useApiResource } from '../hooks/useApiResource';
-import type { SolarSite, UnitMode } from '../types';
+import type { SolarSite } from '../types';
 
 function potentialColor(label: string) {
   if (label === 'EXCELLENT') return 'text-[#f59e0b]';
@@ -19,7 +19,7 @@ function scoreBar(score: number) {
   );
 }
 
-export function SolarPanel({ countryCode, unitMode: _ = 'shuaa' }: { countryCode: string; unitMode?: UnitMode }) {
+export function SolarPanel({ countryCode }: { countryCode: string }) {
   const { t } = useTranslation();
   const url = countryCode ? `/api/solar?country=${countryCode}` : '/api/solar';
   const solar = useApiResource<SolarSite[]>(url, []);

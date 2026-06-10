@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>عين · Ayn — العرض التقديمي</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
+  iframe {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    border: none;
+    pointer-events: none; /* keyboard + clicks stay with the navigator */
+  }
+  .hud {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 22px;
+    padding: 14px 0 18px;
+    font-family: 'IBM Plex Sans Arabic', sans-serif;
+    color: rgba(242,237,227,.55);
+    opacity: 0;
+    transition: opacity .35s;
+    background: linear-gradient(to top, rgba(0,0,0,.75), transparent);
+  }
+  body:hover .hud { opacity: 1; }
+  .hud button {
+    background: rgba(242,237,227,.06);
+    border: 1px solid rgba(242,237,227,.2);
+    color: rgba(242,237,227,.85);
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    font-size: 18px;
+    cursor: pointer;
+  }
+  .hud button:hover { background: rgba(255,92,51,.25); border-color: rgba(255,92,51,.6); }
+  .hud .counter { direction: ltr; font-size: 15px; letter-spacing: .2em; min-width: 70px; text-align: center; }
+  .hud .hint { font-size: 13px; font-weight: 300; color: rgba(242,237,227,.35); }
+  .progress {
+    position: fixed;
+    top: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(to left, #FF5C33, #FFB257);
+    z-index: 11;
+    transition: width .3s ease;
+    box-shadow: 0 0 12px rgba(255,92,51,.6);
+  }
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+<iframe id="frame" src="slides/slide-01.html"></iframe>
+
+<div class="hud">
+  <button onclick="go(current+1)" title="التالي">‹</button>
+  <div class="counter" id="counter">1 / 15</div>
+  <button onclick="go(current-1)" title="السابق">›</button>
+  <div class="hint">← → للتنقل &nbsp;·&nbsp; F لملء الشاشة &nbsp;·&nbsp; نقرة = التالي</div>
+</div>
+
+<script>
+  const MANIFEST = [
+    'slides/slide-01.html', 'slides/slide-02.html', 'slides/slide-03.html',
+    'slides/slide-04.html', 'slides/slide-05.html', 'slides/slide-06.html',
+    'slides/slide-07.html', 'slides/slide-08.html', 'slides/slide-09.html',
+    'slides/slide-10.html', 'slides/slide-11.html', 'slides/slide-12.html',
+    'slides/slide-13.html', 'slides/slide-14.html', 'slides/slide-15.html'
+  ];
+
+  let current = 0;
+  try { current = parseInt(localStorage.getItem('ayn-slide') || '0', 10) || 0; } catch (e) {}
+
+  function go(n) {
+    current = Math.max(0, Math.min(MANIFEST.length - 1, n));
+    try { localStorage.setItem('ayn-slide', current); } catch (e) {}
+    document.getElementById('frame').src = MANIFEST[current];
+    document.getElementById('counter').textContent = (current + 1) + ' / ' + MANIFEST.length;
+    document.getElementById('progress').style.width = ((current + 1) / MANIFEST.length * 100) + '%';
+  }
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'PageUp') { e.preventDefault(); go(current - 1); }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ' || e.key === 'Enter') { e.preventDefault(); go(current + 1); }
+    if (e.key === 'Home') go(0);
+    if (e.key === 'End') go(MANIFEST.length - 1);
+    if (e.key === 'f' || e.key === 'F') {
+      if (document.fullscreenElement) document.exitFullscreen();
+      else document.documentElement.requestFullscreen();
+    }
+  });
+
+  // Click anywhere advances; the HUD buttons stop propagation via their own handlers.
+  document.body.addEventListener('click', function (e) {
+    if (e.target.closest('.hud')) return;
+    go(current + 1);
+  });
+
+  go(current);
+</script>
+</body>
+</html>

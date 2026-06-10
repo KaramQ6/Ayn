@@ -1,0 +1,115 @@
+- generic [ref=e3]:
+  - banner [ref=e32]:
+    - generic [ref=e33]:
+      - generic [ref=e34] [cursor=pointer]:
+        - generic [ref=e35]:
+          - generic [ref=e36]: A
+          - generic [ref=e37]:
+            - paragraph [ref=e38]: عين
+            - paragraph [ref=e39]: مراقبة حرائق الغابات والسيول في الأردن
+        - generic [ref=e41]: نجّي
+      - generic [ref=e42]:
+        - navigation [ref=e43]:
+          - button "العمليات" [ref=e44] [cursor=pointer]
+          - button "بلاغ" [ref=e45] [cursor=pointer]
+          - button "التحليلات" [ref=e46] [cursor=pointer]
+        - generic [ref=e47]:
+          - generic "اللغة" [ref=e48]:
+            - button "العربية" [pressed] [ref=e49] [cursor=pointer]
+            - button "English" [ref=e50] [cursor=pointer]
+          - button "إرسال بلاغ" [ref=e51] [cursor=pointer]:
+            - generic [ref=e52]: إرسال بلاغ
+  - main [ref=e31]:
+    - generic [ref=e53]:
+      - generic [ref=e54]:
+        - generic [ref=e56]:
+          - heading "لوحة العمليات" [level=2] [ref=e57]
+          - paragraph [ref=e58]: خريطة الأردن، طبقات الخطر، البلاغات، والتنبيهات اللحظية.
+        - button "إعادة المحاولة" [ref=e60] [cursor=pointer]
+      - generic [ref=e61]:
+        - generic [ref=e62]:
+          - generic [ref=e63]: 🌧️
+          - generic [ref=e64]:
+            - heading "لوحة التحكم والمحاكاة الفضائية" [level=4] [ref=e65]:
+              - generic [ref=e66]: لوحة التحكم والمحاكاة الفضائية
+            - paragraph [ref=e67]: "وحدة نجّي: تتبع تدفق المياه والأمطار في أودية الأردن الحرجة لتوفير إنذار مبكر للسيول الجارفة."
+        - button "Dismiss guide" [ref=e68] [cursor=pointer]: ✕
+      - generic [ref=e69]:
+        - generic [ref=e70]:
+          - generic [ref=e71]: تنبيهات السيول (24س)
+          - strong [ref=e72]: "0"
+        - generic [ref=e73]:
+          - generic [ref=e74]: متوسط الأمطار
+          - strong [ref=e75]: 18.4 mm
+        - generic [ref=e76]:
+          - generic [ref=e77]: تدفق السيول
+          - strong [ref=e78]: 2.4 m³/s
+        - generic [ref=e79]:
+          - generic [ref=e80]: الأودية الحرجة
+          - strong [ref=e81]: "3"
+        - generic [ref=e82]:
+          - generic [ref=e83]: الأودية المراقبة
+          - strong [ref=e84]: "12"
+      - generic [ref=e85]:
+        - generic [ref=e86]:
+          - heading "وحدات الرصد الفضائي" [level=3] [ref=e88]
+          - generic [ref=e89]:
+            - button "فيّ" [ref=e90] [cursor=pointer]:
+              - generic [ref=e91]: فيّ
+            - button "نجّي" [ref=e92] [cursor=pointer]:
+              - generic [ref=e93]: نجّي
+            - button "شعاع" [ref=e94] [cursor=pointer]:
+              - generic [ref=e95]: شعاع
+            - button "بيدر" [ref=e96] [cursor=pointer]:
+              - generic [ref=e97]: بيدر
+            - button "رياح" [ref=e98] [cursor=pointer]:
+              - generic [ref=e99]: رياح
+            - button "نزاع" [ref=e100] [cursor=pointer]:
+              - generic [ref=e101]: نزاع
+        - generic [ref=e102]:
+          - generic [ref=e103]:
+            - generic [ref=e104]:
+              - heading "الخريطة التشغيلية" [level=3] [ref=e105]
+              - paragraph [ref=e106]: تركيز السيول
+            - group "الطبقات" [ref=e107]:
+              - generic [ref=e108]:
+                - checkbox "الخطر" [checked] [ref=e109]
+                - generic [ref=e110]: الخطر
+              - generic [ref=e111]:
+                - checkbox "البلاغات" [checked] [ref=e112]
+                - generic [ref=e113]: البلاغات
+              - generic [ref=e114]:
+                - checkbox "التنبيهات" [checked] [ref=e115]
+                - generic [ref=e116]: التنبيهات
+          - generic "Jordan operational map" [ref=e117]:
+            - generic [ref=e118]:
+              - generic:
+                - generic:
+                  - img
+              - generic:
+                - generic [ref=e158]:
+                  - button "Zoom in" [ref=e159] [cursor=pointer]: +
+                  - button "Zoom out" [ref=e160] [cursor=pointer]: −
+                - generic [ref=e161]:
+                  - link "Leaflet" [ref=e162] [cursor=pointer]:
+                    - /url: https://leafletjs.com
+                    - img [ref=e163]
+                    - text: Leaflet
+                  - text: "| ©"
+                  - link "OpenStreetMap" [ref=e167] [cursor=pointer]:
+                    - /url: https://www.openstreetmap.org/copyright
+                  - text: ©
+                  - link "CARTO" [ref=e168] [cursor=pointer]:
+                    - /url: https://carto.com/attributions
+        - complementary [ref=e169]:
+          - generic [ref=e170]:
+            - generic [ref=e171]:
+              - heading "البث اللحظي" [level=3] [ref=e172]
+              - generic [ref=e173]: متصل
+            - list [ref=e174]:
+              - listitem [ref=e175]:
+                - generic [ref=e176]: connected
+                - time [ref=e177]: 8:04:44 PM
+          - generic [ref=e178]:
+            - heading "تحديثات السيول" [level=3] [ref=e179]
+            - paragraph [ref=e180]: لا توجد بيانات حالياً.

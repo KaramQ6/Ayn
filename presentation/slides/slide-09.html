@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>عين — منظومة الوحدات</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@200;300;400;500;600;700&family=Noto+Kufi+Arabic:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../deck.css">
+<style>
+  .modules {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-rows: 1fr;
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-top: 50px;
+    height: 640px;
+  }
+  .mod {
+    background: rgba(8,11,20,.92);
+    padding: 30px 36px;
+    display: flex;
+    flex-direction: column;
+  }
+  .mod .head { display: flex; align-items: baseline; justify-content: space-between; }
+  .mod h3 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 35px;
+  }
+  .mod .latin { direction: ltr; font-size: 17px; font-weight: 300; color: var(--faint); }
+  .mod .focus { margin-top: 10px; font-size: 22px; font-weight: 400; color: var(--text); }
+  .mod .src   { margin-top: 6px; font-size: 17px; font-weight: 300; color: var(--faint); }
+  .mod .status {
+    margin-top: auto;
+    align-self: flex-start;
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 600;
+    padding: 6px 16px;
+    border-radius: 999px;
+    border: 1px solid;
+  }
+  .st-live  { color: var(--green); border-color: rgba(88,207,142,.45); background: rgba(88,207,142,.06); }
+  .st-proto { color: var(--amber); border-color: rgba(255,178,87,.35); background: rgba(255,178,87,.05); }
+  .st-vision{ color: var(--faint); border-color: var(--line-strong); }
+  .mod.lead { background: linear-gradient(135deg, rgba(255,92,51,.10), rgba(8,11,20,.92) 55%); }
+  .mod.lead h3 { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="stage">
+<section class="slide">
+  <div class="body">
+    <div class="kicker">
+      <span class="no">07</span><span class="rule"></span><span class="label">المنصة المعيارية</span>
+    </div>
+
+    <h1 class="title">تسع عيون… على منطقةٍ <span class="accent">واحدة</span></h1>
+
+    <div class="modules">
+      <div class="mod lead">
+        <div class="head"><h3>فيّ</h3><span class="latin">FAYY</span></div>
+        <div class="focus">حرائق الغابات وإزالة الأشجار</div>
+        <div class="src">NASA FIRMS + Sentinel-2</div>
+        <span class="status st-live">تشغيلية</span>
+      </div>
+      <div class="mod">
+        <div class="head"><h3>نجّي</h3><span class="latin">NAJJI</span></div>
+        <div class="focus">الإنذار المبكر للسيول</div>
+        <div class="src">Open-Meteo + شبكة الأودية SRTM</div>
+        <span class="status st-proto">نموذج أولي</span>
+      </div>
+      <div class="mod">
+        <div class="head"><h3>بيدر</h3><span class="latin">BAYDAR</span></div>
+        <div class="focus">الزراعة الدقيقة وإجهاد المحاصيل</div>
+        <div class="src">رطوبة التربة + التبخر-نتح ET₀</div>
+        <span class="status st-proto">نموذج أولي</span>
+      </div>
+      <div class="mod">
+        <div class="head"><h3>رياح</h3><span class="latin">RIYAH</span></div>
+        <div class="focus">العواصف الغبارية وجودة الهواء</div>
+        <div class="src">OpenWeatherMap AQI</div>
+        <span class="status st-proto">نموذج أولي</span>
+      </div>
+      <div class="mod">
+        <div class="head"><h3>نزاع</h3><span class="latin">NIZA</span></div>
+        <div class="focus">استخبارات النزاع والتعدّي</div>
+        <div class="src">Wikipedia API — مناطق النزاع</div>
+        <span class="status st-proto">نموذج أولي</span>
+      </div>
+      <div class="mod">
+        <div class="head"><h3>شعاع</h3><span class="latin">SHU'AA</span></div>
+        <div class="focus">رصد الإشعاع الشمسي</div>
+        <div class="src">GHI + UV + الغطاء السحابي</div>
+        <span class="status st-proto">نموذج أولي</span>
+      </div>
+      <div class="mod">
+        <div class="head"><h3>جمال</h3><span class="latin">JAMAL</span></div>
+        <div class="focus">تتبع الحياة البرية المهددة</div>
+        <div class="src">GBIF — التنوع الحيوي العالمي</div>
+        <span class="status st-proto">نموذج أولي</span>
+      </div>
+      <div class="mod">
+        <div class="head"><h3>نجم</h3><span class="latin">NAJM</span></div>
+        <div class="focus">ظروف الرصد الفلكي</div>
+        <div class="src">جودة السماء + الغطاء السحابي</div>
+        <span class="status st-proto">نموذج أولي</span>
+      </div>
+      <div class="mod">
+        <div class="head"><h3>ميّة</h3><span class="latin">MIYYA</span></div>
+        <div class="focus">تسرّبات المياه الجوفية</div>
+        <div class="src">Sentinel-1 — رادار SAR</div>
+        <span class="status st-vision">رؤية مستقبلية</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="brand">عَيْن <b>·</b> Ayn — Astro Code 2026</div>
+    <div class="page">09 / 15</div>
+  </div>
+</section>
+</div>
+<script src="../deck-scale.js"></script>
+</body>
+</html>

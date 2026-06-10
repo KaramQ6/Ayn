@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>عين — الغلاف</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@200;300;400;500;600;700&family=Noto+Kufi+Arabic:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../deck.css">
+<style>
+  .cover {
+    position: absolute; inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding-bottom: 60px;
+  }
+  .wordmark {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 200px;
+    line-height: 1.1;
+    margin-top: -10px;
+    text-shadow: 0 0 90px rgba(255,92,51,.25);
+  }
+  .latin {
+    direction: ltr;
+    font-family: var(--font-body);
+    font-weight: 300;
+    font-size: 24px;
+    letter-spacing: .85em;
+    margin-right: -.85em;
+    color: var(--accent);
+    margin-top: 6px;
+  }
+  .divider { width: 340px; height: 1px; background: var(--line-strong); margin: 44px 0 40px; }
+  .subtitle {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 40px;
+    color: var(--text);
+  }
+  .tagline {
+    margin-top: 24px;
+    font-size: 28px;
+    font-weight: 300;
+    color: var(--amber);
+  }
+  .cover-footer {
+    position: absolute;
+    right: 120px; left: 120px; bottom: 58px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 26px;
+    border-top: 1px solid var(--line);
+    font-size: 21px;
+    color: var(--muted);
+  }
+  .cover-footer .event { font-family: var(--font-display); font-weight: 500; }
+  .cover-footer .meta  { font-weight: 300; color: var(--faint); }
+</style>
+</head>
+<body>
+<div class="stage">
+<section class="slide">
+  <div class="cover">
+
+    <svg class="eye-motif" width="560" height="250" viewBox="0 0 560 250" fill="none">
+      <defs>
+        <radialGradient id="iris" cx="50%" cy="42%" r="62%">
+          <stop offset="0%" stop-color="#FFB257"/>
+          <stop offset="55%" stop-color="#FF5C33"/>
+          <stop offset="100%" stop-color="#C93A18"/>
+        </radialGradient>
+        <filter id="soft" x="-80%" y="-80%" width="260%" height="260%">
+          <feGaussianBlur stdDeviation="26"/>
+        </filter>
+      </defs>
+      <circle cx="280" cy="125" r="78" fill="#FF5C33" opacity=".16" filter="url(#soft)"/>
+      <path d="M30 125 C 140 18, 420 18, 530 125" stroke="rgba(242,237,227,.85)" stroke-width="2.5"/>
+      <path d="M30 125 C 140 232, 420 232, 530 125" stroke="rgba(242,237,227,.32)" stroke-width="2"/>
+      <circle cx="280" cy="125" r="56" fill="url(#iris)"/>
+      <circle cx="280" cy="125" r="21" fill="#06080F" opacity=".88"/>
+      <circle cx="299" cy="106" r="7" fill="rgba(242,237,227,.92)"/>
+      <ellipse cx="280" cy="125" rx="252" ry="78" stroke="rgba(242,237,227,.18)" stroke-width="1" transform="rotate(-8 280 125)"/>
+      <circle cx="497" cy="68" r="9" fill="rgba(65,201,212,.25)"/>
+      <circle cx="497" cy="68" r="4.5" fill="#41C9D4"/>
+    </svg>
+
+    <div class="wordmark">عَيْن</div>
+    <div class="latin">AYN</div>
+
+    <div class="divider"></div>
+
+    <div class="subtitle">منصة عربية معيارية لمراقبة الأرض وإدارة الكوارث</div>
+    <div class="tagline">« عيونٌ في السماء، أصواتٌ على الأرض »</div>
+
+  </div>
+
+  <div class="cover-footer">
+    <div class="event">Astro Code 2026 · هاكاثون</div>
+    <div class="meta">21 دولة عربية &nbsp;·&nbsp; 60 غابة مراقبة &nbsp;·&nbsp; AR / EN / FR</div>
+  </div>
+</section>
+</div>
+<script src="../deck-scale.js"></script>
+</body>
+</html>

@@ -9,6 +9,7 @@ import { MissionBriefing } from './MissionBriefing';
 import { SolarPanel } from './SolarPanel';
 import { StatusBlock } from './StatusBlock';
 import { ConflictPanel } from './ConflictPanel';
+import { StarIdentifier } from './StarIdentifier';
 
 
 const emptyStats: Stats = {
@@ -22,7 +23,6 @@ const emptyStats: Stats = {
 
 type DashboardProps = {
   countryCode: string;
-  onCountryChange: (countryCode: string) => void;
   unitMode: UnitMode;
   onUnitModeChange: (unitMode: UnitMode) => void;
 };
@@ -105,8 +105,9 @@ function getPanelBackground(unitMode: UnitMode): string {
   return backgroundMap[unitMode] || '';
 }
 
-export function Dashboard({ countryCode, onCountryChange: _, unitMode, onUnitModeChange }: DashboardProps) {
+export function Dashboard({ countryCode, unitMode, onUnitModeChange }: DashboardProps) {
   const { t, i18n } = useTranslation();
+  const [nowMs] = useState(() => Date.now());
   const [layers, setLayers] = useState<Record<LayerKey, boolean>>({
     forests: true,
     risk: true,
@@ -198,7 +199,7 @@ export function Dashboard({ countryCode, onCountryChange: _, unitMode, onUnitMod
       case 'niza': {
         const recent24h = nizaEvents.data.filter(e => {
           const d = new Date(e.event_date ?? e.created_at ?? 0);
-          return !isNaN(d.getTime()) && (Date.now() - d.getTime()) < 24 * 60 * 60 * 1000;
+          return !isNaN(d.getTime()) && (nowMs - d.getTime()) < 24 * 60 * 60 * 1000;
         }).length;
         return [
           { label: t('activeDisputes'),    value: 4 },
@@ -246,7 +247,7 @@ export function Dashboard({ countryCode, onCountryChange: _, unitMode, onUnitMod
           { label: t('forestsMonitored'),  value: stats.data.forests_monitored },
         ];
     }
-  }, [unitMode, stats.data, najjiStats.data, riyahSites.data, baydarSites.data, nizaEvents.data, najmSites.data, jamalSites.data, reports.data.length, t, i18n.language]);
+  }, [unitMode, stats.data, najjiStats.data, riyahSites.data, baydarSites.data, nizaEvents.data, najmSites.data, jamalSites.data, reports.data.length, nowMs, t, i18n.language]);
 
 
   function toggleLayer(layer: LayerKey) {
@@ -433,10 +434,11 @@ export function Dashboard({ countryCode, onCountryChange: _, unitMode, onUnitMod
           </div>
 
           {unitMode === 'shuaa' ? (
-            <SolarPanel countryCode={countryCode} unitMode={unitMode} />
+            <SolarPanel countryCode={countryCode} />
           ) : unitMode === 'niza' ? (
-            <ConflictPanel unitMode={unitMode} />
+            <ConflictPanel />
           ) : unitMode === 'najm' ? (
+            <>
             <div className="panel p-4 bg-najm-panel">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="panel-title" style={{ color: '#818cf8' }}>
@@ -481,6 +483,8 @@ export function Dashboard({ countryCode, onCountryChange: _, unitMode, onUnitMod
                 <p className="text-start text-sm text-muted">{isAr ? 'لا تتوفر بيانات حالياً' : 'No data yet — fetching on next cycle'}</p>
               )}
             </div>
+            <StarIdentifier />
+            </>
           ) : unitMode === 'jamal' ? (
             <div className="panel p-4 bg-jamal-panel">
               <div className="flex items-center justify-between mb-3">

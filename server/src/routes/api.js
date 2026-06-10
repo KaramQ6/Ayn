@@ -11,6 +11,8 @@ import { validate, reportSchema, validateId } from '../middleware/validation.js'
 import { awardPoints } from '../services/gamification.js';
 import { getBestSatelliteImage } from '../services/satelliteImagery.js';
 import { analyzeFireCause } from '../services/fireCauseAnalysis.js';
+import { analyzeStarImage } from '../services/starAnalysis.js';
+import { imageMemoryUpload } from '../middleware/upload.js';
 
 const router = Router();
 
@@ -489,6 +491,25 @@ router.get('/najm', safeRoute((req, res) => {
   `).all();
   res.json(sites);
 }));
+
+// POST /api/najm/identify — verify realism of an uploaded star photo and identify it
+router.post('/najm/identify', (req, res) => {
+  imageMemoryUpload.single('image')(req, res, async (uploadError) => {
+    if (uploadError) {
+      return res.status(400).json({ error: uploadError.message });
+    }
+    if (!req.file) {
+      return res.status(400).json({ error: 'image file is required' });
+    }
+    try {
+      const analysis = await analyzeStarImage(req.file.buffer, req.file.mimetype);
+      return res.json({ success: true, analysis });
+    } catch (err) {
+      console.error('[star identify error]', err?.message || err);
+      return res.status(500).json({ error: 'Star analysis failed' });
+    }
+  });
+});
 
 // GET /api/jamal — latest wildlife observation data per site
 router.get('/jamal', safeRoute((req, res) => {

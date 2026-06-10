@@ -41,3 +41,11 @@ export const avatarUpload = multer({
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter,
 });
+
+// In-memory upload for one-off image analysis (not persisted to disk).
+// The file buffer is read straight from req.file.buffer and handed to the AI.
+export const imageMemoryUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 8 * 1024 * 1024 },
+  fileFilter,
+});

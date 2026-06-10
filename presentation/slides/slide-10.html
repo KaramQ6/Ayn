@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>عين — المجتمع</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@200;300;400;500;600;700&family=Noto+Kufi+Arabic:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../deck.css">
+<style>
+  .steps {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    margin-top: 58px;
+  }
+  .step {
+    flex: 1;
+    border: 1px solid var(--line-strong);
+    border-radius: 12px;
+    padding: 24px 26px;
+    background: rgba(13,19,34,.55);
+  }
+  .step .n { direction: ltr; font-weight: 200; font-size: 34px; color: var(--accent); }
+  .step h4 { font-family: var(--font-display); font-weight: 600; font-size: 24px; margin-top: 8px; line-height: 1.5; }
+  .step p { font-weight: 300; font-size: 18px; color: var(--muted); margin-top: 6px; line-height: 1.6; }
+  .sep {
+    align-self: center;
+    width: 46px;
+    text-align: center;
+    color: var(--faint);
+    font-size: 24px;
+    direction: ltr;
+    flex: none;
+  }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 110px; margin-top: 64px; }
+  .grid2 h3 { font-family: var(--font-display); font-weight: 600; font-size: 28px; color: var(--muted); margin-bottom: 24px; }
+  .prow {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 4px;
+    border-top: 1px solid var(--line);
+    font-size: 23px; font-weight: 300;
+  }
+  .prow .pts { direction: ltr; font-weight: 400; font-size: 27px; color: var(--amber); }
+  .ranks { display: flex; flex-direction: column; gap: 0; }
+  .rank {
+    display: flex; align-items: center; gap: 20px;
+    padding: 15px 4px;
+    border-top: 1px solid var(--line);
+    font-size: 23px;
+  }
+  .rank .bar { height: 9px; border-radius: 5px; background: linear-gradient(to left, var(--accent-deep), var(--accent)); }
+  .rank .nm { font-weight: 400; min-width: 200px; }
+  .note {
+    margin-top: 30px;
+    font-size: 21px;
+    font-weight: 300;
+    color: var(--muted);
+    border-right: 2px solid var(--accent);
+    padding-right: 20px;
+    line-height: 1.7;
+  }
+  .note b { color: var(--text); font-weight: 500; }
+</style>
+</head>
+<body>
+<div class="stage">
+<section class="slide">
+  <div class="body">
+    <div class="kicker">
+      <span class="no">08</span><span class="rule"></span><span class="label">المجتمع</span>
+    </div>
+
+    <h1 class="title">كل مواطن… <span class="accent">مستشعرٌ أرضي</span></h1>
+
+    <div class="steps">
+      <div class="step">
+        <div class="n">1</div>
+        <h4>صورة من الميدان</h4>
+        <p>يرسل المواطن صورة التهديد إلى بوت تيليغرام.</p>
+      </div>
+      <div class="sep">←</div>
+      <div class="step">
+        <div class="n">2</div>
+        <h4>تحليل فوري بالرؤية</h4>
+        <p>Google Vision يصنّف: حريق، دخان، أم قطع أشجار؟</p>
+      </div>
+      <div class="sep">←</div>
+      <div class="step">
+        <div class="n">3</div>
+        <h4>موقع GPS</h4>
+        <p>البوت يكتشف الدولة تلقائياً من الإحداثيات.</p>
+      </div>
+      <div class="sep">←</div>
+      <div class="step">
+        <div class="n">4</div>
+        <h4>تحقق متقاطع</h4>
+        <p>البلاغ يدخل المحرك كمصدر بوزن 20%.</p>
+      </div>
+      <div class="sep">←</div>
+      <div class="step">
+        <div class="n">5</div>
+        <h4>نقاط ورتبة</h4>
+        <p>المُبلّغ يكسب نقاطاً ويصعد في لوحة الصدارة.</p>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div>
+        <h3>نظام النقاط</h3>
+        <div class="prow"><span>إرسال بلاغ</span><span class="pts">10</span></div>
+        <div class="prow"><span>بلاغ مع صورة</span><span class="pts">20</span></div>
+        <div class="prow"><span>أول بلاغ في اليوم</span><span class="pts">25</span></div>
+        <div class="prow"><span>بلاغ تم التحقق منه</span><span class="pts">50</span></div>
+        <div class="prow" style="border-bottom:1px solid var(--line)"><span>بلاغ قاد إلى استجابة فعلية</span><span class="pts">100</span></div>
+      </div>
+      <div>
+        <h3>سلّم الرتب</h3>
+        <div class="rank"><span class="nm">مراقب</span><span class="bar" style="width:60px"></span></div>
+        <div class="rank"><span class="nm">مراسل ميداني</span><span class="bar" style="width:130px"></span></div>
+        <div class="rank"><span class="nm">حارس أول</span><span class="bar" style="width:210px"></span></div>
+        <div class="rank"><span class="nm">قائد فريق</span><span class="bar" style="width:300px"></span></div>
+        <div class="rank" style="border-bottom:1px solid var(--line)"><span class="nm">حارس النخبة</span><span class="bar" style="width:400px"></span></div>
+        <div class="note">الحرّاس المسجّلون يتلقون <b>إشعاراً فورياً عبر تيليغرام</b> مع الإحداثيات عند كل إنذار عالٍ أو حرج.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="brand">عَيْن <b>·</b> Ayn — Astro Code 2026</div>
+    <div class="page">10 / 15</div>
+  </div>
+</section>
+</div>
+<script src="../deck-scale.js"></script>
+</body>
+</html>

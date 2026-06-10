@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>عين — محرك الثقة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@200;300;400;500;600;700&family=Noto+Kufi+Arabic:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../deck.css">
+<style>
+  .grid2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 110px;
+    margin-top: 70px;
+  }
+  .panel h3 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 30px;
+    color: var(--muted);
+    margin-bottom: 40px;
+  }
+  /* weights */
+  .wrow { display: grid; grid-template-columns: 250px 1fr 90px; align-items: center; gap: 26px; margin-bottom: 34px; }
+  .wrow .lbl { font-size: 25px; font-weight: 400; }
+  .wrow .lbl span { display: block; font-size: 18px; font-weight: 300; color: var(--faint); margin-top: 3px; }
+  .wrow .track { height: 12px; background: rgba(242,237,227,.06); border-radius: 6px; overflow: hidden; }
+  .wrow .fill { height: 100%; border-radius: 6px; background: linear-gradient(to left, var(--accent-deep), var(--accent)); }
+  .wrow .pct { direction: ltr; text-align: left; font-weight: 300; font-size: 28px; color: var(--amber); }
+  /* ladder */
+  .lrow {
+    display: grid;
+    grid-template-columns: 200px 1fr 190px;
+    align-items: center;
+    gap: 24px;
+    padding: 25px 0;
+    border-top: 1px solid var(--line);
+  }
+  .lrow .src { font-size: 25px; font-weight: 400; }
+  .lrow .conf { direction: ltr; text-align: left; font-weight: 200; font-size: 52px; }
+  .lrow .lvl {
+    justify-self: start;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 21px;
+    padding: 8px 22px;
+    border-radius: 999px;
+    border: 1px solid;
+  }
+  .lvl.critical { color: var(--accent); border-color: rgba(255,92,51,.5); background: rgba(255,92,51,.07); }
+  .lvl.high     { color: var(--amber);  border-color: rgba(255,178,87,.45); background: rgba(255,178,87,.06); }
+  .lvl.medium   { color: var(--muted);  border-color: var(--line-strong); }
+  .threshold {
+    margin-top: 44px;
+    padding: 22px 32px;
+    border-radius: 12px;
+    border: 1px dashed var(--line-strong);
+    font-size: 23px;
+    font-weight: 300;
+    color: var(--muted);
+  }
+  .threshold b { color: var(--text); font-weight: 500; }
+</style>
+</head>
+<body>
+<div class="stage">
+<section class="slide">
+  <div class="body">
+    <div class="kicker">
+      <span class="no">04</span><span class="rule"></span><span class="label">محرك الثقة</span>
+    </div>
+
+    <h1 class="title">كل مصدر يصوّت — والثقة <span class="accent">تُحسب</span> لا تُفترض</h1>
+
+    <div class="grid2">
+      <div class="panel">
+        <h3>أوزان المصادر في القرار</h3>
+        <div class="wrow">
+          <div class="lbl">القمر الصناعي<span>NASA FIRMS — بؤر حرارية</span></div>
+          <div class="track"><div class="fill" style="width:100%"></div></div>
+          <div class="pct">35%</div>
+        </div>
+        <div class="wrow">
+          <div class="lbl">خطر الطقس<span>مؤشر FWI الكندي</span></div>
+          <div class="track"><div class="fill" style="width:71%"></div></div>
+          <div class="pct">25%</div>
+        </div>
+        <div class="wrow">
+          <div class="lbl">بلاغات المجتمع<span>تيليغرام — ضمن 5 كم</span></div>
+          <div class="track"><div class="fill" style="width:57%"></div></div>
+          <div class="pct">20%</div>
+        </div>
+        <div class="wrow">
+          <div class="lbl">الرؤية الاصطناعية<span>Google Cloud Vision</span></div>
+          <div class="track"><div class="fill" style="width:57%"></div></div>
+          <div class="pct">20%</div>
+        </div>
+
+        <div class="threshold">عتبة الإنذار: <b>مصدران فأكثر</b>، أو مصدر واحد بثقة لا تقل عن <b>40%</b>.</div>
+      </div>
+
+      <div class="panel">
+        <h3>سلّم الثقة حسب عدد المصادر المتفقة</h3>
+        <div class="lrow">
+          <div class="src">4 مصادر</div>
+          <div class="conf accent">99%</div>
+          <div class="lvl critical">حرج</div>
+        </div>
+        <div class="lrow">
+          <div class="src">3 مصادر</div>
+          <div class="conf accent">95%</div>
+          <div class="lvl critical">حرج / عالٍ</div>
+        </div>
+        <div class="lrow">
+          <div class="src">مصدران</div>
+          <div class="conf amber">80%</div>
+          <div class="lvl high">عالٍ</div>
+        </div>
+        <div class="lrow" style="border-bottom:1px solid var(--line)">
+          <div class="src">مصدر واحد</div>
+          <div class="conf muted">50%</div>
+          <div class="lvl medium">متوسط — سقف</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="brand">عَيْن <b>·</b> Ayn — Astro Code 2026</div>
+    <div class="page">05 / 15</div>
+  </div>
+</section>
+</div>
+<script src="../deck-scale.js"></script>
+</body>
+</html>
