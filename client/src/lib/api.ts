@@ -1,10 +1,22 @@
 import type { Report, StarAnalysis } from '../types';
 
 const fallbackApiBaseUrl = import.meta.env.PROD ? '' : 'http://localhost:5000';
+const localUrlPattern = /^(https?|wss?):\/\/(localhost|127\.0\.0\.1|\[::1\])(?::\d+)?/i;
 
-export const API_BASE_URL = (
-  import.meta.env.VITE_API_BASE_URL || fallbackApiBaseUrl
-).replace(/\/$/, '');
+function isLocalUrl(url?: string) {
+  return !!url && localUrlPattern.test(url);
+}
+
+function getApiBaseUrl() {
+  const configuredUrl = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, '');
+  if (import.meta.env.PROD && isLocalUrl(configuredUrl)) {
+    return '';
+  }
+
+  return (configuredUrl || fallbackApiBaseUrl).replace(/\/$/, '');
+}
+
+export const API_BASE_URL = getApiBaseUrl();
 
 function getFallbackWsUrl() {
   if (!import.meta.env.PROD || typeof window === 'undefined') {
@@ -15,7 +27,16 @@ function getFallbackWsUrl() {
   return `${protocol}//${window.location.host}/ws`;
 }
 
-export const WS_URL = import.meta.env.VITE_WS_URL || getFallbackWsUrl();
+function getWsUrl() {
+  const configuredUrl = import.meta.env.VITE_WS_URL;
+  if (import.meta.env.PROD && isLocalUrl(configuredUrl)) {
+    return getFallbackWsUrl();
+  }
+
+  return configuredUrl || getFallbackWsUrl();
+}
+
+export const WS_URL = getWsUrl();
 
 export function withCountry(path: string, countryCode: string) {
   if (!countryCode) return path;
