@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "railway:build": "npm --prefix client ci --include=dev && npm --prefix server ci --omit=dev && npm --prefix client run build && node scripts/copy-client-build.mjs",
+    "copy-client-build": "node scripts/copy-client-build.mjs",
+    "railway:build": "node scripts/build-railway.mjs",
     "start:railway": "node scripts/start-railway.mjs",
     "start": "npm run start:railway"
   },
