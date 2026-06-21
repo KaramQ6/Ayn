@@ -226,3 +226,48 @@ h1, h2, h3, h4, h5, h6 {
   background: rgba(5, 10, 7, 0.9);
   border: 1px solid rgba(16, 185, 129, 0.3);
 }
+
+/* Najji Flood System Styles */
+.pulse-flood {
+  animation: flood-pulse 1.4s ease-in-out infinite;
+}
+@keyframes flood-pulse {
+  0%, 100% { opacity: 0.45; stroke-width: 3px; }
+  50%       { opacity: 0.80; stroke-width: 5px; }
+}
+
+.module-toggle {
+  display: flex;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #0A140E;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+.module-btn {
+  padding: 6px 16px;
+  border-radius: 20px;
+  border: 1.5px solid #273b30;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+.module-btn:hover {
+  border-color: #10B981;
+  color: #fff;
+}
+.module-btn.active {
+  background: #10B981;
+  border-color: #10B981;
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Flood vs Fire alert cards */
+.alert-card.flood   { border-right: 4px solid #3b82f6 !important; }
+.alert-card.fire    { border-right: 4px solid #ef4444 !important; }
+.alert-card.critical { background: #1a0f0f; }
+.alert-card.flood.critical { background: #0c121e; }
+

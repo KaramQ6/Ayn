@@ -14,6 +14,7 @@ import apiRoutes from './routes/api.js';
 import authRoutes from './routes/auth.js';
 import { fetchFIRMSData } from './services/firms.js';
 import { updateFireRisk } from './services/weather.js';
+import { checkFloodRisks } from './services/najjiEngine.js';
 import { initDatabase } from './models/database.js';
 import { initBot } from './bot/telegramBot.js';
 import { startDemo, stopDemo, isDemoActive, getScenarios, getActiveScenario } from './services/demoEngine.js';
@@ -249,6 +250,15 @@ cron.schedule('0 * * * *', async () => {
     await updateFireRisk(db, broadcast);
   } catch (err) {
     console.error('Weather fetch error:', err.message);
+  }
+});
+
+// Run Najji (Flash Flood) engine every 30 minutes
+cron.schedule('*/30 * * * *', async () => {
+  try {
+    await checkFloodRisks(db, broadcast);
+  } catch (err) {
+    console.error('Najji engine error:', err.message);
   }
 });
 

@@ -1,6 +1,6 @@
-# ForestGuard AI
+# Ayn - عين (formerly ForestGuard AI)
 
-## Pan-Arab & Middle East Community-Satellite Fusion System for Real-Time Forest Protection
+## Pan-Arab Modular Earth Observation & Disaster Management Platform
 
 [![Status](https://img.shields.io/badge/Status-Operational-green.svg)](https://forestguard-ai.netlify.app)
 [![Coverage](https://img.shields.io/badge/Coverage-21%20Countries-blue.svg)](#monitored-forests)
@@ -11,15 +11,16 @@
 
 > *"Eyes in the Sky, Voices on the Ground"*
 
-ForestGuard AI is a multi-layered disaster management system designed for forest ecosystems across the Arab world and Middle East. It fuses NASA satellite thermal anomalies with real-time community ground-truth reports to generate high-confidence fire alerts minutes before traditional systems can respond.
+Ayn (عين) is a multi-modular Earth Observation platform designed for the Arab world. Born from the Astro Code 2026 Hackathon vision, it integrates diverse satellite data pipelines (NASA FIRMS, GPM, MODIS, SAR) with real-time community ground-truth reports to generate high-confidence early warnings for environmental disasters.
 
-Covering **60 forests** across **21 MENA countries** with trilingual support (English, Arabic, French).
+Currently operating its first fully-fledged module (**Fayy - فيّ**), it covers **60 forests** across **21 MENA countries** with trilingual support (English, Arabic, French).
 
 ---
 
 ## Table of Contents
 
-- [How It Works](#how-it-works)
+- [The Astro Code Vision (Modular Platform)](#the-astro-code-vision-modular-platform)
+- [How It Works (Core Architecture)](#how-it-works)
 - [Tech Stack](#tech-stack)
 - [Internationalization](#internationalization)
 - [Project Structure](#project-structure)
@@ -37,6 +38,20 @@ Covering **60 forests** across **21 MENA countries** with trilingual support (En
 - [Monitored Countries & Forests](#monitored-forests)
 - [SDG Alignment](#sdg-alignment)
 - [License](#license)
+
+---
+
+## The Astro Code Vision (Modular Platform)
+
+Ayn (عين) is built on a scalable, modular architecture designed to ingest arbitrary satellite feeds. Our vision for Astro Code 2026 and beyond includes 5 targeted modules:
+
+| Module | Focus Area | Satellite / Data Source | Status |
+|--------|------------|------------------------|--------|
+| **🌲 Fayy (فيّ)** | Wildfires & Deforestation | NASA FIRMS (VIIRS/MODIS) | **[Operational - Demo Ready]** |
+| **🌊 Najji (نجّي)** | Flash Flood Early Warning | NASA GPM (IMERG) + SRTM DEM | **[Hackathon Priority / Prototyping]** |
+| **💧 Miyya (ميّة)** | Underground Water Leaks | Sentinel-1 (SAR) | *[Vision / Planned]* |
+| **🌾 Baydar (بيدر)** | Precision Agriculture | Landsat / Sentinel-2 (NDVI) | *[Vision / Planned]* |
+| **🌪️ Riyah (رياح)** | Dust Storm Tracking | MODIS Aerosol / AERONET | *[Vision / Planned]* |
 
 ---
 
@@ -662,11 +677,13 @@ Both jobs are skipped in demo mode (simulated data is used instead).
 
 ## SDG Alignment
 
-ForestGuard AI aligns with three UN Sustainable Development Goals:
+The Ayn (عين) platform aligns with five key UN Sustainable Development Goals:
 
-1. **SDG 9: Industry, Innovation & Infrastructure** - Building resilient monitoring infrastructure using satellite-AI fusion across 21 MENA countries.
-2. **SDG 13: Climate Action** - Early detection and response to climate-driven wildfires with climate-zone-tuned risk assessment.
-3. **SDG 15: Life on Land** - Protecting terrestrial ecosystems, forests, and biodiversity across the Arab world and Middle East.
+1. **SDG 2: Zero Hunger** - (via the *Baydar* agriculture module).
+2. **SDG 6: Clean Water and Sanitation** - (via the *Miyya* leak detection module).
+3. **SDG 9: Industry, Innovation & Infrastructure** - Building resilient monitoring infrastructure using satellite-AI fusion across 21 MENA countries.
+4. **SDG 13: Climate Action** - Early detection and response to climate-driven disasters (wildfires, floods, dust storms).
+5. **SDG 15: Life on Land** - Protecting terrestrial ecosystems, forests, and biodiversity (via *Fayy*).
 
 ---
 

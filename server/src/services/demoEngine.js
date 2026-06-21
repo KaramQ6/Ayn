@@ -3,6 +3,10 @@
 // Supports 5 scenarios across different countries
 
 import { FORESTS, getForestById } from '../data/forests.js';
+import { WADIS, getWadiById } from '../data/wadis.js';
+import { fetchPrecipitation, calculateFloodRisk } from './najjiEngine.js';
+
+const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 let demoTimer = null;
 let demoActive = false;
@@ -157,6 +161,17 @@ const SCENARIOS = {
   'iraq-kurdistan': buildIraqKurdistanScenario,
   'morocco-atlas': buildMoroccoAtlasScenario,
   'yemen-socotra': buildYemenSocotraScenario,
+  'najji_petra_2018': () => ({
+    id: 'najji_petra_2018',
+    name: 'Najji: Petra 2018 Flood (Historical)',
+    nameAr: 'نجّي: سيول البتراء 2018 (تاريخي)',
+    nameFr: 'Najji: Inondations de Petra 2018',
+    country: 'JO',
+    description: 'Replay of the tragic Oct 18, 2018 flash floods using real Open-Meteo historical data.',
+    center: [30.3285, 35.4444],
+    zoom: 12,
+    events: [], // Async loop handled dynamically
+  }),
 };
 
 /**
@@ -219,11 +234,16 @@ export function startDemo(db, broadcast, scenarioId = 'ajloun') {
     },
   });
 
-  for (const event of scenario.events) {
-    const timer = setTimeout(() => {
-      console.log(`🎬 [DEMO ${scenario.id} T+${event.delay / 1000}s] ${event.log}`);
+  if (scenarioId === 'najji_petra_2018') {
+    // Run the historical data loop asynchronously
+    runNajjiPetra2018Demo(db, broadcast, scenario).catch(err => console.error('Demo error:', err));
+  } else {
+    // Normal statically timed events
+    for (const event of scenario.events) {
+      const timer = setTimeout(() => {
+        console.log(`🎬 [DEMO ${scenario.id} T+${event.delay / 1000}s] ${event.log}`);
 
-      switch (event.action) {
+        switch (event.action) {
         case 'weather_spike': {
           const forest = getForest(event.data.forestId);
           const regionName = `${forest.nameAr} - ${forest.name}`;
@@ -294,14 +314,14 @@ export function startDemo(db, broadcast, scenarioId = 'ajloun') {
         case 'cross_validate_alert': {
           db.prepare(`
             INSERT INTO alerts (level, type, latitude, longitude, country, message, sources, confidence, created_at)
-            VALUES (?, 'cross_validated', ?, ?, ?, ?, ?, ?, datetime('now'))
-          `).run(event.data.level, event.data.latitude, event.data.longitude, event.data.country, event.data.message, event.data.sources, event.data.confidence);
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+          `).run(event.data.level, event.data.type || 'cross_validated', event.data.latitude, event.data.longitude, event.data.country, event.data.message, event.data.sources, event.data.confidence);
 
           broadcast({
             type: 'NEW_ALERT',
             data: {
               level: event.data.level,
-              type: 'cross_validated',
+              type: event.data.type || 'cross_validated',
               latitude: event.data.latitude,
               longitude: event.data.longitude,
               country: event.data.country,
@@ -313,10 +333,25 @@ export function startDemo(db, broadcast, scenarioId = 'ajloun') {
           broadcast({ type: 'DEMO_EVENT', data: { event: event.log, progress: event.delay / 180000 } });
           break;
         }
+
+        case 'najji_update': {
+          broadcast({
+            type: 'FLOOD_UPDATE',
+            data: [{
+              wadi: 'wadi_petra',
+              rainIntensity: event.data.rain_intensity,
+              discharge: event.data.discharge,
+              message: event.data.message
+            }]
+          });
+          broadcast({ type: 'DEMO_EVENT', data: { event: event.log, progress: event.delay / 180000 } });
+          break;
+        }
       }
     }, event.delay);
 
-    timers.push(timer);
+      timers.push(timer);
+    }
   }
 
   // Demo complete timer
@@ -340,9 +375,73 @@ export function startDemo(db, broadcast, scenarioId = 'ajloun') {
     country: scenario.country,
     center: scenario.center,
     zoom: scenario.zoom,
-    duration: 180,
-    events: scenario.events.length,
+    duration: scenarioId === 'najji_petra_2018' ? 24 * 0.8 : 180,
+    events: scenario.events ? scenario.events.length : 24,
   };
+}
+
+async function runNajjiPetra2018Demo(db, broadcast, scenario) {
+  console.log('Fetching historical data for Oct 18, 2018 from Open-Meteo...');
+  const wadi = getWadiById('wadi_siq_petra');
+  
+  const historicalData = await fetchPrecipitation(
+    wadi.lat, wadi.lng,
+    true,           // isHistorical
+    '2018-10-18'    // Real date of the disaster
+  );
+
+  if (!historicalData || !historicalData.time) {
+    console.error('Failed to fetch historical data for demo.');
+    return;
+  }
+
+  for (let i = 0; i < historicalData.time.length; i++) {
+    if (!demoActive || activeScenarioId !== 'najji_petra_2018') break;
+
+    const rain    = historicalData.precipitation[i] || 0; // mm/hr
+    const result  = calculateFloodRisk(wadi, rain);
+    const hour    = historicalData.time[i];
+
+    broadcast({
+      type:      'NAJJI_UPDATE',
+      wadiId:    wadi.id,
+      timestamp: hour,
+      wadi:      wadi.nameAr,
+      rain_mm:   rain,
+      Q_m3s:     result.Q_m3_per_sec.toFixed(1),
+      risk:      result.riskLevel,
+      lat:       wadi.lat,
+      lng:       wadi.lng
+    });
+
+    if (result.isCritical) {
+      db.prepare(`
+        INSERT INTO alerts (level, type, latitude, longitude, country, message, sources, confidence, created_at)
+        VALUES (?, 'flood', ?, ?, ?, ?, 'OPEN_METEO_HISTORICAL', 99, datetime('now'))
+      `).run(result.riskLevel, wadi.lat, wadi.lng, wadi.country, `🚨 إنذار سيول تاريخي (2018): ${wadi.nameAr} - تدفق: ${result.Q_m3_per_sec.toFixed(0)} م³/ث`);
+
+      broadcast({
+        type: 'NEW_ALERT',
+        data: {
+          level: result.riskLevel,
+          type: 'flood',
+          latitude: wadi.lat,
+          longitude: wadi.lng,
+          country: wadi.country,
+          message: `🚨 إنذار سيول تاريخي (2018): ${wadi.nameAr} - تدفق: ${result.Q_m3_per_sec.toFixed(0)} م³/ث`,
+          sources: 'OPEN_METEO_HISTORICAL',
+          confidence: 99,
+        },
+      });
+    }
+
+    broadcast({ type: 'DEMO_EVENT', data: { event: `[Historical] Oct 18, 2018 - Hour ${i}: Rain ${rain}mm/h, Flow ${result.Q_m3_per_sec.toFixed(1)}m3/s`, progress: i / historicalData.time.length } });
+    await sleep(800); // Fast forward presentation (0.8s per hour = 19 seconds total)
+  }
+
+  demoActive = false;
+  activeScenarioId = null;
+  broadcast({ type: 'DEMO_COMPLETE', data: { scenarioId: scenario.id, message: `Historical Demo ${scenario.name} complete` } });
 }
 
 export function stopDemo() {

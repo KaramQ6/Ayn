@@ -93,6 +93,8 @@ function Dashboard() {
   const [showTreeCover, setShowTreeCover] = useState(false);
   const [treeCoverOpacity, setTreeCoverOpacity] = useState(0.6);
   const [showForestExplorer, setShowForestExplorer] = useState(false);
+  const [najjiData, setNajjiData] = useState({});
+  const [activeModule, setActiveModule] = useState('all'); // 'all' | 'fayy' | 'najji'
 
   // Pan-Arab: country filter & scenarios
   const [countries, setCountries] = useState([]);
@@ -179,6 +181,31 @@ function Dashboard() {
           setStats(s => ({ ...s, active_alerts: Math.max(0, s.active_alerts - 1) }));
         }
         if (msg.type === 'RISK_UPDATE') setRisks(msg.data);
+        if (msg.type === 'NAJJI_UPDATE') {
+          setNajjiData(prev => ({
+            ...prev,
+            [msg.wadiId]: {
+              nameAr:    msg.wadi,
+              rain_mm:   msg.rain_mm,
+              Q:         parseFloat(msg.Q_m3s),
+              risk:      msg.risk,
+              lat:       msg.lat,
+              lng:       msg.lng,
+              timestamp: msg.timestamp
+            }
+          }));
+
+          if (msg.risk === 'CRITICAL') {
+            setAlerts(prev => [{
+              id:       `najji-${Date.now()}`,
+              type:     'flood',
+              titleAr:  `🌊 إنذار سيول — ${msg.wadi}`,
+              bodyAr:   `تدفق متوقع ${msg.Q_m3s} م³/ث • ${msg.rain_mm} ملم/ساعة`,
+              severity: 'CRITICAL',
+              time:     msg.timestamp
+            }, ...prev]);
+          }
+        }
         // Demo mode events
         if (msg.type === 'DEMO_STARTED') {
           setDemoActive(true);
@@ -587,26 +614,31 @@ function Dashboard() {
                         <CheckCircle className="w-8 h-8 mb-2" />
                         <span className="text-xs font-data uppercase tracking-widest">{alertFilter === 'resolved' ? t('dashboard.alerts.noResolved') : t('dashboard.alerts.noActive')}</span>
                       </div>
-                    ) : filteredAlerts.slice(0, 10).map((a, i) => (
-                      <div key={a.id || i} className={`p-3 rounded-xl border flex gap-3 items-start transition-all ${a.resolved ? 'border-white/5 bg-white/[0.02] opacity-60' : a.level === 'CRITICAL' ? 'border-red-500/30 bg-red-500/5' : 'border-orange-500/20 bg-orange-500/5'} hover:border-white/20`}>
-                        <div className={`mt-0.5 flex-shrink-0 ${a.resolved ? 'text-green-500' : a.level === 'CRITICAL' ? 'text-red-500 animate-pulse' : 'text-orange-500'}`}>
-                          {a.resolved ? <CheckCircle className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
+                    ) : filteredAlerts.slice(0, 10).map((a, i) => {
+                      const isFlood = a.type === 'flood';
+                      const isCritical = a.level === 'CRITICAL' || a.severity === 'CRITICAL';
+                      const cardClass = `p-3 rounded-xl border flex gap-3 items-start transition-all alert-card ${isFlood ? 'flood' : 'fire'} ${isCritical ? 'critical' : ''} ${a.resolved ? 'border-white/5 bg-white/[0.02] opacity-60' : isCritical ? 'border-red-500/30 bg-red-500/5' : 'border-orange-500/20 bg-orange-500/5'} hover:border-white/20`;
+                      return (
+                        <div key={a.id || i} className={cardClass}>
+                          <div className={`mt-0.5 flex-shrink-0 ${a.resolved ? 'text-green-500' : isCritical ? 'text-red-500 animate-pulse' : 'text-orange-500'}`}>
+                            {a.resolved ? <CheckCircle className="w-4 h-4" /> : <span>{isFlood ? '🌊' : '🔥'}</span>}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs text-white/90 leading-snug truncate font-bold">
+                              {isFlood ? (a.titleAr || a.message) : `${t(`dashboard.alerts.level.${a.level}`, a.level)} ${a.country ? `· ${a.country}` : ''}`}
+                            </p>
+                            <p className="text-[10px] text-white/50 leading-snug truncate mt-1">
+                              {isFlood ? (a.bodyAr || a.message) : t('dashboard.alerts.meta', { confidence: a.confidence ?? 0, sources: (a.sources || '').split(',').filter(Boolean).length || 1 })}
+                            </p>
+                          </div>
+                          {!a.resolved && a.id && !isFlood && (
+                            <Button onClick={() => handleResolveAlert(a.id)} variant="ghost" className="h-7 px-2 text-[9px] text-green-500 hover:text-green-400 hover:bg-green-500/10">
+                              {t('dashboard.alerts.resolve')}
+                            </Button>
+                          )}
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs text-white/90 leading-snug truncate">
-                            {t(`dashboard.alerts.level.${a.level}`, a.level)} {a.country && `· ${a.country}`}
-                          </p>
-                          <p className="text-[10px] text-white/50 leading-snug truncate">
-                            {t('dashboard.alerts.meta', { confidence: a.confidence ?? 0, sources: (a.sources || '').split(',').filter(Boolean).length || 1 })}
-                          </p>
-                        </div>
-                        {!a.resolved && a.id && (
-                          <Button onClick={() => handleResolveAlert(a.id)} variant="ghost" className="h-7 px-2 text-[9px] text-green-500 hover:text-green-400 hover:bg-green-500/10">
-                            {t('dashboard.alerts.resolve')}
-                          </Button>
-                        )}
-                      </div>
-                    ))}
+                      );
+                    })}
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -709,8 +741,25 @@ function Dashboard() {
         {/* MAIN MAP AREA (75% Width) */}
         <div className="flex-1 relative glass-card rounded-[28px] overflow-hidden shadow-2xl min-h-[500px] flex flex-col">
           
+          {/* Module Toggle */}
+          <div className="module-toggle z-[500]">
+            {[
+              { key: 'all',   icon: '🌍', label: 'عين — الكل' },
+              { key: 'fayy',  icon: '🔥', label: 'فيّ'      },
+              { key: 'najji', icon: '🌊', label: 'نجّي'     }
+            ].map(({ key, icon, label }) => (
+              <button
+                key={key}
+                className={`module-btn ${activeModule === key ? 'active' : ''}`}
+                onClick={() => setActiveModule(key)}
+              >
+                {icon} {label}
+              </button>
+            ))}
+          </div>
+
           {/* Top Left Floating Pill */}
-          <div className="absolute top-6 start-6 z-[500] bg-[#0A140E]/60 backdrop-blur-xl border border-white/10 px-4 py-2.5 rounded-2xl flex items-center gap-3 shadow-lg">
+          <div className="absolute top-16 start-6 z-[500] bg-[#0A140E]/60 backdrop-blur-xl border border-white/10 px-4 py-2.5 rounded-2xl flex items-center gap-3 shadow-lg">
             <Map className="w-4 h-4 text-[var(--accent-emerald)]" />
             <span className="text-xs font-data text-white/90 uppercase tracking-widest">{t('dashboard.map.firmsTelemetry')}</span>
             <div className="h-4 w-px bg-white/10 mx-1"></div>
@@ -718,7 +767,7 @@ function Dashboard() {
           </div>
 
           {/* Tree Cover Layer Toggle: Using shadcn Switch */}
-          <div className="absolute top-6 end-6 z-[500] flex flex-col gap-2">
+          <div className="absolute top-16 end-6 z-[500] flex flex-col gap-2">
             <div className={`bg-[#0A140E]/60 backdrop-blur-xl border px-3 py-2.5 rounded-2xl flex items-center gap-3 shadow-lg transition-all ${showTreeCover ? 'border-emerald-500/40' : 'border-white/10'}`}>
               <Layers className={`w-4 h-4 ${showTreeCover ? 'text-emerald-400' : 'text-white/40'}`} />
               <span className="text-[10px] font-data uppercase tracking-widest text-white/60">{t('dashboard.map.treeCover', 'Tree Cover')}</span>
@@ -838,41 +887,43 @@ function Dashboard() {
               </React.Fragment>
             ))}
 
-            <MarkerClusterGroup chunkedLoading maxClusterRadius={40}>
-              {(Array.isArray(fires) ? fires : []).map((f, i) => {
-                const style = getMarkerStyle(f.frp || f.brightness || 0);
-                return (
-                  <CircleMarker
-                    key={`fire-${i}`}
-                    center={[f.latitude, f.longitude]}
-                    radius={style.radius}
-                    pathOptions={{
-                      fillColor: style.color,
-                      color: '#ffffff',
-                      weight: 1.5,
-                      opacity: 1,
-                      fillOpacity: 0.85
-                    }}
-                  >
-                    <LeafletTooltip direction="top" offset={[0, -5]} opacity={0.9}>
-                      <div className="bg-[#0A140E]/90 border border-red-500/50 p-2 rounded-lg backdrop-blur-md shadow-xl">
-                        <div className="text-[10px] font-bold text-red-500 uppercase tracking-widest mb-1">{t('dashboard.map.thermalAnomaly')}</div>
-                        <div className="text-[9px] text-white/70 font-data">FRP: <span className="text-red-400">{f.frp || f.brightness || 0} MW</span></div>
-                      </div>
-                    </LeafletTooltip>
-                    <Popup className="tactical-popup">
-                      <div className="text-xs font-data">
-                        <b className="text-red-500">{t('dashboard.map.thermalAnomaly')}</b><br />
-                        FRP: <b>{f.frp || f.brightness || 0} MW</b><br />
-                        {t('dashboard.map.confidence')}: {f.confidence}% | {t('dashboard.map.source')}: {f.satellite}
-                      </div>
-                    </Popup>
-                  </CircleMarker>
-                );
-              })}
-            </MarkerClusterGroup>
+            {(activeModule === 'all' || activeModule === 'fayy') && (
+              <MarkerClusterGroup chunkedLoading maxClusterRadius={40}>
+                {(Array.isArray(fires) ? fires : []).map((f, i) => {
+                  const style = getMarkerStyle(f.frp || f.brightness || 0);
+                  return (
+                    <CircleMarker
+                      key={`fire-${i}`}
+                      center={[f.latitude, f.longitude]}
+                      radius={style.radius}
+                      pathOptions={{
+                        fillColor: style.color,
+                        color: '#ffffff',
+                        weight: 1.5,
+                        opacity: 1,
+                        fillOpacity: 0.85
+                      }}
+                    >
+                      <LeafletTooltip direction="top" offset={[0, -5]} opacity={0.9}>
+                        <div className="bg-[#0A140E]/90 border border-red-500/50 p-2 rounded-lg backdrop-blur-md shadow-xl">
+                          <div className="text-[10px] font-bold text-red-500 uppercase tracking-widest mb-1">{t('dashboard.map.thermalAnomaly')}</div>
+                          <div className="text-[9px] text-white/70 font-data">FRP: <span className="text-red-400">{f.frp || f.brightness || 0} MW</span></div>
+                        </div>
+                      </LeafletTooltip>
+                      <Popup className="tactical-popup">
+                        <div className="text-xs font-data">
+                          <b className="text-red-500">{t('dashboard.map.thermalAnomaly')}</b><br />
+                          FRP: <b>{f.frp || f.brightness || 0} MW</b><br />
+                          {t('dashboard.map.confidence')}: {f.confidence}% | {t('dashboard.map.source')}: {f.satellite}
+                        </div>
+                      </Popup>
+                    </CircleMarker>
+                  );
+                })}
+              </MarkerClusterGroup>
+            )}
 
-            {safeReports.filter(r => r.latitude).map((r, i) => (
+            {(activeModule === 'all' || activeModule === 'fayy') && safeReports.filter(r => r.latitude).map((r, i) => (
               <Marker key={`rep-${i}`} position={[r.latitude, r.longitude]} icon={reportIcon}>
                 <LeafletTooltip direction="top" offset={[0, -15]} opacity={0.9}>
                   <div className="bg-[#0A140E]/90 border border-[#10B981]/50 p-2 rounded-lg backdrop-blur-md shadow-xl">
@@ -889,6 +940,44 @@ function Dashboard() {
                 </Popup>
               </Marker>
             ))}
+
+            {(activeModule === 'all' || activeModule === 'najji') &&
+              Object.values(najjiData).map((wadi) => {
+                const color = wadi.risk === 'CRITICAL' ? '#ef4444'
+                            : wadi.risk === 'WARNING'  ? '#f97316'
+                            :                            '#3b82f6';
+                const radius = Math.max(9000, wadi.Q * 90);
+
+                return (
+                  <Circle
+                    key={wadi.nameAr}
+                    center={[wadi.lat, wadi.lng]}
+                    radius={radius}
+                    pathOptions={{
+                      color,
+                      fillColor:   color,
+                      fillOpacity: wadi.risk === 'CRITICAL' ? 0.45 : 0.25,
+                      weight:      wadi.risk === 'CRITICAL' ? 3 : 1.5,
+                      className:   wadi.risk === 'CRITICAL' ? 'pulse-flood' : ''
+                    }}
+                  >
+                    <Popup className="tactical-popup">
+                      <div className="text-xs font-data space-y-1" style={{ direction: 'rtl', minWidth: 160 }}>
+                        <strong className="text-white font-bold">{wadi.nameAr}</strong>
+                        <hr className="border-white/10 my-1" />
+                        <span>🌧️ {wadi.rain_mm} ملم/ساعة</span><br/>
+                        <span>🌊 Q = {wadi.Q} م³/ث</span><br/>
+                        <span style={{ color, fontWeight: 'bold' }}>
+                          {wadi.risk === 'CRITICAL' ? '🚨 خطر حرج'
+                         : wadi.risk === 'WARNING'  ? '⚠️ تحذير'
+                         :                           '✅ طبيعي'}
+                        </span>
+                      </div>
+                    </Popup>
+                  </Circle>
+                );
+              })
+            }
           </MapContainer>
         </div>
       </main>
